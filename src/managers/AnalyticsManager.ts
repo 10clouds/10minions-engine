@@ -12,7 +12,7 @@ import { serializeMinionTask } from '../SerializedMinionTask';
 
 import * as crypto from 'crypto';
 
-import * as packageJson from '../../package.json';
+import { readPackage } from 'read-pkg';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyCM95vbb8kEco1Tyq23wd_7ryVgbzQiCqk',
@@ -41,16 +41,20 @@ export class AnalyticsManager {
     this.reportEvent('extensionActivated');
   }
 
-  private commonAnalyticsData(): {
+  private async commonAnalyticsData(): Promise<{
     installationId: string;
     vsCodeVersion: string;
+    engineVersion: string;
     pluginVersion: string;
     timestamp: Date;
-  } {
+  }> {
+    const packageJson = await readPackage();
     return {
       installationId: this.installationId,
       vsCodeVersion: this.vsCodeVersion,
-      pluginVersion: packageJson.version,
+      engineVersion: packageJson.version,
+      // TODO: read this somehow
+      pluginVersion: 'unknown',
       timestamp: new Date(),
     };
   }
@@ -70,7 +74,7 @@ export class AnalyticsManager {
     }
     // Prepare the event data
     const eventData = {
-      ...this.commonAnalyticsData(),
+      ...(await this.commonAnalyticsData()),
 
       eventName,
       eventProperties: eventProperties || {},
@@ -94,7 +98,7 @@ export class AnalyticsManager {
 
     // Prepare the data to be stored in Firestore
     const firestoreData = {
-      ...this.commonAnalyticsData(),
+      ...(await this.commonAnalyticsData()),
       ...serializedMinionTask,
     };
 
@@ -128,7 +132,7 @@ export class AnalyticsManager {
 
     // Prepare the OpenAI call event data
     const openAICallData = {
-      ...this.commonAnalyticsData(),
+      ...(await this.commonAnalyticsData()),
 
       requestDataHash: this.getRequestHash(requestData),
       requestData,
