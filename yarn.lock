@@ -1562,6 +1562,11 @@ data-uri-to-buffer@^4.0.0:
   resolved "https://registry.yarnpkg.com/data-uri-to-buffer/-/data-uri-to-buffer-4.0.1.tgz#d8feb2b2881e6a4f58c2e08acfd0e2834e26222e"
   integrity sha512-0R9ikRb668HB7QDxT1vkpuUBtqc53YyAwMwGeUFKRojY/NWKvdZ+9UYtRfGmhqNbRkTSVpMbmyhXipFFv2cb/A==
 
+date-and-time@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/date-and-time/-/date-and-time-3.0.2.tgz#c2231ef98e7702b93cde1505d2d93f4fe602f0b6"
+  integrity sha512-MOqlRertOQmQI7ySbz6dKLM7Rxm9dgcPuBI9IL7NVe0UGqHPK+6hWSKVhLrVHxlSgQQtocE2R7+HFOf5aMz8vw==
+
 debug@4, debug@4.3.4, debug@^4.1.1, debug@^4.3.2, debug@^4.3.4:
   version "4.3.4"
   resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.4.tgz#1319f6579357f2338d3337d2cdd4914bb5dcc865"
