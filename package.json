@@ -9,7 +9,7 @@
     "lint": "eslint src --ext ts",
     "prepareTest": "npx tsx ./src/test/prepareTestFiles.ts",
     "test": "npx tsx ./src/test/runTest.ts",
-    "test-score": "npx tsx ./src/test/runScore.ts",
+    "test-score": "npx tsx ./src/test/runScore.ts -c 3",
     "watch": "tsc --watch"
   },
   "dependencies": {
@@ -38,8 +38,8 @@
     "chalk": "^5.3.0",
     "commander": "^11.0.0",
     "eslint": "^8.39.0",
-    "eslint-config-prettier": "^8.8.0",
-    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-config-prettier": "^8.9.0",
+    "eslint-plugin-prettier": "^5.0.0",
     "glob": "^8.1.0",
     "mocha": "^10.2.0",
     "prettier": "^3.0.0",
@@ -47,5 +47,8 @@
     "rimraf": "^5.0.1",
     "tsx": "^3.12.7",
     "typescript": "^5.0.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
