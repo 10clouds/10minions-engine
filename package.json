@@ -20,8 +20,7 @@
     "jsonschema": "^1.4.1",
     "langchain": "^0.0.77",
     "node-fetch": "^3.3.1",
-    "openai": "^3.2.1",
-    "read-pkg": "^8.0.0"
+    "openai": "^3.2.1"
   },
   "devDependencies": {
     "@inquirer/confirm": "^2.0.4",

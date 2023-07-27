@@ -12,8 +12,6 @@ import { serializeMinionTask } from '../SerializedMinionTask';
 
 import * as crypto from 'crypto';
 
-import { readPackage } from 'read-pkg';
-
 const firebaseConfig = {
   apiKey: 'AIzaSyCM95vbb8kEco1Tyq23wd_7ryVgbzQiCqk',
   authDomain: 'minions-diagnostics.firebaseapp.com',
@@ -48,7 +46,7 @@ export class AnalyticsManager {
     pluginVersion: string;
     timestamp: Date;
   }> {
-    const packageJson = await readPackage();
+    const packageJson = require('../../package.json');
     return {
       installationId: this.installationId,
       vsCodeVersion: this.vsCodeVersion,
