@@ -1,28 +1,29 @@
-import { MODEL_DATA } from "../const";
-import { AVAILABLE_MODELS, ModelsResponseData } from "../types";
+import { MODEL_DATA } from '../const';
+import { AVAILABLE_MODELS, ModelsResponseData } from '../types';
+import fetch from 'node-fetch';
 
 /**
  * Function to check the availability of all models in OpenAI.
  */
 export async function getMissingOpenAIModels(
-  openAIApiKey: string
+  openAIApiKey: string,
 ): Promise<AVAILABLE_MODELS[]> {
   const missingModels: AVAILABLE_MODELS[] = Object.keys(
-    MODEL_DATA
+    MODEL_DATA,
   ) as AVAILABLE_MODELS[];
 
   try {
-    const response = await fetch("https://api.openai.com/v1/models", {
-      method: "GET",
+    const response = await fetch('https://api.openai.com/v1/models', {
+      method: 'GET',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${openAIApiKey}`,
       },
     });
 
     const responseData = (await response.json()) as ModelsResponseData;
     if (!responseData || !responseData.data) {
-      console.error("No data received from OpenAI models API.");
+      console.error('No data received from OpenAI models API.');
       return missingModels;
     }
 
