@@ -20,7 +20,8 @@
     "jsonschema": "^1.4.1",
     "langchain": "^0.0.77",
     "node-fetch": "^3.3.1",
-    "openai": "^3.2.1"
+    "openai": "^3.2.1",
+    "read-pkg": "^8.0.0"
   },
   "devDependencies": {
     "@inquirer/confirm": "^2.0.4",
@@ -44,7 +45,6 @@
     "mocha": "^10.2.0",
     "prettier": "^3.0.0",
     "process": "^0.11.10",
-    "read-pkg": "^8.0.0",
     "rimraf": "^5.0.1",
     "tsx": "^3.12.7",
     "typescript": "^5.0.4"
