@@ -4,18 +4,18 @@ import * as glob from 'glob';
 import { Validator } from 'jsonschema'; // Imported the jsonschema library
 import path from 'path';
 import ts from 'typescript';
-import { initCLISystems, setupCLISystemsForTest } from '../CLI/setupCLISystems';
-import { MinionTask } from '../MinionTask';
-import { getEditorManager } from '../managers/EditorManager';
-import { gptExecute } from '../gpt/openai';
+import { initCLISystems, setupCLISystemsForTest } from '../src/CLI/setupCLISystems';
+import { MinionTask } from '../src/MinionTask';
+import { getEditorManager } from '../src/managers/EditorManager';
+import { gptExecute } from '../src/gpt/openai';
 import {
   LOG_NO_FALLBACK_MARKER as LOG_NORMAL_MODIFICATION_MARKER,
   applyMinionTask,
-} from '../strategies/utils/applyMinionTask';
+} from '../src/strategies/utils/applyMinionTask';
 
-import { LOG_PLAIN_COMMENT_MARKER as LOG_FALLBACK_COMMENT_MARKER } from '../strategies/utils/applyFallback';
+import { LOG_PLAIN_COMMENT_MARKER as LOG_FALLBACK_COMMENT_MARKER } from '../src/strategies/utils/applyFallback';
 import chalk from 'chalk';
-import { GPTMode } from '../gpt/types';
+import { GPTMode } from '../src/gpt/types';
 import { OptionValues, program } from 'commander';
 import { mapLimit } from 'async';
 import { format as dtFormat } from 'date-and-time';

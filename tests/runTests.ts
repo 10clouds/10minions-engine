@@ -1,7 +1,7 @@
 import * as path from 'path';
 import Mocha from 'mocha';
 import glob from 'glob';
-import { initCLISystems } from '../CLI/setupCLISystems';
+import { initCLISystems } from '../src/CLI/setupCLISystems';
 
 export function run(): Promise<void> {
   initCLISystems();
