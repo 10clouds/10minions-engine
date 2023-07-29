@@ -6,13 +6,14 @@ import {
   AnalyticsManager,
   setAnalyticsManager,
 } from '../managers/AnalyticsManager';
-import { ConsumingOpenAICacheManager } from '../managers/ConsumingOpenAICacheManager';
+import { NoCacheOpenAICacheManager } from '../managers/NoCacheOpenAICacheManager';
 import { setEditorManager } from '../managers/EditorManager';
 import { setLogProvider } from '../managers/LogProvider';
 import { setOriginalContentProvider } from '../managers/OriginalContentProvider';
 import { setOpenAIApiKey } from '../openai';
 import { CLIEditorManager } from './CLIEditorManager';
 import { setOpenAICacheManager } from '../managers/OpenAICacheManager';
+import { ConsumingOpenAICacheManager } from '../managers/ConsumingOpenAICacheManager';
 
 export function initCLISystems() {
   const baseDir = path.resolve(path.resolve(__dirname), "..", "..");
@@ -20,13 +21,16 @@ export function initCLISystems() {
   setOpenAIApiKey(process.env.OPENAI_API_KEY!);
 
   setOpenAICacheManager(undefined);
-  const openAiCacheManager = new ConsumingOpenAICacheManager(
-    JSON.parse(
-      readFileSync(path.resolve(baseDir, 'serviceAccount.json'), 'utf8'),
-    ),
-  );
 
-  setOpenAICacheManager(openAiCacheManager);
+  if (process.env.NO_OPENAI_CACHE === 'true') {
+    setOpenAICacheManager(new NoCacheOpenAICacheManager());
+  } else {
+    setOpenAICacheManager(new ConsumingOpenAICacheManager(
+      JSON.parse(
+        readFileSync(path.resolve(baseDir, 'serviceAccount.json'), 'utf8'),
+      ),
+    ));
+  }
 
   const analyticsManager = new AnalyticsManager(
     'CLIInstallationID',
