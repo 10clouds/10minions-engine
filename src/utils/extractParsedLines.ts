@@ -16,9 +16,9 @@ export function extractParsedLines(
       const [line, ...rest] = chunkBuffer.split("\n");
       chunkBuffer = rest.join("\n");
 
-      if (DEBUG_RESPONSES) {
-        console.log(line);
-      }
+      //if (DEBUG_RESPONSES) {
+      //  console.log(line);
+      //}
 
       if (line === "data: [DONE]") continue;
 

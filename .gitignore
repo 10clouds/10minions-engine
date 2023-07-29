@@ -8,3 +8,7 @@ node_modules
 .idea
 
 *.tgz
+
+openAIKey.json
+serviceAccount.json
+.env.local

@@ -2,8 +2,8 @@ import { ModelData } from './types';
 import { encode as encodeGPT35 } from 'gpt-tokenizer/cjs/model/gpt-3.5-turbo';
 import { encode as encodeGPT4 } from 'gpt-tokenizer/cjs/model/gpt-4';
 
-export const DEBUG_PROMPTS = false;
-export const DEBUG_RESPONSES = false;
+export const DEBUG_PROMPTS = process.env.DEBUG_PROMPTS === 'true';
+export const DEBUG_RESPONSES = process.env.DEBUG_RESPONSES === 'true';
 
 export const APPLYING_STAGE_NAME = 'Applying';
 export const APPLIED_STAGE_NAME = 'Applied';

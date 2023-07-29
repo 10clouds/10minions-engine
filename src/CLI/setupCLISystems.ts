@@ -1,3 +1,5 @@
+import '../initEnv';
+
 import { readFileSync } from 'fs';
 import path from 'path';
 import {
@@ -13,11 +15,9 @@ import { CLIEditorManager } from './CLIEditorManager';
 import { setOpenAICacheManager } from '../managers/OpenAICacheManager';
 
 export function initCLISystems() {
-  const baseDir = path.resolve(__dirname);
-  setOpenAIApiKey(
-    JSON.parse(readFileSync(path.resolve(baseDir, 'openAIKey.json'), 'utf8'))
-      .openAIKey,
-  );
+  const baseDir = path.resolve(path.resolve(__dirname), "..", "..");
+  
+  setOpenAIApiKey(process.env.OPENAI_API_KEY!);
 
   setOpenAICacheManager(undefined);
   const openAiCacheManager = new ConsumingOpenAICacheManager(

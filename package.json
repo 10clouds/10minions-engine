@@ -10,10 +10,12 @@
     "prepareTest": "npx tsx ./src/test/prepareTestFiles.ts",
     "test": "npx tsx ./src/test/runTest.ts",
     "test-score": "npx tsx ./src/test/runScore.ts",
+    "example-step-evolve": "npx tsx examples/stepEvolveBasicLLM.ts",
     "watch": "tsc --watch"
   },
   "dependencies": {
     "async-lock": "^1.4.0",
+    "dotenv": "^16.3.1",
     "firebase": "^9.22.2",
     "firebase-admin": "^11.9.0",
     "gpt-tokenizer": "^2.1.1",
