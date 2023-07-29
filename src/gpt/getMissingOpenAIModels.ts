@@ -4,12 +4,8 @@ import fetch from 'node-fetch';
 /**
  * Function to check the availability of all models in OpenAI.
  */
-export async function getMissingOpenAIModels(
-  openAIApiKey: string,
-): Promise<GPTModel[]> {
-  const missingModels: GPTModel[] = Object.keys(
-    MODEL_DATA,
-  ) as GPTModel[];
+export async function getMissingOpenAIModels(openAIApiKey: string): Promise<GPTModel[]> {
+  const missingModels: GPTModel[] = Object.keys(MODEL_DATA) as GPTModel[];
 
   try {
     const response = await fetch('https://api.openai.com/v1/models', {

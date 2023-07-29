@@ -31,9 +31,7 @@ ${userQuery}
 ${
   selectedText
     ? `
-# SELECTED CODE (starts on line ${selectionPosition.line + 1} column: ${
-        selectionPosition.character + 1
-      } in the file) 
+# SELECTED CODE (starts on line ${selectionPosition.line + 1} column: ${selectionPosition.character + 1} in the file) 
 ${selectedText}
 `
     : ''

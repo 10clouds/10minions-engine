@@ -31,7 +31,6 @@ export abstract class CalcEnv<T extends Mutable> {
 }
 
 export class NodeCalcEnv<T extends Mutable> extends CalcEnv<T> {
-
   constructor(obj: T) {
     super(obj);
   }

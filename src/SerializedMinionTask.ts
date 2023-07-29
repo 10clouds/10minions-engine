@@ -29,9 +29,7 @@ export type SerializedMinionTask = {
   aplicationStatus?: ApplicationStatus;
 };
 
-export function serializeMinionTask(
-  minionTask: MinionTask,
-): SerializedMinionTask {
+export function serializeMinionTask(minionTask: MinionTask): SerializedMinionTask {
   return {
     id: minionTask.id,
     minionIndex: minionTask.minionIndex,

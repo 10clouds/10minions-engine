@@ -1,4 +1,4 @@
-import { shouldNeverGetHere } from "../../../utils/shouldNeverGetHere";
+import { shouldNeverGetHere } from '../../../utils/shouldNeverGetHere';
 import { withDefault } from '../../utils/utils';
 import { type CalcEnv } from './CalcEnv';
 import {
@@ -15,7 +15,7 @@ import {
   MulExpression,
   PlusExpression,
   ToNumberExpression,
-  type Expression
+  type Expression,
 } from './expression';
 import { type Mutable } from './Mutable';
 

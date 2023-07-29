@@ -1,8 +1,6 @@
-
 export class NoCacheOpenAICacheManager {
-  public async getCachedResult(
-    requestData: object
-  ): Promise<string | undefined> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public async getCachedResult(requestData: object): Promise<string | undefined> {
     return undefined;
   }
 }

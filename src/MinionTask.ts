@@ -1,20 +1,10 @@
 import { randomUUID } from 'crypto';
 import * as path from 'path';
 import { z } from 'zod';
-import {
-  APPLIED_STAGE_NAME,
-  APPLYING_STAGE_NAME,
-  CANCELED_STAGE_NAME,
-  FINISHED_STAGE_NAME,
-} from './const';
+import { APPLIED_STAGE_NAME, APPLYING_STAGE_NAME, CANCELED_STAGE_NAME, FINISHED_STAGE_NAME } from './const';
 import { gptExecute } from './gpt/openai';
 import { GPTMode } from './gpt/types';
-import {
-  EditorDocument,
-  EditorRange,
-  EditorUri,
-  getEditorManager,
-} from './managers/EditorManager';
+import { EditorDocument, EditorRange, EditorUri, getEditorManager } from './managers/EditorManager';
 import { getLogProvider } from './managers/LogProvider';
 import { getOriginalContentProvider } from './managers/OriginalContentProvider';
 import { PRE_STAGES, Stage, TASK_STRATEGY_ID } from './strategies/strategies';
@@ -163,17 +153,11 @@ export class MinionTask {
   }
 
   get logURI() {
-    return `10minions-log:minionTaskId/${this.id}/${(
-      '[' +
-      this.shortName +
-      '].md'
-    ).replace(/ /g, '%20')}`;
+    return `10minions-log:minionTaskId/${this.id}/${('[' + this.shortName + '].md').replace(/ /g, '%20')}`;
   }
 
   get originalContentURI() {
-    return `10minions-originalContent:minionTaskId/${this.id}/${(
-      this.shortName + '.txt'
-    ).replace(/ /g, '%20')}`;
+    return `10minions-originalContent:minionTaskId/${this.id}/${(this.shortName + '.txt').replace(/ /g, '%20')}`;
   }
 
   appendToLog(content: string): void {
@@ -233,9 +217,7 @@ export class MinionTask {
   }
 
   public async document() {
-    const document = await getEditorManager().openTextDocument(
-      this.documentURI,
-    );
+    const document = await getEditorManager().openTextDocument(this.documentURI);
     return document;
   }
 
@@ -270,8 +252,7 @@ export class MinionTask {
       return acc + stage.weight;
     }, 0);
 
-    const remainingProgress =
-      (1.0 * weigtsNextStepTotal) / this.calculateTotalWeights();
+    const remainingProgress = (1.0 * weigtsNextStepTotal) / this.calculateTotalWeights();
     const currentProgress = this.progress;
 
     const totalPending = remainingProgress - currentProgress;
@@ -302,15 +283,12 @@ export class MinionTask {
             break;
           }
 
-          const weigtsNextStepTotal = this.stages.reduce(
-            (acc, stage, index) => {
-              if (index > this.currentStageIndex) {
-                return acc;
-              }
-              return acc + stage.weight;
-            },
-            0,
-          );
+          const weigtsNextStepTotal = this.stages.reduce((acc, stage, index) => {
+            if (index > this.currentStageIndex) {
+              return acc;
+            }
+            return acc + stage.weight;
+          }, 0);
 
           this.progress = weigtsNextStepTotal / this.calculateTotalWeights();
           this.onChanged(false);
@@ -322,17 +300,12 @@ export class MinionTask {
           console.error('Error in execution', error);
         }
 
-        this.stopExecution(
-          error instanceof Error ? `Error: ${error.message}` : String(error),
-        );
+        this.stopExecution(error instanceof Error ? `Error: ${error.message}` : String(error));
       } finally {
         const executionTime = Date.now() - this.startTime;
-        const formattedExecutionTime =
-          calculateAndFormatExecutionTime(executionTime);
+        const formattedExecutionTime = calculateAndFormatExecutionTime(executionTime);
 
-        this.appendToLog(
-          `${this.executionStage} (Execution Time: ${formattedExecutionTime})\n\n`,
-        );
+        this.appendToLog(`${this.executionStage} (Execution Time: ${formattedExecutionTime})\n\n`);
 
         this.progress = 1;
       }

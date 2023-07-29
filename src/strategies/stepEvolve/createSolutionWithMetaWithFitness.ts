@@ -1,6 +1,16 @@
 import { FitnessAndNextSolutionsFunction, SolutionWithMeta } from './FitnessFunction';
 
-export async function createSolutionWithMetaWithFitness<S>({ solution, createdWith, parent, fitnessAndNextSolutionsFunction }: { solution: S; createdWith: string; parent: SolutionWithMeta<S> | undefined; fitnessAndNextSolutionsFunction: FitnessAndNextSolutionsFunction<S>; }): Promise<SolutionWithMeta<S>> {
+export async function createSolutionWithMetaWithFitness<S>({
+  solution,
+  createdWith,
+  parent,
+  fitnessAndNextSolutionsFunction,
+}: {
+  solution: S;
+  createdWith: string;
+  parent: SolutionWithMeta<S> | undefined;
+  fitnessAndNextSolutionsFunction: FitnessAndNextSolutionsFunction<S>;
+}): Promise<SolutionWithMeta<S>> {
   let solutionWithMeta: SolutionWithMeta<S> = {
     solution,
     parent,

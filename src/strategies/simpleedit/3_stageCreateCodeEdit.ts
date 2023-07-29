@@ -60,9 +60,7 @@ ${fullFileContents}
 
 ===== CODE SNIPPET ${
     selectedText
-      ? `(starts on line ${selectionPosition.line + 1} column: ${
-          selectionPosition.character + 1
-        } in the file)`
+      ? `(starts on line ${selectionPosition.line + 1} column: ${selectionPosition.character + 1} in the file)`
       : `(Language: ${document.languageId})`
   } ====
 ${selectedText ? selectedText : fullFileContents}
@@ -93,15 +91,7 @@ export async function stageCreateModification(this: MinionTask) {
     return this.stopped;
   };
 
-  const promptWithContext = createPrompt(
-    classification,
-    selectedText,
-    document,
-    fullFileContents,
-    this.selection.start,
-    userQuery,
-    this.baseName,
-  );
+  const promptWithContext = createPrompt(classification, selectedText, document, fullFileContents, this.selection.start, userQuery, this.baseName);
 
   const tokensCode = countTokens(promptWithContext, GPTMode.QUALITY);
   const luxiouriosTokens = tokensCode * 1.5;

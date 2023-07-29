@@ -2,10 +2,7 @@ import '../initEnv';
 
 import { readFileSync } from 'fs';
 import path from 'path';
-import {
-  AnalyticsManager,
-  setAnalyticsManager,
-} from '../managers/AnalyticsManager';
+import { AnalyticsManager, setAnalyticsManager } from '../managers/AnalyticsManager';
 import { NoCacheOpenAICacheManager } from '../managers/NoCacheOpenAICacheManager';
 import { setEditorManager } from '../managers/EditorManager';
 import { setLogProvider } from '../managers/LogProvider';
@@ -16,8 +13,8 @@ import { setOpenAICacheManager } from '../managers/OpenAICacheManager';
 import { ConsumingOpenAICacheManager } from '../managers/ConsumingOpenAICacheManager';
 
 export function initCLISystems() {
-  const baseDir = path.resolve(path.resolve(__dirname), "..", "..");
-  
+  const baseDir = path.resolve(path.resolve(__dirname), '..', '..');
+
   setOpenAIApiKey(process.env.OPENAI_API_KEY!);
 
   setOpenAICacheManager(undefined);
@@ -25,17 +22,10 @@ export function initCLISystems() {
   if (process.env.NO_OPENAI_CACHE === 'true') {
     setOpenAICacheManager(new NoCacheOpenAICacheManager());
   } else {
-    setOpenAICacheManager(new ConsumingOpenAICacheManager(
-      JSON.parse(
-        readFileSync(path.resolve(baseDir, 'serviceAccount.json'), 'utf8'),
-      ),
-    ));
+    setOpenAICacheManager(new ConsumingOpenAICacheManager(JSON.parse(readFileSync(path.resolve(baseDir, 'serviceAccount.json'), 'utf8'))));
   }
 
-  const analyticsManager = new AnalyticsManager(
-    'CLIInstallationID',
-    'CLIVsCodeStub',
-  );
+  const analyticsManager = new AnalyticsManager('CLIInstallationID', 'CLIVsCodeStub');
   analyticsManager.setSendDiagnosticsData(true);
 
   setAnalyticsManager(analyticsManager);

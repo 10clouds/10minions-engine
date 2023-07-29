@@ -1,18 +1,10 @@
-import { GPTModel, GPTExecuteRequestData, GPTMode, MODEL_DATA } from "./types";
-import { countTokens } from "./countTokens";
+import { GPTModel, GPTExecuteRequestData, GPTMode, MODEL_DATA } from './types';
+import { countTokens } from './countTokens';
 
-export const calculateCosts = (
-  model: GPTModel,
-  requestData: GPTExecuteRequestData,
-  result: string,
-  mode: GPTMode
-) => {
-  const functionsTokens = requestData.functions
-      ? countTokens(JSON.stringify(requestData.functions), mode)
-      : 0;
-    
-  const inputTokens =
-    countTokens(JSON.stringify(requestData.messages), mode) + functionsTokens;
+export const calculateCosts = (model: GPTModel, requestData: GPTExecuteRequestData, result: string, mode: GPTMode) => {
+  const functionsTokens = requestData.functions ? countTokens(JSON.stringify(requestData.functions), mode) : 0;
+
+  const inputTokens = countTokens(JSON.stringify(requestData.messages), mode) + functionsTokens;
 
   const outputTokens = countTokens(result, mode);
 

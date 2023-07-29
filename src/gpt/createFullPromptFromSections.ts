@@ -1,11 +1,12 @@
-
-
 export function createFullPromptFromSections({
-  intro, outro, sections, sectionMarker = '====',
+  intro,
+  outro,
+  sections,
+  sectionMarker = '====',
 }: {
   intro: string;
   outro?: string;
-  sections: { [key: string]: string; };
+  sections: { [key: string]: string };
   sectionMarker?: string;
 }) {
   //replace all section markers in intro, sections and outro
@@ -17,13 +18,13 @@ export function createFullPromptFromSections({
 ${intro}
 
 ${Object.entries(sections)
-      .map(([name, section]) => {
-        return `
+  .map(([name, section]) => {
+    return `
 ${sectionMarker} ${name} ${sectionMarker}
 ${section}
 `.trim();
-      })
-      .join('\n\n')}
+  })
+  .join('\n\n')}
 
 
 ${outro ?? ''}

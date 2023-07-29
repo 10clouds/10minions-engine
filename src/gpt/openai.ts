@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 import fetch from 'node-fetch';
 import { DEBUG_RESPONSES } from '../const';
 import { getAnalyticsManager } from '../managers/AnalyticsManager';
@@ -16,11 +16,11 @@ export function setOpenAIApiKey(apiKey: string) {
 }
 
 function isZodString(schema: z.ZodType<any, any>): boolean {
-  let parseResult = schema.safeParse("");
+  const parseResult = schema.safeParse('');
   return parseResult.success;
 }
 
-export async function gptExecute<OutputTypeSchema extends z.ZodType<any, any>> ({
+export async function gptExecute<OutputTypeSchema extends z.ZodType<any, any>>({
   fullPrompt,
   onChunk = async () => {},
   isCancelled = () => false,
@@ -40,7 +40,7 @@ export async function gptExecute<OutputTypeSchema extends z.ZodType<any, any>> (
   controller?: AbortController;
   outputSchema: OutputTypeSchema;
   outputName?: string;
-}) : Promise<{
+}): Promise<{
   result: z.infer<OutputTypeSchema>;
   cost: number;
 }> {
@@ -77,27 +77,29 @@ export async function gptExecute<OutputTypeSchema extends z.ZodType<any, any>> (
     stream: true,
     ...(isZodString(outputSchema)
       ? {}
-      : { function_call: { name: outputName }, functions: [
-        {
-          name: outputName,
-          description: outputSchema.description || 'Output',
-          parameters: zodToJsonSchema(outputSchema, "parameters").definitions!.parameters,
-    }] }),
+      : {
+          function_call: { name: outputName },
+          functions: [
+            {
+              name: outputName,
+              description: outputSchema.description || 'Output',
+              parameters: zodToJsonSchema(outputSchema, 'parameters').definitions!.parameters,
+            },
+          ],
+        }),
   };
 
   if (DEBUG_RESPONSES) {
     console.log(requestData);
   }
 
-  const cachedResult = await getOpenAICacheManager().getCachedResult(
-    requestData,
-  );
+  const cachedResult = await getOpenAICacheManager().getCachedResult(requestData);
 
   function convertResult(result: string): z.infer<OutputTypeSchema> {
     if (isZodString(outputSchema)) {
       return result as z.infer<OutputTypeSchema>;
     } else {
-      let parseResult = outputSchema.safeParse(JSON.parse(result)); 
+      const parseResult = outputSchema.safeParse(JSON.parse(result));
       if (parseResult.success) {
         return parseResult.data;
       } else {
@@ -114,21 +116,17 @@ export async function gptExecute<OutputTypeSchema extends z.ZodType<any, any>> (
     };
   }
 
-
-for (let attempt = 1; attempt <= 3; attempt++) {
+  for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      const response = await fetch(
-        'https://api.openai.com/v1/chat/completions',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${openAIApiKey}`,
-          },
-          body: JSON.stringify(requestData),
-          signal,
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${openAIApiKey}`,
         },
-      );
+        body: JSON.stringify(requestData),
+        signal,
+      });
 
       const result = await processOpenAIResponseStream({
         response,

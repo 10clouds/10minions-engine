@@ -1,13 +1,7 @@
-export function commonStringEnd(
-  commonIndent: string,
-  lineIndent: string,
-): string {
+export function commonStringEnd(commonIndent: string, lineIndent: string): string {
   let commonEnd = '';
   for (let i = 0; i < Math.min(commonIndent.length, lineIndent.length); i++) {
-    if (
-      commonIndent[commonIndent.length - i - 1] ===
-      lineIndent[lineIndent.length - i - 1]
-    ) {
+    if (commonIndent[commonIndent.length - i - 1] === lineIndent[lineIndent.length - i - 1]) {
       commonEnd = commonIndent[commonIndent.length - i - 1] + commonEnd;
     } else {
       break;
@@ -173,9 +167,7 @@ export function equalsStringSimilarity(a: string, b: string): number {
   return matchingChars / max;
 }
 
-export function trimEmptyLinesAtTheBeginingAndEnd(
-  textLines: string[],
-): string[] {
+export function trimEmptyLinesAtTheBeginingAndEnd(textLines: string[]): string[] {
   let start = 0;
   let end = textLines.length - 1;
 
@@ -191,9 +183,7 @@ export function trimEmptyLinesAtTheBeginingAndEnd(
 }
 
 export function longestCommonSubsequenceLength(s1: string, s2: string): number {
-  const dp = Array.from({ length: s1.length + 1 }, () =>
-    new Array(s2.length + 1).fill(0),
-  );
+  const dp = Array.from({ length: s1.length + 1 }, () => new Array(s2.length + 1).fill(0));
 
   for (let i = 1; i <= s1.length; i++) {
     for (let j = 1; j <= s2.length; j++) {

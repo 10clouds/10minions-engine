@@ -1,4 +1,3 @@
-
 import { weightedRandomIndex } from '../../utils/utils';
 import { type CalcEnv } from './CalcEnv';
 import { type Mutable } from './Mutable';

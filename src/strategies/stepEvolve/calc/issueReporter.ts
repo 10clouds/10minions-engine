@@ -1,9 +1,8 @@
 import { writeFileSync } from 'fs';
 import path from 'path';
 
-
 class IssueReporter {
-  private issueCounts: any = {};
+  private issueCounts: { [key: string]: number } = {};
 
   reportIssue(issue: string) {
     if (!this.issueCounts[issue]) {

@@ -15,19 +15,14 @@ export class SimpleOpenAICacheManager {
     }
   }
 
-  public async getCachedResult(
-    requestData: object,
-  ): Promise<string | undefined> {
+  public async getCachedResult(requestData: object): Promise<string | undefined> {
     if (!this.firestore) {
       return undefined;
     }
 
     const requestDataHash = getAnalyticsManager().getRequestHash(requestData);
 
-    const snapshot = await this.firestore
-      .collection('openAICalls')
-      .where('requestDataHash', '==', requestDataHash)
-      .get();
+    const snapshot = await this.firestore.collection('openAICalls').where('requestDataHash', '==', requestDataHash).get();
 
     if (snapshot.empty) {
       return undefined;

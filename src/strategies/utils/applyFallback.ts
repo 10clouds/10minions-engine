@@ -23,13 +23,7 @@ ${minionTask.modificationDescription}
   minionTask.aplicationStatus = ApplicationStatus.APPLIED_AS_FALLBACK;
 
   await getEditorManager().applyWorkspaceEdit(async (edit) => {
-    edit.insert(
-      minionTask.documentURI,
-      { line: 0, character: 0 },
-      decomposedString + '\n',
-    );
+    edit.insert(minionTask.documentURI, { line: 0, character: 0 }, decomposedString + '\n');
   });
-  getEditorManager().showInformationMessage(
-    `Modification applied successfully.`,
-  );
+  getEditorManager().showInformationMessage(`Modification applied successfully.`);
 }

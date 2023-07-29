@@ -1,24 +1,22 @@
-import { ParsedLine } from "./types";
+import { ParsedLine } from './types';
 
-export function extractParsedLines(
-  chunkBuffer: string
-): [ParsedLine[], string] {
+export function extractParsedLines(chunkBuffer: string): [ParsedLine[], string] {
   const parsedLines: ParsedLine[] = [];
 
-  while (chunkBuffer.includes("\n")) {
-    if (chunkBuffer.startsWith("\n")) {
+  while (chunkBuffer.includes('\n')) {
+    if (chunkBuffer.startsWith('\n')) {
       chunkBuffer = chunkBuffer.slice(1);
       continue;
     }
 
-    if (chunkBuffer.startsWith("data: ")) {
-      const [line, ...rest] = chunkBuffer.split("\n");
-      chunkBuffer = rest.join("\n");
+    if (chunkBuffer.startsWith('data: ')) {
+      const [line, ...rest] = chunkBuffer.split('\n');
+      chunkBuffer = rest.join('\n');
 
-      if (line === "data: [DONE]") continue;
+      if (line === 'data: [DONE]') continue;
 
-      const parsedLine = line.replace(/^data: /, "").trim();
-      if (parsedLine !== "") {
+      const parsedLine = line.replace(/^data: /, '').trim();
+      if (parsedLine !== '') {
         try {
           parsedLines.push(JSON.parse(parsedLine));
         } catch (e) {

@@ -27,9 +27,7 @@ ${TASK_STRATEGIES.map((c) => `* ${c.name} - ${c.description}`).join('\n')}
 
 ===== CODE ${
     this.selectedText
-      ? `(starts on line ${this.selection.start.line + 1} column: ${
-          this.selection.start.character + 1
-        } in the file)`
+      ? `(starts on line ${this.selection.start.line + 1} column: ${this.selection.start.character + 1} in the file)`
       : `(Language: ${document.languageId})`
   } ====
 ${this.selectedText ? this.selectedText : this.originalContent}
@@ -69,9 +67,11 @@ Choose strategy for the task.
     mode: GPTMode.FAST,
     controller: new AbortController(),
     outputName: 'classification',
-    outputSchema: z.object({
-      strategy: z.enum(TASK_STRATEGY_IDS),
-    }).describe('Classification'),
+    outputSchema: z
+      .object({
+        strategy: z.enum(TASK_STRATEGY_IDS),
+      })
+      .describe('Classification'),
   });
 
   this.totalCost += cost;
@@ -79,9 +79,7 @@ Choose strategy for the task.
   this.appendToLog('\n\n');
 
   //find classification in text
-  const strategies = TASK_STRATEGIES.filter(
-    (c) => result.strategy === c.name,
-  );
+  const strategies = TASK_STRATEGIES.filter((c) => result.strategy === c.name);
 
   if (strategies.length !== 1) {
     throw new Error(`Could not find strategy in the text: ${result}`);

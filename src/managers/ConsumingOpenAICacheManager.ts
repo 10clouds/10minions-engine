@@ -18,9 +18,7 @@ export class ConsumingOpenAICacheManager {
     }
   }
 
-  public async getCachedResult(
-    requestData: object,
-  ): Promise<string | undefined> {
+  public async getCachedResult(requestData: object): Promise<string | undefined> {
     if (!this.firestore) {
       return undefined;
     }
@@ -29,10 +27,7 @@ export class ConsumingOpenAICacheManager {
 
     //if cache was not initialized yet, initialize it
     if (!this.cache[requestDataHash]) {
-      const snapshot = await this.firestore
-        .collection('openAICalls')
-        .where('requestDataHash', '==', requestDataHash)
-        .get();
+      const snapshot = await this.firestore.collection('openAICalls').where('requestDataHash', '==', requestDataHash).get();
 
       this.cache[requestDataHash] = [];
 

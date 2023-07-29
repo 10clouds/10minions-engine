@@ -18,7 +18,6 @@ export class ConsistencyObserver<S> implements FitnessObserver<S> {
   onFinalSolution?: (solutionWithMeta: SolutionWithMeta<S>, iteration: number) => Promise<void>;
 }
 
-
 /*export function convertToConsistncyCheckString<T>(obj: T) {
   const data = obj.toPlainData();
 
@@ -45,8 +44,6 @@ export class ConsistencyObserver<S> implements FitnessObserver<S> {
 
     if (referenceFitness !== env.calculate(fitness)) throw new Error('Inconsistency detected (fitness)');*/
 
-
-
-  /*env = env.edit((obj) => {
+/*env = env.edit((obj) => {
     obj.addToHistory(`${env.obj.id} moved ${currentFitness.fitness} towards ${threshold}, reference: ${referenceFitness} after: ${afterFitness}`);
   });*/

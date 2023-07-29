@@ -1,7 +1,7 @@
-import AsyncLock from "async-lock";
-import { CANCELED_STAGE_NAME } from "../const";
-import { extractParsedLines } from "./extractParsedLines";
-import { Response } from "node-fetch";
+import AsyncLock from 'async-lock';
+import { CANCELED_STAGE_NAME } from '../const';
+import { extractParsedLines } from './extractParsedLines';
+import { Response } from 'node-fetch';
 
 const openAILock = new AsyncLock();
 
@@ -19,12 +19,12 @@ export async function processOpenAIResponseStream({
   controller: AbortController;
 }) {
   const stream = response?.body;
-  const decoder = new TextDecoder("utf-8");
-  let fullContent = "";
-  let chunkBuffer = "";
+  const decoder = new TextDecoder('utf-8');
+  let fullContent = '';
+  let chunkBuffer = '';
 
   return await new Promise<string>((resolve, reject) => {
-    stream?.on("data", async (value) => {
+    stream?.on('data', async (value) => {
       try {
         if (isCancelled() || controller.signal.aborted) {
           stream.removeAllListeners();
@@ -45,27 +45,22 @@ export async function processOpenAIResponseStream({
         }
 
         const tokens = parsedLines
-          .map(
-            (l) =>
-              l.choices[0].delta.content ||
-              l.choices[0].delta.function_call?.arguments ||
-              ""
-          )
+          .map((l) => l.choices[0].delta.content || l.choices[0].delta.function_call?.arguments || '')
           .filter((c) => c)
-          .join("");
+          .join('');
 
-        await openAILock.acquire("openAI", async () => {
+        await openAILock.acquire('openAI', async () => {
           await onChunk(tokens);
         });
 
         fullContent += tokens;
       } catch (e) {
-        console.error("Error processing response stream: ", e, value);
+        console.error('Error processing response stream: ', e, value);
         reject(e);
       }
     });
 
-    stream?.on("end", () => {
+    stream?.on('end', () => {
       if (isCancelled() || controller.signal.aborted) {
         stream.removeAllListeners();
         reject(CANCELED_STAGE_NAME);
@@ -74,8 +69,8 @@ export async function processOpenAIResponseStream({
       resolve(fullContent);
     });
 
-    stream?.on("error", (err) => {
-      console.error("Error: ", err);
+    stream?.on('error', (err) => {
+      console.error('Error: ', err);
       reject(err);
     });
   });

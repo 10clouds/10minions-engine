@@ -1,6 +1,5 @@
-
 export class MultiSet {
-  private _backing: { [key: string]: number; } = {};
+  private _backing: { [key: string]: number } = {};
   private _array: string[] = [];
 
   constructor(values: string[]) {
@@ -38,6 +37,7 @@ export class MultiSet {
 
   get(value: string): number {
     const v = this._backing[value];
+    // eslint-disable-next-line eqeqeq
     if (v != null && v > 0) {
       return v;
     } else {

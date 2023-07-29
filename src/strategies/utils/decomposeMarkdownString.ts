@@ -1,9 +1,6 @@
 import { getCommentForLanguage } from './comments';
 
-export function splitCommentIntoLines(
-  comment: string,
-  maxChars = 80,
-): string[] {
+export function splitCommentIntoLines(comment: string, maxChars = 80): string[] {
   const finalLines: string[] = [];
 
   const lines = comment.split('\n');
@@ -18,15 +15,11 @@ export function splitCommentIntoLines(
     words.forEach((word) => {
       // Handle the case when a single word is longer than maxChars
       if (word.length > maxChars) {
-        const subStrings =
-          word.match(new RegExp(`.{1,${maxChars}}`, 'g')) || [];
+        const subStrings = word.match(new RegExp(`.{1,${maxChars}}`, 'g')) || [];
         subStrings.forEach((subString) => finalLines.push(subString));
       }
       // Handle the case when adding the word doesn't exceed maxChars
-      else if (
-        currentLine.length + word.length + (currentLine.length > 0 ? 1 : 0) <=
-        maxChars
-      ) {
+      else if (currentLine.length + word.length + (currentLine.length > 0 ? 1 : 0) <= maxChars) {
         currentLine += currentLine.length > 0 ? ' ' : '';
         currentLine += word;
       }
@@ -51,10 +44,7 @@ export function splitCommentIntoLines(
  * @param {string} languageId The language ID of the document.
  * @returns {string[]} An array of string parts, formatted as comments and code blocks.
  */
-export function decomposeMarkdownString(
-  markdownString: string,
-  languageId: string,
-): string[] {
+export function decomposeMarkdownString(markdownString: string, languageId: string): string[] {
   const lines = markdownString.split('\n');
   let inCodeBlock = false;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -121,22 +111,13 @@ function trimEmptyLines(lines: string[]): string[] {
  * @param {string[]} decomposedStringParts Array holding the decomposed markdown string parts.
  * @returns {void}
  */
-function dumpCommentBuffer(
-  languageId: string,
-  commentBuffer: string[],
-  decomposedStringParts: string[],
-): void {
+function dumpCommentBuffer(languageId: string, commentBuffer: string[], decomposedStringParts: string[]): void {
   if (commentBuffer.length > 0) {
     const trimmedCommentLines = commentBuffer; //check if that was needed: trimEmptyLines(
-    const splitComment = splitCommentIntoLines(trimmedCommentLines.join('\n'))
-      .join('\n')
-      .trim();
+    const splitComment = splitCommentIntoLines(trimmedCommentLines.join('\n')).join('\n').trim();
 
     if (splitComment.length > 0) {
-      const languageSpecificComment = getCommentForLanguage(
-        languageId,
-        splitComment,
-      );
+      const languageSpecificComment = getCommentForLanguage(languageId, splitComment);
       decomposedStringParts.push(languageSpecificComment);
     }
 

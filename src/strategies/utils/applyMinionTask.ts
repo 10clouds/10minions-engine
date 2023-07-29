@@ -1,9 +1,5 @@
 import { ApplicationStatus, MinionTask } from '../../MinionTask';
-import {
-  APPLIED_STAGE_NAME,
-  APPLYING_STAGE_NAME,
-  FINISHED_STAGE_NAME,
-} from '../../const';
+import { APPLIED_STAGE_NAME, APPLYING_STAGE_NAME, FINISHED_STAGE_NAME } from '../../const';
 import { applyModificationProcedure } from './applyModificationProcedure';
 import { getEditorManager } from '../../managers/EditorManager';
 import { applyFallback } from './applyFallback';
@@ -49,11 +45,7 @@ export async function applyMinionTask(minionTask: MinionTask) {
 
     const preprocessedContent = minionTask.originalContent;
 
-    const modifiedContent = await applyModificationProcedure(
-      preprocessedContent,
-      minionTask.modificationProcedure,
-      document.languageId,
-    );
+    const modifiedContent = await applyModificationProcedure(preprocessedContent, minionTask.modificationProcedure, document.languageId);
     minionTask.aplicationStatus = ApplicationStatus.APPLIED;
 
     await getEditorManager().applyWorkspaceEdit(async (edit) => {
@@ -87,7 +79,5 @@ export async function applyMinionTask(minionTask: MinionTask) {
   minionTask.progress = 1;
   minionTask.appendToLog(LOG_NO_FALLBACK_MARKER);
   minionTask.onChanged(true);
-  getEditorManager().showInformationMessage(
-    `Modification applied successfully.`,
-  );
+  getEditorManager().showInformationMessage(`Modification applied successfully.`);
 }

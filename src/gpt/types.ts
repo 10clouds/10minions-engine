@@ -3,14 +3,11 @@ import { encode as encodeGPT4 } from 'gpt-tokenizer/cjs/model/gpt-4';
 import { JsonSchema7Type } from 'zod-to-json-schema/src/parseDef';
 
 export enum GPTMode {
-  FAST = 'FAST', 
-  QUALITY = 'QUALITY'
+  FAST = 'FAST',
+  QUALITY = 'QUALITY',
 }
 
-export type GPTModel =
-  | 'gpt-4-0613'
-  | 'gpt-3.5-turbo-0613'
-  | 'gpt-3.5-turbo-16k-0613'; // | "gpt-4-32k-0613"
+export type GPTModel = 'gpt-4-0613' | 'gpt-3.5-turbo-0613' | 'gpt-3.5-turbo-16k-0613'; // | "gpt-4-32k-0613"
 
 export type FunctionDef = {
   name: string;
@@ -90,7 +87,6 @@ export interface ParsedLine {
     message: string;
   };
 }
-
 
 export const MODEL_DATA: ModelData = {
   'gpt-4-0613': {

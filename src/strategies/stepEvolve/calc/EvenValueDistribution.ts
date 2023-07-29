@@ -1,11 +1,14 @@
-import { sum } from "../../utils/utils";
+import { sum } from '../../utils/utils';
 
 export class EvenValueDistribution<T extends { id: string }> {
   desiredDistribution: { [key: string]: number } = {};
   currentDistribution: { [key: string]: number } = {};
   orginalObjects: { [key: string]: T } = {};
 
-  constructor(public totalDecks: number, referenceDistribution: [T, number][]) {
+  constructor(
+    public totalDecks: number,
+    referenceDistribution: [T, number][],
+  ) {
     this.desiredDistribution = {};
     this.currentDistribution = {};
     this.orginalObjects = {};

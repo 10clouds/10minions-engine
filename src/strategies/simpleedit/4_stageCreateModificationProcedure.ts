@@ -33,9 +33,7 @@ export async function stageCreateModificationProcedure(this: MinionTask) {
     this.modificationProcedure = result;
     this.totalCost += cost;
   } catch (error) {
-    this.appendToLog(
-      `Error while creating modification procedure:\n\n ${error}\n\n`,
-    );
+    this.appendToLog(`Error while creating modification procedure:\n\n ${error}\n\n`);
     this.stopExecution((error as Error).message as string);
   }
 

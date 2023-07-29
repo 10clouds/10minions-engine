@@ -5,20 +5,9 @@ import { stageFinishing } from './common/stageFinishing';
 import { stageCreateModification } from './simpleedit/3_stageCreateCodeEdit';
 import { stageCreateAnswer } from './question/3_stageCreateAnswer';
 
-export type TASK_STRATEGY_ID =
-  | 'AnswerQuestion'
-  | 'AutonomousAgent'
-  | 'VectorizeAndExecute'
-  | 'WorkspaceWide'
-  | 'CodeChange';
+export type TASK_STRATEGY_ID = 'AnswerQuestion' | 'AutonomousAgent' | 'VectorizeAndExecute' | 'WorkspaceWide' | 'CodeChange';
 
-export const TASK_STRATEGY_IDS = [
-  'AnswerQuestion',
-  'AutonomousAgent',
-  'VectorizeAndExecute',
-  'WorkspaceWide',
-  'CodeChange',
-] as const;
+export const TASK_STRATEGY_IDS = ['AnswerQuestion', 'AutonomousAgent', 'VectorizeAndExecute', 'WorkspaceWide', 'CodeChange'] as const;
 
 /**
  * Interface representing a stage in the process.

@@ -1,9 +1,4 @@
-import {
-  EditorDocument,
-  EditorManager,
-  EditorUri,
-  WorkspaceEdit,
-} from '../managers/EditorManager';
+import { EditorDocument, EditorManager, EditorUri, WorkspaceEdit } from '../managers/EditorManager';
 import { CLIWorkspaceEdit } from './CLIWorkspaceEdit';
 import { CLIEditorDocument } from './CLIEditorDocument';
 
@@ -47,9 +42,7 @@ export class CLIEditorManager implements EditorManager {
   showInformationMessage(message: string): void {}
 
   async openTextDocument(uri: EditorUri) {
-    const existingDocument = this.openDocuments.find(
-      (doc) => doc.uri.toString() === uri.toString(),
-    );
+    const existingDocument = this.openDocuments.find((doc) => doc.uri.toString() === uri.toString());
     if (existingDocument) {
       return existingDocument;
     }

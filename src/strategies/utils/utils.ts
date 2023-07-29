@@ -1,4 +1,4 @@
-﻿import { type KeyOfType } from "../../utils/KeyOfType";
+﻿import { type KeyOfType } from '../../utils/KeyOfType';
 
 export function shuffleArray<T>(array: T[], random = Math.random) {
   for (let i = array.length - 1; i > 0; i--) {

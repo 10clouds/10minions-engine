@@ -45,7 +45,6 @@ export abstract class BaseMutable implements Mutable {
     return result;
   }
 
-
   private editing = false;
 
   assertEditing() {
