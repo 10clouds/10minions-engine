@@ -1,9 +1,11 @@
+import { z } from 'zod';
 import { MinionTask } from '../../MinionTask';
 import { DEBUG_PROMPTS, DEBUG_RESPONSES } from '../../const';
+import { countTokens } from '../../gpt/countTokens';
+import { ensureICanRunThis } from '../../gpt/ensureIcanRunThis';
+import { gptExecute } from '../../gpt/openai';
+import { GPTMode } from '../../gpt/types';
 import { EditorDocument, EditorPosition } from '../../managers/EditorManager';
-import { gptExecute } from '../../openai';
-import { countTokens } from '../../utils/countTokens';
-import { ensureICanRunThis } from '../../utils/ensureIcanRunThis';
 
 export function extractRelevantCodePrompt({
   userQuery,
@@ -67,11 +69,11 @@ export async function stageExtractRelevantCode(this: MinionTask) {
     this.appendToLog('<<<< EXECUTION >>>>\n\n');
   }
 
-  const tokensNeeded = countTokens(fullFileContents, 'QUALITY');
+  const tokensNeeded = countTokens(fullFileContents, GPTMode.QUALITY);
 
   ensureICanRunThis({
     prompt: promptWithContext,
-    mode: 'QUALITY',
+    mode: GPTMode.QUALITY,
     maxTokens: tokensNeeded,
   });
 
@@ -89,8 +91,8 @@ export async function stageExtractRelevantCode(this: MinionTask) {
       return this.stopped;
     },
     maxTokens: tokensNeeded,
-    mode: 'FAST',
-    outputType: 'string' /*{
+    mode: GPTMode.FAST,
+    outputSchema: z.string() /*{
       name: "codeSegments",
       description: "Provided code segments",
       parameters: {

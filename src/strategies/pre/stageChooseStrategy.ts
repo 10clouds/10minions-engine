@@ -1,8 +1,10 @@
 import { MinionTask } from '../../MinionTask';
 import { DEBUG_PROMPTS, DEBUG_RESPONSES } from '../../const';
-import { gptExecute } from '../../openai';
-import { ensureICanRunThis } from '../../utils/ensureIcanRunThis';
-import { PRE_STAGES, TASK_STRATEGIES } from '../strategies';
+import { gptExecute } from '../../gpt/openai';
+import { ensureICanRunThis } from '../../gpt/ensureIcanRunThis';
+import { PRE_STAGES, TASK_STRATEGIES, TASK_STRATEGY_IDS } from '../strategies';
+import { z } from 'zod';
+import { GPTMode } from '../../gpt/types';
 
 export async function stageChooseStrategy(this: MinionTask) {
   const document = await this.document();
@@ -48,7 +50,7 @@ Choose strategy for the task.
     this.appendToLog('<<<< EXECUTION >>>>\n\n');
   }
 
-  ensureICanRunThis({ prompt: promptWithContext, maxTokens: 50, mode: 'FAST' });
+  ensureICanRunThis({ prompt: promptWithContext, maxTokens: 50, mode: GPTMode.FAST });
 
   const { result, cost } = await gptExecute({
     fullPrompt: promptWithContext,
@@ -64,22 +66,12 @@ Choose strategy for the task.
       return this.stopped;
     },
     maxTokens: 50,
-    mode: 'FAST',
+    mode: GPTMode.FAST,
     controller: new AbortController(),
-    outputType: {
-      name: 'classification',
-      description: 'Classification',
-      parameters: {
-        type: 'object',
-        properties: {
-          strategy: {
-            type: 'string',
-            enum: TASK_STRATEGIES.map((c) => c.name),
-          },
-        },
-        required: ['classification'],
-      },
-    },
+    outputName: 'classification',
+    outputSchema: z.object({
+      strategy: z.enum(TASK_STRATEGY_IDS),
+    }).describe('Classification'),
   });
 
   this.totalCost += cost;
@@ -88,7 +80,7 @@ Choose strategy for the task.
 
   //find classification in text
   const strategies = TASK_STRATEGIES.filter(
-    (c) => result.indexOf(c.name) !== -1,
+    (c) => result.strategy === c.name,
   );
 
   if (strategies.length !== 1) {

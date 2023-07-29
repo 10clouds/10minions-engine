@@ -1,5 +1,4 @@
-import { MODEL_DATA } from '../const';
-import { AVAILABLE_MODELS, ModelsResponseData } from '../types';
+import { GPTModel, MODEL_DATA, ModelsResponseData } from './types';
 import fetch from 'node-fetch';
 
 /**
@@ -7,10 +6,10 @@ import fetch from 'node-fetch';
  */
 export async function getMissingOpenAIModels(
   openAIApiKey: string,
-): Promise<AVAILABLE_MODELS[]> {
-  const missingModels: AVAILABLE_MODELS[] = Object.keys(
+): Promise<GPTModel[]> {
+  const missingModels: GPTModel[] = Object.keys(
     MODEL_DATA,
-  ) as AVAILABLE_MODELS[];
+  ) as GPTModel[];
 
   try {
     const response = await fetch('https://api.openai.com/v1/models', {

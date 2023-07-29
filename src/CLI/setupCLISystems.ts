@@ -10,7 +10,7 @@ import { NoCacheOpenAICacheManager } from '../managers/NoCacheOpenAICacheManager
 import { setEditorManager } from '../managers/EditorManager';
 import { setLogProvider } from '../managers/LogProvider';
 import { setOriginalContentProvider } from '../managers/OriginalContentProvider';
-import { setOpenAIApiKey } from '../openai';
+import { setOpenAIApiKey } from '../gpt/openai';
 import { CLIEditorManager } from './CLIEditorManager';
 import { setOpenAICacheManager } from '../managers/OpenAICacheManager';
 import { ConsumingOpenAICacheManager } from '../managers/ConsumingOpenAICacheManager';

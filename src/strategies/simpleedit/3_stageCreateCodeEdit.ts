@@ -1,9 +1,11 @@
 import { MinionTask } from '../../MinionTask';
-import { gptExecute } from '../../openai';
+import { gptExecute } from '../../gpt/openai';
 import { TASK_STRATEGY_ID } from '../strategies';
 import { EditorDocument, EditorPosition } from '../../managers/EditorManager';
-import { ensureIRunThisInRange } from '../../utils/ensureIRunThisInRange';
-import { countTokens } from '../../utils/countTokens';
+import { ensureIRunThisInRange } from '../../gpt/ensureIRunThisInRange';
+import { countTokens } from '../../gpt/countTokens';
+import { GPTMode } from '../../gpt/types';
+import { z } from 'zod';
 
 function createPrompt(
   classification: TASK_STRATEGY_ID,
@@ -101,13 +103,13 @@ export async function stageCreateModification(this: MinionTask) {
     this.baseName,
   );
 
-  const tokensCode = countTokens(promptWithContext, 'QUALITY');
+  const tokensCode = countTokens(promptWithContext, GPTMode.QUALITY);
   const luxiouriosTokens = tokensCode * 1.5;
   const absoluteMinimumTokens = tokensCode;
 
   const tokensToUse = ensureIRunThisInRange({
     prompt: promptWithContext,
-    mode: 'QUALITY',
+    mode: GPTMode.QUALITY,
     preferedTokens: luxiouriosTokens,
     minTokens: absoluteMinimumTokens,
   });
@@ -120,10 +122,10 @@ export async function stageCreateModification(this: MinionTask) {
       this.reportSmallProgress();
     },
     isCancelled,
-    mode: 'QUALITY',
+    mode: GPTMode.QUALITY,
     maxTokens: tokensToUse,
     controller: new AbortController(),
-    outputType: 'string',
+    outputSchema: z.string(),
   });
 
   this.modificationDescription = result;

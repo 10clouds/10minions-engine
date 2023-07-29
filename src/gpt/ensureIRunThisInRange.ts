@@ -1,12 +1,11 @@
-import { MODEL_DATA } from "../const";
-import { GptMode } from "../types";
+import { GPTMode, MODEL_DATA } from "./types";
 import { getModel } from "./getModel";
 
 interface EnsureICanRunThisInRangeParams {
   prompt: string;
   minTokens: number;
   preferedTokens: number;
-  mode: GptMode;
+  mode: GPTMode;
 }
 
 /**

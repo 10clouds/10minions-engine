@@ -1,8 +1,9 @@
+import { z } from 'zod';
 import { DEBUG_PROMPTS } from '../../const';
-import { gptExecute } from '../../openai';
-import { GptMode } from '../../types';
-import { countTokens } from '../../utils/countTokens';
-import { ensureIRunThisInRange } from '../../utils/ensureIRunThisInRange';
+import { countTokens } from '../../gpt/countTokens';
+import { ensureIRunThisInRange } from '../../gpt/ensureIRunThisInRange';
+import { gptExecute } from '../../gpt/openai';
+import { GPTMode } from '../../gpt/types';
 
 export const AVAILABLE_COMMANDS = [
   `
@@ -113,7 +114,7 @@ export async function createModificationProcedure(
   //console.log("Prompt with context:");
   //console.log(promptWithContext);
 
-  const tokensModification = countTokens(modification, 'QUALITY') + 50;
+  const tokensModification = countTokens(modification, GPTMode.QUALITY) + 50;
   const luxiouriosTokens = tokensModification * 1.5;
   const absoluteMinimumTokens = tokensModification;
 
@@ -123,7 +124,7 @@ export async function createModificationProcedure(
     onChunk('<<<< EXECUTION >>>>\n\n');
   }
 
-  const mode: GptMode = 'QUALITY';
+  const mode: GPTMode = GPTMode.QUALITY;
 
   return await gptExecute({
     fullPrompt: promptWithContext,
@@ -137,7 +138,7 @@ export async function createModificationProcedure(
     temperature: 0,
     isCancelled,
     mode,
-    outputType: 'string',
+    outputSchema: z.string(),
   });
 }
 function createPrompt(refCode: string, modification: string, fileName: string) {

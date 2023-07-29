@@ -1,8 +1,10 @@
 import { MinionTask } from '../../MinionTask';
 import { EditorDocument, EditorPosition } from '../../managers/EditorManager';
-import { gptExecute } from '../../openai';
-import { countTokens } from '../../utils/countTokens';
-import { ensureIRunThisInRange } from '../../utils/ensureIRunThisInRange';
+import { gptExecute } from '../../gpt/openai';
+import { countTokens } from '../../gpt/countTokens';
+import { ensureIRunThisInRange } from '../../gpt/ensureIRunThisInRange';
+import { GPTMode } from '../../gpt/types';
+import { z } from 'zod';
 
 function createPrompt(
   selectedText: string,
@@ -77,13 +79,13 @@ export async function stageCreateAnswer(this: MinionTask) {
     this.baseName,
   );
 
-  const tokensCode = countTokens(promptWithContext, 'FAST');
+  const tokensCode = countTokens(promptWithContext, GPTMode.FAST);
   const luxiouriosTokens = tokensCode * 1.5;
   const absoluteMinimumTokens = tokensCode;
 
   const tokensToUse = ensureIRunThisInRange({
     prompt: promptWithContext,
-    mode: 'FAST',
+    mode: GPTMode.FAST,
     preferedTokens: luxiouriosTokens,
     minTokens: absoluteMinimumTokens,
   });
@@ -96,10 +98,10 @@ export async function stageCreateAnswer(this: MinionTask) {
       this.reportSmallProgress();
     },
     isCancelled,
-    mode: 'FAST',
+    mode: GPTMode.FAST,
     maxTokens: tokensToUse,
     controller: new AbortController(),
-    outputType: 'string',
+    outputSchema: z.string(),
   });
 
   this.inlineMessage = result;

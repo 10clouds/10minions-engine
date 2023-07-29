@@ -1,4 +1,3 @@
-
 import { FitnessAndNextSolutionsFunction, SolutionWithMeta } from '../src/strategies/stepEvolve/FitnessFunction';
 import { stepEvolve } from '../src/strategies/stepEvolve/stepEvolve';
 import { createSolutionWithMetaWithFitness } from '../src/strategies/stepEvolve/createSolutionWithMetaWithFitness';
@@ -7,7 +6,8 @@ import { createSolutionsFromFixes } from '../src/strategies/stepEvolve/createSol
 const RANGE_SEEK_START = 0;
 const RANGE_SEEK_END = 10000;
 const ITERATIONS = 10000;
-const THRESHOLD = -0.000935;
+const MAX_STALE_ITERATIONS = 100;
+const THRESHOLD = -0.000932;
 
 type TaskDefinition = {
   avoidThoseNumbers: number[];
@@ -35,19 +35,11 @@ function createFitnessAndNextSolutionsFunction(
           },
   
           async function moveUp(solution: number) {
-            return Math.min(RANGE_SEEK_END, solution + 0.01);
+            return Math.min(RANGE_SEEK_END, solution + Math.pow(100, 1 - (Math.random() * 5)));
           },
   
           async function moveDown(solution: number) {
-            return Math.max(RANGE_SEEK_START, solution - 0.01);
-          },
-  
-          async function moveUpBig(solution: number) {
-            return Math.min(RANGE_SEEK_END, solution + 1);
-          },
-  
-          async function moveDownBig(solution: number) {
-            return Math.max(RANGE_SEEK_START, solution - 1);
+            return Math.max(RANGE_SEEK_START, solution - Math.pow(100, 1 - (Math.random() * 5)));
           },
         ];
 
@@ -71,6 +63,7 @@ function createFitnessAndNextSolutionsFunction(
     ),
     threshold: THRESHOLD,
     maxNumIterations: ITERATIONS,
+    maxStaleIterations: MAX_STALE_ITERATIONS,
     observers: [
       {
         onInitialSolution: async (solutionWithMeta, iteration) => {

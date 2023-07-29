@@ -1,5 +1,4 @@
-import { DEBUG_RESPONSES } from "../const";
-import { ParsedLine } from "../types";
+import { ParsedLine } from "./types";
 
 export function extractParsedLines(
   chunkBuffer: string
@@ -15,10 +14,6 @@ export function extractParsedLines(
     if (chunkBuffer.startsWith("data: ")) {
       const [line, ...rest] = chunkBuffer.split("\n");
       chunkBuffer = rest.join("\n");
-
-      //if (DEBUG_RESPONSES) {
-      //  console.log(line);
-      //}
 
       if (line === "data: [DONE]") continue;
 

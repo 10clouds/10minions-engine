@@ -12,6 +12,14 @@ export type TASK_STRATEGY_ID =
   | 'WorkspaceWide'
   | 'CodeChange';
 
+export const TASK_STRATEGY_IDS = [
+  'AnswerQuestion',
+  'AutonomousAgent',
+  'VectorizeAndExecute',
+  'WorkspaceWide',
+  'CodeChange',
+] as const;
+
 /**
  * Interface representing a stage in the process.
  * Each stage contains a name, weight, execution function, and a disabled flag.

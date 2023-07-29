@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import fs from 'fs';
 import * as glob from 'glob';
 import { Validator } from 'jsonschema'; // Imported the jsonschema library
@@ -6,7 +7,7 @@ import ts from 'typescript';
 import { initCLISystems, setupCLISystemsForTest } from '../CLI/setupCLISystems';
 import { MinionTask } from '../MinionTask';
 import { getEditorManager } from '../managers/EditorManager';
-import { gptExecute } from '../openai';
+import { gptExecute } from '../gpt/openai';
 import {
   LOG_NO_FALLBACK_MARKER as LOG_NORMAL_MODIFICATION_MARKER,
   applyMinionTask,
@@ -14,12 +15,12 @@ import {
 
 import { LOG_PLAIN_COMMENT_MARKER as LOG_FALLBACK_COMMENT_MARKER } from '../strategies/utils/applyFallback';
 import chalk from 'chalk';
-import { GptMode } from '../types';
+import { GPTMode } from '../gpt/types';
 import { OptionValues, program } from 'commander';
 import { mapLimit } from 'async';
 
 export type TestDefinition =
-  | { type: 'gptAssert'; mode: GptMode; assertion: string }
+  | { type: 'gptAssert'; mode: GPTMode; assertion: string }
   | { type: 'simpleStringFind'; stringToFind: string }
   | {
       type: 'functionReturnTypeCheck';
@@ -189,41 +190,28 @@ function logToFile(logMessage: string) {
 async function gptAssert({
   originalCode,
   resultingCode,
-  mode = 'FAST',
+  mode = GPTMode.FAST,
   assertion,
 }: {
   originalCode: string;
   resultingCode: string;
-  mode?: GptMode;
+  mode?: GPTMode;
   assertion: string;
 }) {
   const response = await gptExecute({
     fullPrompt: `Original code:\n${originalCode}\n\nResulting code:\n${resultingCode}\n\nPlease analyse the resulting code and answer: does the resulting code passes this test: "${assertion}"\n\n`,
     maxTokens: 100,
     mode,
-    outputType: {
-      name: 'reportTestResult',
-      description: `Report a result of the test, whenever the resulting code meets the criteria: ${assertion}, provide a comment explaining why it does not meet the criteria`,
-      parameters: {
-        type: 'object',
-        properties: {
-          comment: {
-            type: 'string',
-            description:
-              'Describe the reason for why the code passed (or did not pass) the test.',
-          },
-          passessTest: { type: 'boolean' },
-        },
-        required: ['passessTest', 'comment'],
-      },
-    },
+    outputName: 'reportTestResult',
+    outputSchema: z.object({
+      comment: z.string().describe('Describe the reason for why the code passed (or did not pass) the test.'),
+      passessTest: z.boolean().describe('Whether the code passed the test or not.'),
+    }).describe(`Report a result of the test, whenever the resulting code meets the criteria: ${assertion}, provide a comment explaining why it does not meet the criteria`),
   });
 
-  const { passessTest, comment } = JSON.parse(response.result);
-
   return {
-    passessTest,
-    comment,
+    passessTest: response.result.passessTest,
+    comment: response.result.comment,
   };
 }
 

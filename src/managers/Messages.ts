@@ -1,4 +1,5 @@
-import { MinionTaskUIInfo } from './managers/MinionTaskUIInfo';
+import { MinionTaskUIInfo } from './MinionTaskUIInfo';
+
 export enum MessageToWebViewType {
   ClearAndFocusOnInput,
   ExecutionsUpdated,

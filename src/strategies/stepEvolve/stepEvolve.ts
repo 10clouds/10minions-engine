@@ -2,12 +2,13 @@ import { type SolutionWithMeta } from './FitnessFunction';
 import { FitnessObserver } from './FitnessObserver';
 
 export async function stepEvolve<S>({
-  initialSolution, threshold, startIterationFrom = 0, maxNumIterations, observers
+  initialSolution, threshold, startIterationFrom = 0, maxNumIterations, maxStaleIterations, observers
 }: {
   initialSolution: SolutionWithMeta<S>;
   threshold: number;
   startIterationFrom?: number;
   maxNumIterations: number;
+  maxStaleIterations: number;
   observers: FitnessObserver<S>[];
 }): Promise<SolutionWithMeta<S>> {
   let current = initialSolution;
@@ -16,7 +17,23 @@ export async function stepEvolve<S>({
 
   await Promise.all(observers.map((o) => o.onInitialSolution?.(current, currentIteration)));
 
-  while (current.fitness < threshold && currentIteration < maxNumIterations) {
+  while (true) {
+
+    if (current.fitness >= threshold) {
+      console.log('Threshold reached');
+      break;
+    }
+    
+    if (currentIteration > maxNumIterations) {
+      console.log('Max iterations reached');
+      break;
+    }
+
+    if (maxStaleIterations && (currentIteration - current.iteration) > maxStaleIterations) {
+      console.log('Max stale iterations reached');
+      break;
+    }
+
     let candidateSolutions = await current.nextPossibleSolutions();
     
     for (let candidateSolution of candidateSolutions) {
@@ -48,23 +65,3 @@ export async function stepEvolve<S>({
 
   return current;
 }
-
-
-//currentSolutionString = convertToConsistncyCheckString(env.obj);
-  //let currentSolutionString = convertToConsistncyCheckString(serializeT(currentSolution));
-/*
-        const newString = convertToConsistncyCheckString(serializeT(currentSolution));
-
-        if (currentSolutionString !== newString) {
-          writeFileSync('tmpReferenceDeck.json', currentSolutionString);
-          writeFileSync('tmpNewDeck.json', newString);
-          throw new Error('Inconsistency detected (JSON)');
-        }
-
-        if (referenceFitness !== env.calculate(fitness)) throw new Error('Inconsistency detected (fitness)');*/
-
-
-
-  /*env = env.edit((obj) => {
-    obj.addToHistory(`${env.obj.id} moved ${currentFitness.fitness} towards ${threshold}, reference: ${referenceFitness} after: ${afterFitness}`);
-  });*/

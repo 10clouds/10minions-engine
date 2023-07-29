@@ -1,28 +1,31 @@
 import { randomUUID } from 'crypto';
 import * as path from 'path';
-import { getLogProvider } from './managers/LogProvider';
-import { getOriginalContentProvider } from './managers/OriginalContentProvider';
-import { gptExecute } from './openai';
-import { PRE_STAGES, Stage, TASK_STRATEGY_ID } from './strategies/strategies';
+import { z } from 'zod';
 import {
   APPLIED_STAGE_NAME,
   APPLYING_STAGE_NAME,
   CANCELED_STAGE_NAME,
   FINISHED_STAGE_NAME,
 } from './const';
-import { calculateAndFormatExecutionTime } from './utils/calculateAndFormatExecutionTime';
+import { gptExecute } from './gpt/openai';
+import { GPTMode } from './gpt/types';
 import {
   EditorDocument,
   EditorRange,
   EditorUri,
   getEditorManager,
 } from './managers/EditorManager';
+import { getLogProvider } from './managers/LogProvider';
+import { getOriginalContentProvider } from './managers/OriginalContentProvider';
+import { PRE_STAGES, Stage, TASK_STRATEGY_ID } from './strategies/strategies';
+import { calculateAndFormatExecutionTime } from './utils/calculateAndFormatExecutionTime';
 
 export enum ApplicationStatus {
   APPLIED = 'applied',
   NOT_APPLIED = 'not applied',
   APPLIED_AS_FALLBACK = 'applied as fallback',
 }
+
 export class MinionTask {
   readonly userQuery: string;
   readonly id: string;
@@ -349,7 +352,7 @@ ${this.baseName}
       `.trim();
 
     await gptExecute({
-      mode: 'FAST',
+      mode: GPTMode.FAST,
       maxTokens: 20,
       fullPrompt: `
 User just created a task, he said what the task is, but also selected the code and file this task refers to.
@@ -365,7 +368,7 @@ ${this.userQuery}
 ${context}
       
       `.trim(),
-      outputType: 'string',
+      outputSchema: z.string(),
     }).then(({ result, cost }) => {
       this.shortName = result || this.baseName;
       this.totalCost += cost;

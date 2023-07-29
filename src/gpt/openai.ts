@@ -1,11 +1,13 @@
+import { z } from "zod";
 import fetch from 'node-fetch';
-import { DEBUG_RESPONSES, MODEL_DATA } from './const';
-import { getAnalyticsManager } from './managers/AnalyticsManager';
-import { getOpenAICacheManager } from './managers/OpenAICacheManager';
-import { AVAILABLE_MODELS, GptMode, OutputType } from './types';
-import { ensureICanRunThis } from './utils/ensureIcanRunThis';
-import { processOpenAIResponseStream } from './utils/processOpenAIResponseStream';
-import { calculateCosts } from './utils/calculateCosts';
+import { DEBUG_RESPONSES } from '../const';
+import { getAnalyticsManager } from '../managers/AnalyticsManager';
+import { getOpenAICacheManager } from '../managers/OpenAICacheManager';
+import { GPTModel, GPTMode, GPTExecuteRequestData as GPTRequestData, MODEL_DATA } from './types';
+import { ensureICanRunThis } from './ensureIcanRunThis';
+import { processOpenAIResponseStream } from './processOpenAIResponseStream';
+import { calculateCosts } from './calculateCosts';
+import zodToJsonSchema from 'zod-to-json-schema';
 
 let openAIApiKey: string | undefined;
 
@@ -13,7 +15,12 @@ export function setOpenAIApiKey(apiKey: string) {
   openAIApiKey = apiKey;
 }
 
-export async function gptExecute({
+function isZodString(schema: z.ZodType<any, any>): boolean {
+  let parseResult = schema.safeParse("");
+  return parseResult.success;
+}
+
+export async function gptExecute<OutputTypeSchema extends z.ZodType<any, any>> ({
   fullPrompt,
   onChunk = async () => {},
   isCancelled = () => false,
@@ -21,20 +28,25 @@ export async function gptExecute({
   mode,
   temperature = 1,
   controller = new AbortController(),
-  outputType,
+  outputSchema,
+  outputName = 'output',
 }: {
   fullPrompt: string;
   onChunk?: (chunk: string) => Promise<void>;
   isCancelled?: () => boolean;
   maxTokens?: number;
-  mode: GptMode;
+  mode: GPTMode;
   temperature?: number;
   controller?: AbortController;
-  outputType: OutputType;
-}) {
-  let model: AVAILABLE_MODELS = 'gpt-4-0613';
+  outputSchema: OutputTypeSchema;
+  outputName?: string;
+}) : Promise<{
+  result: z.infer<OutputTypeSchema>;
+  cost: number;
+}> {
+  let model: GPTModel = 'gpt-4-0613';
 
-  if (mode === 'FAST') {
+  if (mode === GPTMode.FAST) {
     model = 'gpt-3.5-turbo-16k-0613';
 
     const usedTokens = MODEL_DATA[model].encode(fullPrompt).length + maxTokens;
@@ -52,7 +64,7 @@ export async function gptExecute({
     throw new Error('OpenAI API key not found. Please set it in the settings.');
   }
 
-  const requestData = {
+  const requestData: GPTRequestData = {
     model,
     messages: [
       {
@@ -63,9 +75,14 @@ export async function gptExecute({
     max_tokens: maxTokens,
     temperature,
     stream: true,
-    ...(outputType === 'string'
+    ...(isZodString(outputSchema)
       ? {}
-      : { function_call: { name: outputType.name }, functions: [outputType] }),
+      : { function_call: { name: outputName }, functions: [
+        {
+          name: outputName,
+          description: outputSchema.description || 'Output',
+          parameters: zodToJsonSchema(outputSchema, "parameters").definitions!.parameters,
+    }] }),
   };
 
   if (DEBUG_RESPONSES) {
@@ -76,15 +93,29 @@ export async function gptExecute({
     requestData,
   );
 
+  function convertResult(result: string): z.infer<OutputTypeSchema> {
+    if (isZodString(outputSchema)) {
+      return result as z.infer<OutputTypeSchema>;
+    } else {
+      let parseResult = outputSchema.safeParse(JSON.parse(result)); 
+      if (parseResult.success) {
+        return parseResult.data;
+      } else {
+        throw new Error(`Could not parse result: ${result}`);
+      }
+    }
+  }
+
   if (cachedResult && typeof cachedResult === 'string') {
     await onChunk(cachedResult);
     return {
-      result: cachedResult,
+      result: convertResult(cachedResult),
       cost: 0,
     };
   }
 
-  for (let attempt = 1; attempt <= 3; attempt++) {
+
+for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       const response = await fetch(
         'https://api.openai.com/v1/chat/completions',
@@ -107,10 +138,10 @@ export async function gptExecute({
       });
 
       getAnalyticsManager().reportOpenAICall(requestData, result);
-      const cost = calculateCosts(model, outputType, requestData, result, mode);
+      const cost = calculateCosts(model, requestData, result, mode);
 
       return {
-        result,
+        result: convertResult(result),
         cost,
       };
     } catch (error) {
