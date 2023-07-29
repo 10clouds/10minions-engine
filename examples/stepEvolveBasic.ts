@@ -7,7 +7,7 @@ const INTRO = `
 This example searches for a maximum of a example function.
 Domain of this search is 0 to 10000
 There are two maximums of the example function: one around 2431 and one around 7568.
-`
+`;
 
 const RANGE_SEEK_START = 0;
 const RANGE_SEEK_END = 10000;
@@ -21,54 +21,47 @@ type TaskDefinition = {
 
 type Solution = number;
 
-function createFitnessAndNextSolutionsFunction(
-  task: TaskDefinition,
-): FitnessAndNextSolutionsFunction<Solution> {
-  let fitnessAndNextSolutionsFunction = async (solutionWithMeta: SolutionWithMeta<Solution>) => {
-    let fitness = task.avoidThoseNumbers.reduce((fitness, avoidThisNumber) => {
+function createFitnessAndNextSolutionsFunction(task: TaskDefinition): FitnessAndNextSolutionsFunction<Solution> {
+  const fitnessAndNextSolutionsFunction = async (solutionWithMeta: SolutionWithMeta<Solution>) => {
+    const fitness = task.avoidThoseNumbers.reduce((fitness, avoidThisNumber) => {
       return fitness - 1 / (0.1 + Math.abs(solutionWithMeta.solution - avoidThisNumber));
     }, 0);
 
     return {
       fitness,
       nextPossibleSolutions: async (): Promise<SolutionWithMeta<Solution>[]> => {
-        let fixes = [
+        const fixes = [
           async function randomFix(solution: number) {
-            return (
-              Math.random() * (RANGE_SEEK_END - RANGE_SEEK_START) +
-              RANGE_SEEK_START
-            );
+            return Math.random() * (RANGE_SEEK_END - RANGE_SEEK_START) + RANGE_SEEK_START;
           },
-  
+
           async function moveUp(solution: number) {
-            return Math.min(RANGE_SEEK_END, solution + Math.pow(100, 1 - (Math.random() * 5)));
+            return Math.min(RANGE_SEEK_END, solution + Math.pow(100, 1 - Math.random() * 5));
           },
-  
+
           async function moveDown(solution: number) {
-            return Math.max(RANGE_SEEK_START, solution - Math.pow(100, 1 - (Math.random() * 5)));
+            return Math.max(RANGE_SEEK_START, solution - Math.pow(100, 1 - Math.random() * 5));
           },
         ];
 
         return createSolutionsFromFixes({ solutionWithMeta, fitnessAndNextSolutionsFunction, fixes, maxBranching: 1 });
-      }
-    }
+      },
+    };
   };
 
   return fitnessAndNextSolutionsFunction;
 }
 
 (async () => {
-  console.log(INTRO)
+  console.log(INTRO);
 
   stepEvolve({
-    initialSolution: await createSolutionWithMetaWithFitness(
-      {
-        solution: Math.random() * (RANGE_SEEK_END - RANGE_SEEK_START) + RANGE_SEEK_START,
-        createdWith: 'initial',
-        parent: undefined,
-        fitnessAndNextSolutionsFunction: createFitnessAndNextSolutionsFunction({ avoidThoseNumbers: [0, 5000, 10000] })
-      },
-    ),
+    initialSolution: await createSolutionWithMetaWithFitness({
+      solution: Math.random() * (RANGE_SEEK_END - RANGE_SEEK_START) + RANGE_SEEK_START,
+      createdWith: 'initial',
+      parent: undefined,
+      fitnessAndNextSolutionsFunction: createFitnessAndNextSolutionsFunction({ avoidThoseNumbers: [0, 5000, 10000] }),
+    }),
     threshold: THRESHOLD,
     maxNumIterations: ITERATIONS,
     maxStaleIterations: MAX_STALE_ITERATIONS,
@@ -77,11 +70,7 @@ function createFitnessAndNextSolutionsFunction(
         onInitialSolution: async (solutionWithMeta, iteration) => {
           console.log('Initial solution is: ' + solutionWithMeta.solution + '.');
         },
-        onAccept: async (
-          oldSolutionWithMeta,
-          acceptedSolutionWithMeta,
-          iteration,
-        ) => {
+        onAccept: async (oldSolutionWithMeta, acceptedSolutionWithMeta, iteration) => {
           console.log(
             'New best ' +
               iteration +
@@ -104,4 +93,3 @@ function createFitnessAndNextSolutionsFunction(
     console.log('Solution is: ' + solutionWithMeta.solution + '.');
   });
 })();
-

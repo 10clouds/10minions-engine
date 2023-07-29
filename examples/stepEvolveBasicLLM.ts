@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 import { initCLISystems } from '../src/CLI/setupCLISystems';
 import { createFullPromptFromSections } from '../src/gpt/createFullPromptFromSections';
 import { gptExecute } from '../src/gpt/openai';
@@ -11,9 +11,10 @@ import { shuffleArray, sum } from '../src/strategies/utils/utils';
 
 const INTRO = `
 This example uses LLMs to write and improve on a linkedin post that meets given criteria.
-`
+`;
 
-const TASK = 'Create a world class best official annoucement on linkedin by the CEO of 10Clouds that announces 10Clouds AI Labs. Output only post text, do not add any section markers or additional sections in your response.';
+const TASK =
+  'Create a world class best official annoucement on linkedin by the CEO of 10Clouds that announces 10Clouds AI Labs. Output only post text, do not add any section markers or additional sections in your response.';
 const ITERATIONS = 10;
 const MAX_STALE_ITERATIONS = 3;
 const THRESHOLD = 100;
@@ -38,13 +39,22 @@ function createNewSolutionFix(problem: TaskDefinition) {
   };
 }
 
-function improveSolutionFix({ task, solutionWithMeta, suggestions  }: { task: TaskDefinition; solutionWithMeta: SolutionWithMeta<Solution>; suggestions: string; }) {
+function improveSolutionFix({
+  task,
+  solutionWithMeta,
+  suggestions,
+}: {
+  task: TaskDefinition;
+  solutionWithMeta: SolutionWithMeta<Solution>;
+  suggestions: string;
+}) {
   return async function improveSolution() {
     return (
       await gptExecute({
         fullPrompt: createFullPromptFromSections({
-          intro: 'Improve the following SOLUTION to the PROBLEM described below, use SUGGESTIONS as guidance. Do not output any section markers or additional sections in your response, just the new improved solution.',
-          sections: { PROBLEM: task.task, SOLUTION: solutionWithMeta.solution, SUGGESTIONS: suggestions, "YOUR PROPOSED NEW SOLUTION": "" },
+          intro:
+            'Improve the following SOLUTION to the PROBLEM described below, use SUGGESTIONS as guidance. Do not output any section markers or additional sections in your response, just the new improved solution.',
+          sections: { PROBLEM: task.task, SOLUTION: solutionWithMeta.solution, SUGGESTIONS: suggestions, 'YOUR PROPOSED NEW SOLUTION': '' },
         }),
         maxTokens: 500,
         mode: GPTMode.QUALITY,
@@ -54,18 +64,14 @@ function improveSolutionFix({ task, solutionWithMeta, suggestions  }: { task: Ta
   };
 }
 
-
 type Criterion = {
   name: string;
   maxPointsIf: string;
   maxPoints: number;
-}
+};
 
-function createFitnessFunction(
-  task: TaskDefinition,
-): FitnessAndNextSolutionsFunction<Solution> {
-
-  let criteriaDefinition: Criterion[] = [
+function createFitnessFunction(task: TaskDefinition): FitnessAndNextSolutionsFunction<Solution> {
+  const criteriaDefinition: Criterion[] = [
     {
       name: 'Avoid emojis',
       maxPointsIf: 'there are no emojis',
@@ -91,57 +97,66 @@ function createFitnessFunction(
       maxPointsIf: 'post should be written in a way so it can get a lot of likes',
       maxPoints: 20,
     },
-  ]
+  ];
 
-  let fitnessAndNextSolutionsFunction = async (solutionWithMeta: SolutionWithMeta<Solution>) => {
-    let rawResult = await gptExecute({
+  const fitnessAndNextSolutionsFunction = async (solutionWithMeta: SolutionWithMeta<Solution>) => {
+    const rawResult = await gptExecute({
       fullPrompt: createFullPromptFromSections({
         intro: 'Rate on a scale from 0 to 100 (Use CRITERIA to assign values), how good is the following SOLUTION to the PROBLEM described below?',
         sections: {
           PROBLEM: task.task,
           SOLUTION: solutionWithMeta.solution,
-          CRITERIA: shuffleArray(criteriaDefinition.slice()).map(c => `${c.name} - Max of ${c.maxPoints}pts if ${c.maxPointsIf}`).join('\n'),
+          CRITERIA: shuffleArray(criteriaDefinition.slice())
+            .map((c) => `${c.name} - Max of ${c.maxPoints}pts if ${c.maxPointsIf}`)
+            .join('\n'),
         },
       }),
       maxTokens: 500,
       mode: GPTMode.FAST,
       outputName: 'rating',
-      outputSchema: z.object({
-        criteria: z.array(
-          z.object({
-            criteria: z.string().describe('Name of the criteria'),
-            reasoning: z.string().describe('Reasoning for the rating on this criteria'),
-            suggestion: z.string().describe('Suggest to the user, what should be improved in order to maximize this criteria. Leave empty if no suggestion.'),
-            rating: z.number().describe('Rating for the criteria'),
-          })
-        ).describe('Components of the final rating, from the CRITERIA section'),
-      }).describe('Rating of the solution'),
+      outputSchema: z
+        .object({
+          criteria: z
+            .array(
+              z.object({
+                criteria: z.string().describe('Name of the criteria'),
+                reasoning: z.string().describe('Reasoning for the rating on this criteria'),
+                suggestion: z
+                  .string()
+                  .describe('Suggest to the user, what should be improved in order to maximize this criteria. Leave empty if no suggestion.'),
+                rating: z.number().describe('Rating for the criteria'),
+              }),
+            )
+            .describe('Components of the final rating, from the CRITERIA section'),
+        })
+        .describe('Rating of the solution'),
     });
 
     console.log(rawResult.result);
-  
-    let criteria = rawResult.result.criteria;
-    let finalRating = sum(criteria.map((c:any) => c.rating as number));
+
+    const criteria = rawResult.result.criteria;
+    const finalRating = sum(criteria.map((c) => c.rating as number));
 
     //TODO: There should be a seperate gpt call for getting suggestions when nextPossibleSolutions is called, otherwise we are constantly using the same which may not lead to good results.
     //TODO: Find appropriate criteria to seek maxPoints
     //TODO: Integrate this criteria system into runScore
-    const suggestions: string[] = criteria.filter((c:any) => c.rating < 20 && c.suggestion.length > 0).map((c:any) => c.suggestion as string);
+    const suggestions: string[] = criteria.filter((c) => c.rating < 20 && c.suggestion.length > 0).map((c: any) => c.suggestion as string);
 
-    let fixes = [
+    const fixes = [
       createNewSolutionFix(task),
-      ...suggestions.map(s => improveSolutionFix({ task, solutionWithMeta, suggestions: s })),
-      improveSolutionFix({ task, solutionWithMeta, suggestions: suggestions.join("\n") })
+      ...suggestions.map((s) => improveSolutionFix({ task, solutionWithMeta, suggestions: s })),
+      improveSolutionFix({ task, solutionWithMeta, suggestions: suggestions.join('\n') }),
     ];
 
     return {
       fitness: finalRating as number,
-      nextPossibleSolutions: async (): Promise<SolutionWithMeta<Solution>[]> => createSolutionsFromFixes({
-        solutionWithMeta,
-        fitnessAndNextSolutionsFunction,
-        fixes, 
-        maxBranching: BRANCHING
-      })
+      nextPossibleSolutions: async (): Promise<SolutionWithMeta<Solution>[]> =>
+        createSolutionsFromFixes({
+          solutionWithMeta,
+          fitnessAndNextSolutionsFunction,
+          fixes,
+          maxBranching: BRANCHING,
+        }),
     };
   };
 
@@ -168,26 +183,13 @@ function createFitnessFunction(
         onInitialSolution: async (solutionWithMeta, iteration) => {
           console.log('Initial solution is: ' + solutionWithMeta.solution + '.');
         },
-        onAccept: async (
-          oldSolutionWithMeta,
-          solutionWithMeta,
-          iteration,
-        ) => {
+        onAccept: async (oldSolutionWithMeta, solutionWithMeta, iteration) => {
           console.log(
-            'New best ' +
-              iteration +
-              ': ' +
-              solutionWithMeta.solution +
-              ' ' +
-              solutionWithMeta.fitness +
-              ' (' +
-              solutionWithMeta.createdWith +
-              ')' +
-              '.',
+            'New best ' + iteration + ': ' + solutionWithMeta.solution + ' ' + solutionWithMeta.fitness + ' (' + solutionWithMeta.createdWith + ')' + '.',
           );
         },
         onFinalSolution: async (solutionWithMeta, iteration) => {
-          console.log('Final solution is:')
+          console.log('Final solution is:');
           console.log('```');
           console.log(solutionWithMeta.solution);
           console.log('```');
