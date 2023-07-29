@@ -18,12 +18,23 @@ import chalk from 'chalk';
 import { GPTMode } from '../gpt/types';
 import { OptionValues, program } from 'commander';
 import { mapLimit } from 'async';
+import { format as dtFormat } from 'date-and-time';
+
+// main types
+type GPT_ASSERT = 'gptAssert';
+type SIMPLE_STRING_FIND = 'simpleStringFind';
+type FUNCTION_RETURN_TYPE_CHECK = 'functionReturnTypeCheck';
+
+type TestDefinitionType =
+  | GPT_ASSERT
+  | SIMPLE_STRING_FIND
+  | FUNCTION_RETURN_TYPE_CHECK;
 
 export type TestDefinition =
-  | { type: 'gptAssert'; mode: GPTMode; assertion: string }
-  | { type: 'simpleStringFind'; stringToFind: string }
+  | { type: GPT_ASSERT; mode: GPTMode; assertion: string }
+  | { type: SIMPLE_STRING_FIND; stringToFind: string }
   | {
-      type: 'functionReturnTypeCheck';
+      type: FUNCTION_RETURN_TYPE_CHECK;
       functionName: string;
       expectedType: string;
     };
@@ -34,9 +45,29 @@ interface ScoringTestOptions extends OptionValues {
   concurrency: number;
 }
 
-const defaultIternationsNumber = 10;
+interface BaseSchema {
+  properties: {
+    type: { type: 'string'; pattern: TestDefinitionType };
+    mode?: { type: 'string' };
+    assertion?: { type: 'string' };
+    stringToFind?: { type: 'string' };
+    functionName?: { type: 'string' };
+    expectedType?: { type: 'string' };
+  };
+  required: (
+    | 'type'
+    | 'mode'
+    | 'assertion'
+    | 'stringToFind'
+    | 'functionName'
+    | 'expectedType'
+  )[];
+}
 
-const gptAssertSchema = {
+// consts
+const TEST_FILE_POSTFIX = '.original.txt';
+
+const gptAssertSchema: BaseSchema = {
   properties: {
     type: { type: 'string', pattern: 'gptAssert' },
     mode: { type: 'string' },
@@ -45,7 +76,7 @@ const gptAssertSchema = {
   required: ['type', 'mode', 'assertion'],
 };
 
-const simpleStringFindSchema = {
+const simpleStringFindSchema: BaseSchema = {
   properties: {
     type: { type: 'string', pattern: 'simpleStringFind' },
     stringToFind: { type: 'string' },
@@ -53,7 +84,7 @@ const simpleStringFindSchema = {
   required: ['type', 'stringToFind'],
 };
 
-const functionReturnTypeCheckSchema = {
+const functionReturnTypeCheckSchema: BaseSchema = {
   properties: {
     type: { type: 'string', pattern: 'functionReturnTypeCheck' },
     functionName: { type: 'string' },
@@ -160,18 +191,10 @@ async function checkFunctionReturnType({
 
 const directoryPath = path.join(__dirname, 'logs');
 // Added the Date object to get the current date and time and formatted it as per requirement (YYYY-MM-DD_HH-MM-SS).
-const current_date = new Date();
-const date_string = `${current_date.getFullYear()}-${(
-  '00' +
-  (current_date.getMonth() + 1)
-).slice(-2)}-${('00' + current_date.getDate()).slice(-2)}_${(
-  '00' + current_date.getHours()
-).slice(-2)}-${('00' + current_date.getMinutes()).slice(-2)}-${(
-  '00' + current_date.getSeconds()
-).slice(-2)}`;
+const logFilename = `log_${dtFormat(new Date(), 'YYYY-MM-DD_HH-mm-ss')}.log`;
 
 // Concatenating date_string with the filename to include the current date and time in the filename.
-const logFilePath = path.join(directoryPath, `log_${date_string}.log`);
+const logFilePath = path.join(directoryPath, logFilename);
 
 function logToFile(logMessage: string) {
   // Check if logs directory exist or not
@@ -179,12 +202,10 @@ function logToFile(logMessage: string) {
     fs.mkdirSync(directoryPath); // If logs directory does not exist, create it
   }
 
-  // If the file does not exist, create it, else append to it. `writeFileSync` and `appendFileSync` both create the file if it doesn't exist.
-  if (!fs.existsSync(logFilePath)) {
-    fs.writeFileSync(logFilePath, logMessage + '\n');
-  } else {
-    fs.appendFileSync(logFilePath, logMessage + '\n');
-  }
+  fs[fs.existsSync(logFilePath) ? 'appendFileSync' : 'writeFileSync'](
+    logFilePath,
+    logMessage + '\n',
+  );
 }
 
 async function gptAssert({
@@ -217,18 +238,17 @@ async function gptAssert({
 
 async function runTest({
   fileName,
-  iterations = defaultIternationsNumber,
+  iterations,
 }: {
   fileName: string;
-  iterations?: number;
-}) {
-  //TODO: fix this linter error
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const tests: TestDefinition[] = require(path.join(
-    __dirname,
-    'score',
-    fileName + '.tests.json',
-  ));
+  iterations: number;
+}): Promise<void> {
+  const tests: TestDefinition[] = JSON.parse(
+    fs.readFileSync(
+      path.join(__dirname, 'score', `${fileName}.tests.json`),
+      'utf8',
+    ),
+  );
 
   // Create a validator instance
   const validator = new Validator();
@@ -247,7 +267,7 @@ async function runTest({
     }
   }
   const userQuery = fs.readFileSync(
-    path.join(__dirname, 'score', fileName + '.userQuery.txt'),
+    path.join(__dirname, 'score', `${fileName}.userQuery.txt`),
     'utf8',
   );
 
@@ -391,7 +411,6 @@ async function runScoring(options: ScoringTestOptions): Promise<void> {
 
   initCLISystems();
   // this probably will be parametrized in the future
-  const TEST_FILE_POSTFIX = '.original.txt';
 
   // Use glob to get all .original.txt file paths from the 'score' directory
   const testBaseNames = glob
@@ -400,9 +419,12 @@ async function runScoring(options: ScoringTestOptions): Promise<void> {
     })
     // Remove the '.original.txt' postfix from the file names
     .map((fileName) => fileName.slice(0, -TEST_FILE_POSTFIX.length));
-  console.log(testBaseNames);
+
   await mapLimit(
-    testBaseNames.map((fileName) => ({ fileName })),
+    testBaseNames.map((fileName) => ({
+      fileName,
+      iterations: options.iterations,
+    })),
     options.concurrency,
     runTest,
   );
@@ -421,7 +443,7 @@ program
     '-i, --iterations <iterations>',
     'Number of iterations',
     (value) => parseInt(value),
-    1,
+    10, //  based on the previous definition
   )
   .option('-p, --pattern <pattern>', 'File patterns to run tests on', '*')
   .option(
@@ -437,6 +459,7 @@ program
     $ yarn <package.json script name> // runs all tests
     $ yarn <package.json script name> -p "test*" // runs all tests that match the pattern
     $ yarn <package.json script name> -p "test*" -c 2 // runs all tests that match the pattern with concurrency of 2
+    $ yarn <package.json script name> -p "test*" -i 20 // runs all tests that match the pattern with 20 iterations
   `,
   )
   .parse();
