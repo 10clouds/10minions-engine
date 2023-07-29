@@ -8,11 +8,11 @@
   "scripts": {
     "compile": "rimraf dist/* && tsc",
     "lint": "eslint src --ext ts",
-    "prepareTest": "npx tsx ./src/test/prepareTestFiles.ts",
-    "test": "npx tsx ./src/test/runTest.ts",
-    "test-score": "npx tsx ./src/test/runScore.ts -c 3",
-    "example-step-evolve": "npx tsx examples/stepEvolveBasic.ts",
-    "example-step-evolve-llm": "npx tsx examples/stepEvolveBasicLLM.ts",
+    "prepareTest": "npx tsx ./tests/prepareTestFiles.ts",
+    "test": "npx tsx ./tests/runTests.ts",
+    "test-score": "npx tsx ./score/runScore.ts -c 3",
+    "example-step-evolve": "npx tsx ./examples/stepEvolveBasic.ts",
+    "example-step-evolve-llm": "npx tsx ./examples/stepEvolveBasicLLM.ts",
 
     "watch": "tsc --watch"
   },

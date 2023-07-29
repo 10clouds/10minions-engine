@@ -9,6 +9,10 @@ import { createSolutionsFromFixes } from '../src/strategies/stepEvolve/createSol
 import { stepEvolve } from '../src/strategies/stepEvolve/stepEvolve';
 import { shuffleArray, sum } from '../src/strategies/utils/utils';
 
+const INTRO = `
+This example uses LLMs to write and improve on a linkedin post that meets given criteria.
+`
+
 const TASK = 'Create a world class best official annoucement on linkedin by the CEO of 10Clouds that announces 10Clouds AI Labs. Output only post text, do not add any section markers or additional sections in your response.';
 const ITERATIONS = 10;
 const MAX_STALE_ITERATIONS = 3;
@@ -145,6 +149,8 @@ function createFitnessFunction(
 }
 
 (async function () {
+  console.log(INTRO);
+
   initCLISystems();
 
   stepEvolve({

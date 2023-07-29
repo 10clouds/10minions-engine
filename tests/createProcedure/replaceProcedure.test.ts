@@ -3,10 +3,10 @@ import * as fs from 'fs';
 import { readFileSync } from 'fs';
 import * as glob from 'glob';
 import * as path from 'path';
-import { setupCLISystemsForTest } from '../../CLI/setupCLISystems';
-import { applyModificationProcedure } from '../../strategies/utils/applyModificationProcedure';
-import { createModificationProcedure } from '../../strategies/utils/createModificationProcedure';
-import { extractFileNameFromPath } from '../../strategies/utils/extractFileNameFromPath';
+import { setupCLISystemsForTest } from '../../src/CLI/setupCLISystems';
+import { applyModificationProcedure } from '../../src/strategies/utils/applyModificationProcedure';
+import { createModificationProcedure } from '../../src/strategies/utils/createModificationProcedure';
+import { extractFileNameFromPath } from '../../src/strategies/utils/extractFileNameFromPath';
 
 suite('Create procedure test suite', () => {
   const baseDir = path.resolve(__dirname);

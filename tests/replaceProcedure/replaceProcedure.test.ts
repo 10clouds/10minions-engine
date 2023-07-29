@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import { readFileSync } from 'fs';
 import * as glob from 'glob';
 import * as path from 'path';
-import { applyModificationProcedure } from '../../strategies/utils/applyModificationProcedure';
+import { applyModificationProcedure } from '../../src/strategies/utils/applyModificationProcedure';
 
 suite('Replace Procedure Test Suite', () => {
   const baseDir = path.resolve(__dirname);

@@ -3,6 +3,12 @@ import { stepEvolve } from '../src/strategies/stepEvolve/stepEvolve';
 import { createSolutionWithMetaWithFitness } from '../src/strategies/stepEvolve/createSolutionWithMetaWithFitness';
 import { createSolutionsFromFixes } from '../src/strategies/stepEvolve/createSolutionsFromFixes';
 
+const INTRO = `
+This example searches for a maximum of a example function.
+Domain of this search is 0 to 10000
+There are two maximums of the example function: one around 2431 and one around 7568.
+`
+
 const RANGE_SEEK_START = 0;
 const RANGE_SEEK_END = 10000;
 const ITERATIONS = 10000;
@@ -52,6 +58,8 @@ function createFitnessAndNextSolutionsFunction(
 }
 
 (async () => {
+  console.log(INTRO)
+
   stepEvolve({
     initialSolution: await createSolutionWithMetaWithFitness(
       {
