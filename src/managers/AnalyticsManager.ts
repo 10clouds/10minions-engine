@@ -30,7 +30,10 @@ const firestore = getFirestore(firebaseApp);
 export class AnalyticsManager {
   private sendDiagnosticsData = true;
 
-  constructor(private installationId: string, private vsCodeVersion: string) {
+  constructor(
+    private readonly installationId: string,
+    private vsCodeVersion: string,
+  ) {
     // Retrieve or generate a unique installation Id
     this.installationId = installationId;
 
