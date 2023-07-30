@@ -88,4 +88,9 @@ export class CLIEditorDocument implements EditorDocument {
       this._textLines.splice(startLineNumber + 1, endLineNumber - startLineNumber);
     }
   }
+
+  save() {
+    // Write the text back to the file synchronously for simplicity. Consider using async I/O in production code
+    fs.writeFileSync(this.uri.fsPath, this._textLines.join('\n'), 'utf8');
+  }
 }

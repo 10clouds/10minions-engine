@@ -15,7 +15,11 @@ import { ConsumingOpenAICacheManager } from '../managers/ConsumingOpenAICacheMan
 export function initCLISystems() {
   const baseDir = path.resolve(path.resolve(__dirname), '..', '..');
 
-  setOpenAIApiKey(process.env.OPENAI_API_KEY!);
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY is not set');
+  }
+
+  setOpenAIApiKey(process.env.OPENAI_API_KEY);
 
   setOpenAICacheManager(undefined);
 
@@ -29,20 +33,17 @@ export function initCLISystems() {
   analyticsManager.setSendDiagnosticsData(true);
 
   setAnalyticsManager(analyticsManager);
-}
 
-const reportChange = (uri: string) => {
-  // TODO
-};
-
-const reportChangeInTask = (id: string) => {
-  // TODO
-};
-
-export function setupCLISystemsForTest() {
   setLogProvider(undefined);
   setOriginalContentProvider(undefined);
-  setEditorManager(undefined);
+
+  const reportChange = (uri: string) => {
+    // TODO
+  };
+
+  const reportChangeInTask = (id: string) => {
+    // TODO
+  };
 
   setLogProvider({
     reportChangeInTask,
@@ -52,5 +53,10 @@ export function setupCLISystemsForTest() {
     reportChange,
   });
 
+  setEditorManager(new CLIEditorManager());
+}
+
+export function setupCLISystemsForTest() {
+  setEditorManager(undefined);
   setEditorManager(new CLIEditorManager());
 }

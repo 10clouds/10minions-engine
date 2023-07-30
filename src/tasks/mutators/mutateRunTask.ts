@@ -1,13 +1,13 @@
 import { getEditorManager } from '../../managers/EditorManager';
-import { TaskContext } from '../TaskContext';
-import { calculateTotalWeights } from '../utils/calculateTotalWeights';
-import { ShortNameContext, mutateGenerateShortName } from './mutateGenerateShortName';
-import { CANCELED_STAGE_NAME } from '../stageNames';
-import { mutateStopExecution } from './mutateStopExecution';
 import { calculateAndFormatExecutionTime } from '../../utils/calculateAndFormatExecutionTime';
+import { TaskContext } from '../TaskContext';
+import { CANCELED_STAGE_NAME } from '../stageNames';
+import { calculateTotalWeights } from '../utils/calculateTotalWeights';
 import { mutateAppendToLog } from './mutateAppendToLog';
+import { mutateStopExecution } from './mutateStopExecution';
 
-export function mutateRunTask<T extends TaskContext<T>>(task: T & ShortNameContext) {
+//TODO: mutateGenerateShortName(task);
+export function mutateRunTask<T extends TaskContext<T>>(task: T) {
   return new Promise<void>(async (resolve, reject) => {
     if (task.stopped) {
       return;
@@ -16,8 +16,6 @@ export function mutateRunTask<T extends TaskContext<T>>(task: T & ShortNameConte
     task.resolveProgress = resolve;
     task.rejectProgress = reject;
     task.currentStageIndex = 0;
-
-    mutateGenerateShortName(task);
 
     try {
       while (task.currentStageIndex < task.stages.length && !task.stopped) {
@@ -48,10 +46,13 @@ export function mutateRunTask<T extends TaskContext<T>>(task: T & ShortNameConte
 
       mutateStopExecution(task, error instanceof Error ? `Error: ${error.message}` : String(error));
     } finally {
+      mutateStopExecution(task);
+
       const executionTime = Date.now() - task.startTime;
       const formattedExecutionTime = calculateAndFormatExecutionTime(executionTime);
 
-      mutateAppendToLog(task, `${task.executionStage} (Execution Time: ${formattedExecutionTime})\n\n`);
+      mutateAppendToLog(task, `Total Cost: ~${task.totalCost.toFixed(2)}$\n`);
+      mutateAppendToLog(task, `${task.executionStage} (Execution Time: ${formattedExecutionTime})\n`);
 
       task.progress = 1;
     }

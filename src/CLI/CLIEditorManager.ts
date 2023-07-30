@@ -5,6 +5,8 @@ import { CLIEditorDocument } from './CLIEditorDocument';
 export class CLIEditorManager implements EditorManager {
   openDocuments: EditorDocument[] = [];
 
+  constructor(public dryRun = false) {}
+
   applyWorkspaceEdit(fillEdit: (edit: WorkspaceEdit) => Promise<void>) {
     const edit = new CLIWorkspaceEdit();
     fillEdit(edit);
@@ -31,13 +33,19 @@ export class CLIEditorManager implements EditorManager {
           document.insert(range.start, text);
         }
       });
+
+      if (!this.dryRun) {
+        document.save();
+      }
     });
 
     // Await for all the promises to complete.
     await Promise.all(promises);
   }
 
-  showErrorMessage(message: string): void {}
+  showErrorMessage(message: string): void {
+    console.error(message);
+  }
 
   showInformationMessage(message: string): void {}
 
@@ -54,7 +62,7 @@ export class CLIEditorManager implements EditorManager {
 
   createUri(uri: string): EditorUri {
     return {
-      fsPath: uri + '.original.txt',
+      fsPath: uri,
       toString: () => uri,
     };
   }

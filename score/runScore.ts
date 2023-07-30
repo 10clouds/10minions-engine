@@ -238,7 +238,7 @@ async function runTest({ fileName, iterations }: { fileName: string; iterations:
 
     const execution = await MinionTask.create({
       userQuery,
-      document: await getEditorManager().openTextDocument(getEditorManager().createUri(path.join(__dirname, 'score', fileName))),
+      document: await getEditorManager().openTextDocument(getEditorManager().createUri(path.join(__dirname, 'score', fileName) + '.original.txt')),
 
       // Use dynamically calculated 'start' and 'end'
       selection: { start, end },
