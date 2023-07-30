@@ -17,6 +17,6 @@
     "rootDir": ".",
     "declaration": true
   },
-  "include": ["src/**/*", "examples/**/*", "score/runScore.ts", "tests/runTests.ts"],
+  "include": ["src/**/*", "examples/**/*", "score/**/*", "tests/**/*"],
   "exclude": ["node_modules"]
 }

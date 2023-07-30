@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import { input, select, confirm } from '@inquirer/prompts';
 import chalk from 'chalk';
-import { extractFileNameFromPath } from '../strategies/utils/extractFileNameFromPath';
+import { extractFileNameFromPath } from '../src/utils/extractFileNameFromPath';
 
 interface TestRequiredData {
   selectedText: string;
@@ -38,9 +38,7 @@ interface TestConfig {
 }
 
 const baseDir = path.resolve(__dirname);
-const serviceAccount = JSON.parse(
-  readFileSync(path.resolve(baseDir, '../CLI/serviceAccount.json'), 'utf8'),
-);
+const serviceAccount = JSON.parse(readFileSync(path.resolve(baseDir, '../CLI/serviceAccount.json'), 'utf8'));
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
@@ -76,10 +74,7 @@ function createTestFile(content: string, fileName: string) {
   }
 }
 
-const createScoreTestFiles = async (
-  testData: TestRequiredData,
-  config: TestConfig,
-): Promise<void> => {
+const createScoreTestFiles = async (testData: TestRequiredData, config: TestConfig): Promise<void> => {
   const { selectedText, originalContent, userQuery } = testData;
   const languageFileExtension = TestLanguagesExtensions[config.language];
 
@@ -103,29 +98,15 @@ const createScoreTestFiles = async (
   );
 };
 
-const createProcedureTestFiles = async (
-  testData: TestRequiredData,
-  config: TestConfig,
-) => {
-  const {
-    finalContent,
-    originalContent,
-    modificationDescription,
-    modificationProcedure,
-  } = testData;
+const createProcedureTestFiles = async (testData: TestRequiredData, config: TestConfig) => {
+  const { finalContent, originalContent, modificationDescription, modificationProcedure } = testData;
   const testDirPath = createTestsDirectory(config.testType, config.testName);
   const testFileNamePrefix = `${testDirPath}/`;
   const originalFileName = extractFileNameFromPath(testData.documentURI);
 
   if (config.testType === TestType.CREATE_PROCEDURE) {
-    createTestFile(
-      modificationDescription,
-      `${testFileNamePrefix}modification.txt`,
-    );
-    createTestFile(
-      originalContent,
-      `${testFileNamePrefix}${originalFileName}.original.txt`,
-    );
+    createTestFile(modificationDescription, `${testFileNamePrefix}modification.txt`);
+    createTestFile(originalContent, `${testFileNamePrefix}${originalFileName}.original.txt`);
   } else {
     createTestFile(originalContent, `${testFileNamePrefix}original.txt`);
   }
@@ -134,29 +115,16 @@ const createProcedureTestFiles = async (
   createTestFile(finalContent, `${testFileNamePrefix}result.txt`);
 };
 
-const createTestFiles = async (
-  testData: TestRequiredData,
-  config: TestConfig,
-): Promise<void> => {
+const createTestFiles = async (testData: TestRequiredData, config: TestConfig): Promise<void> => {
   const createFunction = {
     [TestType.SCORE]: createScoreTestFiles.bind(this, testData, config),
-    [TestType.REPLACE_PROCEDURE]: createProcedureTestFiles.bind(
-      this,
-      testData,
-      config,
-    ),
-    [TestType.CREATE_PROCEDURE]: createProcedureTestFiles.bind(
-      this,
-      testData,
-      config,
-    ),
+    [TestType.REPLACE_PROCEDURE]: createProcedureTestFiles.bind(this, testData, config),
+    [TestType.CREATE_PROCEDURE]: createProcedureTestFiles.bind(this, testData, config),
   }[config.testType];
   createFunction && (await createFunction());
 };
 
-const collectBaseTestData = async (): Promise<
-  Omit<TestConfig, 'withSelectedText' | 'language'>
-> => {
+const collectBaseTestData = async (): Promise<Omit<TestConfig, 'withSelectedText' | 'language'>> => {
   const testId = await input({
     message: 'Enter Firestore test ID ( 36 characters a-zA-Z0-9 )',
     validate: (value) => value.length === 36,
@@ -208,12 +176,7 @@ const prepareTestFiles = async () => {
   const testConfigBase = await collectBaseTestData();
 
   try {
-    const minionTaskSnapshot = await admin
-      .firestore()
-      .collection('minionTasks')
-      .where('id', '==', testConfigBase.id)
-      .limit(1)
-      .get();
+    const minionTaskSnapshot = await admin.firestore().collection('minionTasks').where('id', '==', testConfigBase.id).limit(1).get();
 
     // it will always return 1 document since we've added the limit above, and
     // to proper functionality the document ID should be used not the ID from the collection doc itself

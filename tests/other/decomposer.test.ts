@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { decomposeMarkdownString } from '../../src/strategies/utils/decomposeMarkdownString';
+import { decomposeMarkdownString } from '../../src/utils/string/decomposeMarkdownString';
 
 suite('Decomposer Test Suite', () => {
   test('Basic test case', () => {

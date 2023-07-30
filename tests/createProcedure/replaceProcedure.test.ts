@@ -4,9 +4,9 @@ import { readFileSync } from 'fs';
 import * as glob from 'glob';
 import * as path from 'path';
 import { setupCLISystemsForTest } from '../../src/CLI/setupCLISystems';
-import { applyModificationProcedure } from '../../src/strategies/utils/applyModificationProcedure';
-import { createModificationProcedure } from '../../src/strategies/utils/createModificationProcedure';
-import { extractFileNameFromPath } from '../../src/strategies/utils/extractFileNameFromPath';
+import { applyModificationProcedure } from '../../src/minionTasks/mutators/applyModificationProcedure';
+import { createModificationProcedure } from '../../src/minionTasks/createModificationProcedure';
+import { extractFileNameFromPath } from '../../src/utils/extractFileNameFromPath';
 
 suite('Create procedure test suite', () => {
   const baseDir = path.resolve(__dirname);
@@ -22,21 +22,11 @@ suite('Create procedure test suite', () => {
         cwd: path.join(__dirname, testDir),
       })[0];
 
-      const originalFileURI = testOriginalFilePath
-        ? testOriginalFilePath
-        : path.resolve(baseDir, testDir, 'original.txt');
-      const filename = testOriginalFilePath
-        ? extractFileNameFromPath(testOriginalFilePath)
-        : '';
+      const originalFileURI = testOriginalFilePath ? testOriginalFilePath : path.resolve(baseDir, testDir, 'original.txt');
+      const filename = testOriginalFilePath ? extractFileNameFromPath(testOriginalFilePath) : '';
       const currentCode = readFileSync(originalFileURI, 'utf8');
-      const modification = readFileSync(
-        path.resolve(baseDir, testDir, 'modification.txt'),
-        'utf8',
-      );
-      const expectedOutput = readFileSync(
-        path.resolve(baseDir, testDir, 'result.txt'),
-        'utf8',
-      );
+      const modification = readFileSync(path.resolve(baseDir, testDir, 'modification.txt'), 'utf8');
+      const expectedOutput = readFileSync(path.resolve(baseDir, testDir, 'result.txt'), 'utf8');
 
       const { result: procedure } = await createModificationProcedure(
         currentCode,
@@ -46,18 +36,11 @@ suite('Create procedure test suite', () => {
         filename,
       );
 
-      fs.writeFileSync(
-        path.resolve(baseDir, testDir, 'procedure.txt'),
-        procedure,
-      );
+      fs.writeFileSync(path.resolve(baseDir, testDir, 'procedure.txt'), procedure);
 
       let modifiedContent;
       try {
-        modifiedContent = await applyModificationProcedure(
-          currentCode,
-          procedure,
-          'typescript',
-        );
+        modifiedContent = await applyModificationProcedure(currentCode, procedure, 'typescript');
       } catch (e) {
         const error = e as Error;
         modifiedContent = error.toString();
