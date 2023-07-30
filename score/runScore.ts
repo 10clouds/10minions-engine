@@ -5,30 +5,24 @@ import { Validator } from 'jsonschema'; // Imported the jsonschema library
 import path from 'path';
 import ts from 'typescript';
 import { initCLISystems, setupCLISystemsForTest } from '../src/CLI/setupCLISystems';
-import { MinionTask } from '../src/MinionTask';
+import { MinionTask } from '../src/minionTasks/MinionTask';
 import { getEditorManager } from '../src/managers/EditorManager';
-import { gptExecute } from '../src/gpt/openai';
-import {
-  LOG_NO_FALLBACK_MARKER as LOG_NORMAL_MODIFICATION_MARKER,
-  applyMinionTask,
-} from '../src/strategies/utils/applyMinionTask';
-
-import { LOG_PLAIN_COMMENT_MARKER as LOG_FALLBACK_COMMENT_MARKER } from '../src/strategies/utils/applyFallback';
+import { gptExecute } from '../src/gpt/gptExecute';
+import { LOG_NO_FALLBACK_MARKER as LOG_NORMAL_MODIFICATION_MARKER, applyMinionTask } from '../src/minionTasks/mutators/applyMinionTask';
+import { LOG_PLAIN_COMMENT_MARKER as LOG_FALLBACK_COMMENT_MARKER } from '../src/minionTasks/mutators/applyFallback';
 import chalk from 'chalk';
 import { GPTMode } from '../src/gpt/types';
 import { OptionValues, program } from 'commander';
 import { mapLimit } from 'async';
 import { format as dtFormat } from 'date-and-time';
+import { mutateRunTask } from '../src/tasks/mutators/mutateRunTask';
 
 // main types
 type GPT_ASSERT = 'gptAssert';
 type SIMPLE_STRING_FIND = 'simpleStringFind';
 type FUNCTION_RETURN_TYPE_CHECK = 'functionReturnTypeCheck';
 
-type TestDefinitionType =
-  | GPT_ASSERT
-  | SIMPLE_STRING_FIND
-  | FUNCTION_RETURN_TYPE_CHECK;
+type TestDefinitionType = GPT_ASSERT | SIMPLE_STRING_FIND | FUNCTION_RETURN_TYPE_CHECK;
 
 export type TestDefinition =
   | { type: GPT_ASSERT; mode: GPTMode; assertion: string }
@@ -54,14 +48,7 @@ interface BaseSchema {
     functionName?: { type: 'string' };
     expectedType?: { type: 'string' };
   };
-  required: (
-    | 'type'
-    | 'mode'
-    | 'assertion'
-    | 'stringToFind'
-    | 'functionName'
-    | 'expectedType'
-  )[];
+  required: ('type' | 'mode' | 'assertion' | 'stringToFind' | 'functionName' | 'expectedType')[];
 }
 
 // consts
@@ -95,35 +82,19 @@ const functionReturnTypeCheckSchema: BaseSchema = {
 
 const TestDefinitionSchema = {
   id: '/TestDefinition',
-  oneOf: [
-    gptAssertSchema,
-    simpleStringFindSchema,
-    functionReturnTypeCheckSchema,
-  ],
+  oneOf: [gptAssertSchema, simpleStringFindSchema, functionReturnTypeCheckSchema],
 };
 
-async function checkFunctionReturnType({
-  code,
-  functionName,
-}: {
-  code: string;
-  functionName: string;
-}): Promise<string> {
+async function checkFunctionReturnType({ code, functionName }: { code: string; functionName: string }): Promise<string> {
   try {
     // Create and compile program
     // Create an in-memory source file
-    const sourceFile = ts.createSourceFile(
-      'temp.ts',
-      code,
-      ts.ScriptTarget.ES2015,
-      true,
-    );
+    const sourceFile = ts.createSourceFile('temp.ts', code, ts.ScriptTarget.ES2015, true);
 
     // Create an in-memory compiler host
     const compilerHost: ts.CompilerHost = {
       ...ts.createCompilerHost({}),
-      getSourceFile: (fileName) =>
-        fileName === 'temp.ts' ? sourceFile : undefined,
+      getSourceFile: (fileName) => (fileName === 'temp.ts' ? sourceFile : undefined),
       readFile: (fileName) => (fileName === 'temp.ts' ? code : undefined),
     };
 
@@ -132,15 +103,8 @@ async function checkFunctionReturnType({
     const checker = program.getTypeChecker();
 
     // Helper function to search the AST nodes for a function declaration
-    function findFunctionDeclaration(
-      node: ts.Node,
-      functionName: string,
-    ): ts.FunctionDeclaration | undefined {
-      if (
-        ts.isFunctionDeclaration(node) &&
-        node.name &&
-        node.name.text === functionName
-      ) {
+    function findFunctionDeclaration(node: ts.Node, functionName: string): ts.FunctionDeclaration | undefined {
+      if (ts.isFunctionDeclaration(node) && node.name && node.name.text === functionName) {
         return node;
       }
 
@@ -163,27 +127,16 @@ async function checkFunctionReturnType({
     const funcSym = checker.getSymbolAtLocation(funcDecl?.name);
 
     if (!funcSym || !funcSym.valueDeclaration) {
-      throw new Error(
-        `Symbol not found for function '${functionName}'. Ensure the function exists and is correctly spelled.`,
-      );
+      throw new Error(`Symbol not found for function '${functionName}'. Ensure the function exists and is correctly spelled.`);
     }
 
-    const typeOfFuncSym = checker.getTypeOfSymbolAtLocation(
-      funcSym,
-      funcSym.valueDeclaration,
-    );
+    const typeOfFuncSym = checker.getTypeOfSymbolAtLocation(funcSym, funcSym.valueDeclaration);
 
-    const returnType = checker.getReturnTypeOfSignature(
-      typeOfFuncSym.getCallSignatures()[0],
-    );
+    const returnType = checker.getReturnTypeOfSignature(typeOfFuncSym.getCallSignatures()[0]);
 
     return checker.typeToString(returnType);
   } catch (error) {
-    logToFile(
-      `Error during return type check: ${
-        error instanceof Error ? error.message : error
-      }`,
-    );
+    logToFile(`Error during return type check: ${error instanceof Error ? error.message : error}`);
 
     return 'Error during return type check';
   }
@@ -202,10 +155,7 @@ function logToFile(logMessage: string) {
     fs.mkdirSync(directoryPath); // If logs directory does not exist, create it
   }
 
-  fs[fs.existsSync(logFilePath) ? 'appendFileSync' : 'writeFileSync'](
-    logFilePath,
-    logMessage + '\n',
-  );
+  fs[fs.existsSync(logFilePath) ? 'appendFileSync' : 'writeFileSync'](logFilePath, logMessage + '\n');
 }
 
 async function gptAssert({
@@ -224,10 +174,14 @@ async function gptAssert({
     maxTokens: 100,
     mode,
     outputName: 'reportTestResult',
-    outputSchema: z.object({
-      comment: z.string().describe('Describe the reason for why the code passed (or did not pass) the test.'),
-      passessTest: z.boolean().describe('Whether the code passed the test or not.'),
-    }).describe(`Report a result of the test, whenever the resulting code meets the criteria: ${assertion}, provide a comment explaining why it does not meet the criteria`),
+    outputSchema: z
+      .object({
+        comment: z.string().describe('Describe the reason for why the code passed (or did not pass) the test.'),
+        passessTest: z.boolean().describe('Whether the code passed the test or not.'),
+      })
+      .describe(
+        `Report a result of the test, whenever the resulting code meets the criteria: ${assertion}, provide a comment explaining why it does not meet the criteria`,
+      ),
   });
 
   return {
@@ -236,19 +190,8 @@ async function gptAssert({
   };
 }
 
-async function runTest({
-  fileName,
-  iterations,
-}: {
-  fileName: string;
-  iterations: number;
-}): Promise<void> {
-  const tests: TestDefinition[] = JSON.parse(
-    fs.readFileSync(
-      path.join(__dirname, 'score', `${fileName}.tests.json`),
-      'utf8',
-    ),
-  );
+async function runTest({ fileName, iterations }: { fileName: string; iterations: number }): Promise<void> {
+  const tests: TestDefinition[] = JSON.parse(fs.readFileSync(path.join(__dirname, 'score', `${fileName}.tests.json`), 'utf8'));
 
   // Create a validator instance
   const validator = new Validator();
@@ -259,17 +202,10 @@ async function runTest({
 
     // If validation fails, throw error with details
     if (!validation.valid) {
-      throw new Error(
-        `Test validation failed for '${fileName}': ${validation.errors.join(
-          ', ',
-        )}`,
-      );
+      throw new Error(`Test validation failed for '${fileName}': ${validation.errors.join(', ')}`);
     }
   }
-  const userQuery = fs.readFileSync(
-    path.join(__dirname, 'score', `${fileName}.userQuery.txt`),
-    'utf8',
-  );
+  const userQuery = fs.readFileSync(path.join(__dirname, 'score', `${fileName}.userQuery.txt`), 'utf8');
 
   const statistics = {
     total: 0,
@@ -283,15 +219,9 @@ async function runTest({
 
     logToFile(`Iteration ${i + 1} of ${iterations}`);
 
-    const checkPath = path.join(
-      __dirname,
-      'score',
-      fileName + '.selectedText.txt',
-    ); // Path to the selectedText file
+    const checkPath = path.join(__dirname, 'score', fileName + '.selectedText.txt'); // Path to the selectedText file
     const selectedTextExists = fs.existsSync(checkPath); // Check if selectedText file exists
-    const readSelectedText = selectedTextExists
-      ? fs.readFileSync(checkPath, 'utf8')
-      : ''; // Read the selectedText file if it exists, else "".
+    const readSelectedText = selectedTextExists ? fs.readFileSync(checkPath, 'utf8') : ''; // Read the selectedText file if it exists, else "".
 
     let start = { line: 0, character: 0 };
     let end = { line: 0, character: 0 };
@@ -308,9 +238,7 @@ async function runTest({
 
     const execution = await MinionTask.create({
       userQuery,
-      document: await getEditorManager().openTextDocument(
-        getEditorManager().createUri(path.join(__dirname, 'score', fileName)),
-      ),
+      document: await getEditorManager().openTextDocument(getEditorManager().createUri(path.join(__dirname, 'score', fileName))),
 
       // Use dynamically calculated 'start' and 'end'
       selection: { start, end },
@@ -319,7 +247,7 @@ async function runTest({
       minionIndex: 0,
       onChanged: async () => {},
     });
-    await execution.run();
+    await mutateRunTask(execution);
     await applyMinionTask(execution);
 
     const resultingCode = (await execution.document()).getText();
@@ -328,21 +256,15 @@ async function runTest({
     logToFile(resultingCode);
 
     statistics.total++;
-    const includesNormalModification = execution.logContent.includes(
-      LOG_NORMAL_MODIFICATION_MARKER,
-    );
-    const includesFallbackComment = execution.logContent.includes(
-      LOG_FALLBACK_COMMENT_MARKER,
-    );
+    const includesNormalModification = execution.logContent.includes(LOG_NORMAL_MODIFICATION_MARKER);
+    const includesFallbackComment = execution.logContent.includes(LOG_FALLBACK_COMMENT_MARKER);
 
     if (includesNormalModification && !includesFallbackComment) {
       logToFile(`Test passed: No fallback`);
       statistics.passed++;
     } else {
       if (includesNormalModification) {
-        logToFile(
-          `Test failed: Includes both normal modification & fallback comment `,
-        );
+        logToFile(`Test failed: Includes both normal modification & fallback comment `);
       } else if (!includesFallbackComment) {
         logToFile(`Test failed: No modification (normal or fallback)`);
       } else {
@@ -382,14 +304,10 @@ async function runTest({
           code: resultingCode,
           functionName: test.functionName,
         });
-        logToFile(
-          `Return type of function ${test.functionName}: ${returnType}`,
-        );
+        logToFile(`Return type of function ${test.functionName}: ${returnType}`);
 
         if (returnType !== test.expectedType) {
-          logToFile(
-            `Test failed: The return type of function ${test.functionName} is not ${test.expectedType}`,
-          );
+          logToFile(`Test failed: The return type of function ${test.functionName} is not ${test.expectedType}`);
         } else {
           statistics.passed++;
         }
@@ -446,12 +364,7 @@ program
     10, //  based on the previous definition
   )
   .option('-p, --pattern <pattern>', 'File patterns to run tests on', '*')
-  .option(
-    '-c, --concurrency <concurency>',
-    'Number of concurrent tests',
-    (value) => parseInt(value),
-    1,
-  )
+  .option('-c, --concurrency <concurency>', 'Number of concurrent tests', (value) => parseInt(value), 1)
   .addHelpText(
     'after',
     `

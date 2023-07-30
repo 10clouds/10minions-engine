@@ -7,7 +7,7 @@ import { NoCacheOpenAICacheManager } from '../managers/NoCacheOpenAICacheManager
 import { setEditorManager } from '../managers/EditorManager';
 import { setLogProvider } from '../managers/LogProvider';
 import { setOriginalContentProvider } from '../managers/OriginalContentProvider';
-import { setOpenAIApiKey } from '../gpt/openai';
+import { setOpenAIApiKey } from '../gpt/gptExecute';
 import { CLIEditorManager } from './CLIEditorManager';
 import { setOpenAICacheManager } from '../managers/OpenAICacheManager';
 import { ConsumingOpenAICacheManager } from '../managers/ConsumingOpenAICacheManager';
@@ -35,13 +35,17 @@ const reportChange = (uri: string) => {
   // TODO
 };
 
+const reportChangeInTask = (id: string) => {
+  // TODO
+};
+
 export function setupCLISystemsForTest() {
   setLogProvider(undefined);
   setOriginalContentProvider(undefined);
   setEditorManager(undefined);
 
   setLogProvider({
-    reportChange,
+    reportChangeInTask,
   });
 
   setOriginalContentProvider({

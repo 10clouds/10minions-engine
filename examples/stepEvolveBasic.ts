@@ -1,7 +1,7 @@
-import { FitnessAndNextSolutionsFunction, SolutionWithMeta } from '../src/strategies/stepEvolve/FitnessFunction';
-import { stepEvolve } from '../src/strategies/stepEvolve/stepEvolve';
-import { createSolutionWithMetaWithFitness } from '../src/strategies/stepEvolve/createSolutionWithMetaWithFitness';
-import { createSolutionsFromFixes } from '../src/strategies/stepEvolve/createSolutionsFromFixes';
+import { FitnessAndNextSolutionsFunction, SolutionWithMeta } from '../src/stepEvolve/FitnessFunction';
+import { stepEvolve } from '../src/stepEvolve/stepEvolve';
+import { createSolutionWithMetaWithFitness } from '../src/stepEvolve/createSolutionWithMetaWithFitness';
+import { createSolutionsFromFixes } from '../src/stepEvolve/createSolutionsFromFixes';
 
 const INTRO = `
 This example searches for a maximum of a example function.

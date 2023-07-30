@@ -1,8 +1,8 @@
-import { MinionTask } from '../MinionTask';
+import { MinionTask } from '../minionTasks/MinionTask';
 
 import { initializeApp } from 'firebase/app';
 import { addDoc, collection, doc, getFirestore, setDoc } from 'firebase/firestore';
-import { serializeMinionTask } from '../SerializedMinionTask';
+import { serializeMinionTask } from '../minionTasks/SerializedMinionTask';
 
 import * as crypto from 'crypto';
 

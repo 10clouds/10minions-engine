@@ -1,13 +1,14 @@
 import { z } from 'zod';
 import { initCLISystems } from '../src/CLI/setupCLISystems';
 import { createFullPromptFromSections } from '../src/gpt/createFullPromptFromSections';
-import { gptExecute } from '../src/gpt/openai';
+import { gptExecute } from '../src/gpt/gptExecute';
 import { GPTMode } from '../src/gpt/types';
-import { FitnessAndNextSolutionsFunction, SolutionWithMeta } from '../src/strategies/stepEvolve/FitnessFunction';
-import { createSolutionWithMetaWithFitness } from '../src/strategies/stepEvolve/createSolutionWithMetaWithFitness';
-import { createSolutionsFromFixes } from '../src/strategies/stepEvolve/createSolutionsFromFixes';
-import { stepEvolve } from '../src/strategies/stepEvolve/stepEvolve';
-import { shuffleArray, sum } from '../src/strategies/utils/utils';
+import { FitnessAndNextSolutionsFunction, SolutionWithMeta } from '../src/stepEvolve/FitnessFunction';
+import { createSolutionWithMetaWithFitness } from '../src/stepEvolve/createSolutionWithMetaWithFitness';
+import { createSolutionsFromFixes } from '../src/stepEvolve/createSolutionsFromFixes';
+import { stepEvolve } from '../src/stepEvolve/stepEvolve';
+import { sum } from '../src/utils/utils';
+import { shuffleArray } from '../src/utils/random/shuffleArray';
 
 const INTRO = `
 This example uses LLMs to write and improve on a linkedin post that meets given criteria.
@@ -140,7 +141,7 @@ function createFitnessFunction(task: TaskDefinition): FitnessAndNextSolutionsFun
     //TODO: There should be a seperate gpt call for getting suggestions when nextPossibleSolutions is called, otherwise we are constantly using the same which may not lead to good results.
     //TODO: Find appropriate criteria to seek maxPoints
     //TODO: Integrate this criteria system into runScore
-    const suggestions: string[] = criteria.filter((c) => c.rating < 20 && c.suggestion.length > 0).map((c: any) => c.suggestion as string);
+    const suggestions: string[] = criteria.filter((c) => c.rating < 20 && c.suggestion.length > 0).map((c) => c.suggestion as string);
 
     const fixes = [
       createNewSolutionFix(task),

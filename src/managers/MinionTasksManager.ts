@@ -1,4 +1,4 @@
-import { MinionTask } from '../MinionTask';
+import { MinionTask } from '../minionTasks/MinionTask';
 import { EditorDocument, EditorRange } from './EditorManager';
 
 export interface MinionTasksManager {

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+
 module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
@@ -11,13 +13,14 @@ module.exports = {
   rules: {
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': 'off',
-    '@typescript-eslint/naming-convention': 'off',
+    '@typescript-eslint/naming-convention': ['warn', { selector: 'enumMember', format: ['UPPER_CASE'] }],
     '@typescript-eslint/semi': 'warn',
     curly: 'off',
     eqeqeq: 'warn',
     'no-throw-literal': 'warn',
     semi: 'off',
     '@typescript-eslint/no-empty-function': 'off',
+    'prettier/prettier': 'warn',
   },
   ignorePatterns: ['out', 'dist', '**/*.d.ts'],
 };

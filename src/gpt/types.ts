@@ -109,3 +109,5 @@ export const MODEL_DATA: ModelData = {
     outputCostPer1K: 0.004,
   },
 };
+
+export const MODEL_NAMES = Object.keys(MODEL_DATA) as GPTModel[];

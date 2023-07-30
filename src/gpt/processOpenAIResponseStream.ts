@@ -1,7 +1,7 @@
 import AsyncLock from 'async-lock';
-import { CANCELED_STAGE_NAME } from '../const';
 import { extractParsedLines } from './extractParsedLines';
 import { Response } from 'node-fetch';
+import { CANCELED_STAGE_NAME } from '../tasks/stageNames';
 
 const openAILock = new AsyncLock();
 
