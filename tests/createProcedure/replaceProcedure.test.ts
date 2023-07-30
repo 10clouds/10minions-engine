@@ -4,7 +4,7 @@ import { readFileSync } from 'fs';
 import * as glob from 'glob';
 import * as path from 'path';
 import { setupCLISystemsForTest } from '../../src/CLI/setupCLISystems';
-import { applyModificationProcedure } from '../../src/minionTasks/mutators/applyModificationProcedure';
+import { applyModificationProcedure } from '../../src/minionTasks/applyModificationProcedure';
 import { createModificationProcedure } from '../../src/minionTasks/createModificationProcedure';
 import { extractFileNameFromPath } from '../../src/utils/extractFileNameFromPath';
 

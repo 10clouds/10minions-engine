@@ -5,7 +5,7 @@ import { decomposeMarkdownString } from '../../utils/string/decomposeMarkdownStr
 
 export const LOG_PLAIN_COMMENT_MARKER = `\nPLAIN COMMENT FALLBACK\n`;
 
-export async function applyFallback(minionTask: MinionTask) {
+export async function mutatorApplyFallback(minionTask: MinionTask) {
   const document = await minionTask.document();
   const language = document.languageId || 'javascript';
 

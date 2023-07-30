@@ -8,8 +8,8 @@ import { initCLISystems, setupCLISystemsForTest } from '../src/CLI/setupCLISyste
 import { MinionTask } from '../src/minionTasks/MinionTask';
 import { getEditorManager } from '../src/managers/EditorManager';
 import { gptExecute } from '../src/gpt/gptExecute';
-import { LOG_NO_FALLBACK_MARKER as LOG_NORMAL_MODIFICATION_MARKER, applyMinionTask } from '../src/minionTasks/mutators/applyMinionTask';
-import { LOG_PLAIN_COMMENT_MARKER as LOG_FALLBACK_COMMENT_MARKER } from '../src/minionTasks/mutators/applyFallback';
+import { LOG_NO_FALLBACK_MARKER as LOG_NORMAL_MODIFICATION_MARKER, mutatorApplyMinionTask } from '../src/minionTasks/mutators/mutateApplyMinionTask';
+import { LOG_PLAIN_COMMENT_MARKER as LOG_FALLBACK_COMMENT_MARKER } from '../src/minionTasks/mutators/mutateApplyFallback';
 import chalk from 'chalk';
 import { GPTMode } from '../src/gpt/types';
 import { OptionValues, program } from 'commander';
@@ -248,7 +248,7 @@ async function runTest({ fileName, iterations }: { fileName: string; iterations:
       onChanged: async () => {},
     });
     await mutateRunTask(execution);
-    await applyMinionTask(execution);
+    await mutatorApplyMinionTask(execution);
 
     const resultingCode = (await execution.document()).getText();
 

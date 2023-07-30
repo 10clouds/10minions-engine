@@ -2,12 +2,12 @@ import { ApplicationStatus, MinionTask } from '../MinionTask';
 import { mutateAppendToLog } from '../../tasks/mutators/mutateAppendToLog';
 import { FINISHED_STAGE_NAME, APPLYING_STAGE_NAME, APPLIED_STAGE_NAME } from '../../tasks/stageNames';
 import { getEditorManager } from '../../managers/EditorManager';
-import { applyFallback } from './applyFallback';
-import { applyModificationProcedure } from './applyModificationProcedure';
+import { mutatorApplyFallback } from './mutateApplyFallback';
+import { applyModificationProcedure } from '../applyModificationProcedure';
 
 export const LOG_NO_FALLBACK_MARKER = `Applied changes for user review.\n\n`;
 
-export async function applyMinionTask(minionTask: MinionTask) {
+export async function mutatorApplyMinionTask(minionTask: MinionTask) {
   const document = await minionTask.document();
 
   if (minionTask.executionStage !== FINISHED_STAGE_NAME) {
@@ -63,7 +63,7 @@ export async function applyMinionTask(minionTask: MinionTask) {
       );
     });
   } catch (error) {
-    await applyFallback(minionTask);
+    await mutatorApplyFallback(minionTask);
 
     minionTask.executionStage = APPLIED_STAGE_NAME;
     minionTask.contentAfterApply = document.getText();

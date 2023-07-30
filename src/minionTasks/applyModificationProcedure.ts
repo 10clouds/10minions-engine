@@ -1,5 +1,5 @@
-import { getCommentForLanguage } from '../../utils/code/comments';
-import { fuzzyReplaceTextInner } from '../../utils/code/fuzzyReplaceText';
+import { getCommentForLanguage } from '../utils/code/comments';
+import { fuzzyReplaceTextInner } from '../utils/code/fuzzyReplaceText';
 
 type CommandSegment = {
   name: string;
