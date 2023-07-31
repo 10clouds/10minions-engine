@@ -1,4 +1,4 @@
-import { MessageToVSCode, MessageToWebView } from '../Messages';
+import { MessageToVSCode, MessageToWebView } from './Messages';
 
 export interface ViewProvider {
   postMessageToWebView(message: MessageToWebView): void;

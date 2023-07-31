@@ -1,58 +1,62 @@
+import '../initEnv';
+
 import { readFileSync } from 'fs';
 import path from 'path';
-import {
-  AnalyticsManager,
-  setAnalyticsManager,
-} from '../managers/AnalyticsManager';
-import { ConsumingOpenAICacheManager } from '../managers/ConsumingOpenAICacheManager';
+import { AnalyticsManager, setAnalyticsManager } from '../managers/AnalyticsManager';
+import { NoCacheOpenAICacheManager } from '../managers/NoCacheOpenAICacheManager';
 import { setEditorManager } from '../managers/EditorManager';
 import { setLogProvider } from '../managers/LogProvider';
 import { setOriginalContentProvider } from '../managers/OriginalContentProvider';
-import { setOpenAIApiKey } from '../openai';
+import { setOpenAIApiKey } from '../gpt/gptExecute';
 import { CLIEditorManager } from './CLIEditorManager';
 import { setOpenAICacheManager } from '../managers/OpenAICacheManager';
+import { ConsumingOpenAICacheManager } from '../managers/ConsumingOpenAICacheManager';
 
 export function initCLISystems() {
-  const baseDir = path.resolve(__dirname);
-  setOpenAIApiKey(
-    JSON.parse(readFileSync(path.resolve(baseDir, 'openAIKey.json'), 'utf8'))
-      .openAIKey,
-  );
+  const baseDir = path.resolve(path.resolve(__dirname), '..', '..');
+
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY is not set');
+  }
+
+  setOpenAIApiKey(process.env.OPENAI_API_KEY);
 
   setOpenAICacheManager(undefined);
-  const openAiCacheManager = new ConsumingOpenAICacheManager(
-    JSON.parse(
-      readFileSync(path.resolve(baseDir, 'serviceAccount.json'), 'utf8'),
-    ),
-  );
 
-  setOpenAICacheManager(openAiCacheManager);
+  if (process.env.NO_OPENAI_CACHE === 'true') {
+    setOpenAICacheManager(new NoCacheOpenAICacheManager());
+  } else {
+    setOpenAICacheManager(new ConsumingOpenAICacheManager(JSON.parse(readFileSync(path.resolve(baseDir, 'serviceAccount.json'), 'utf8'))));
+  }
 
-  const analyticsManager = new AnalyticsManager(
-    'CLIInstallationID',
-    'CLIVsCodeStub',
-  );
+  const analyticsManager = new AnalyticsManager('CLIInstallationID', 'CLIVsCodeStub');
   analyticsManager.setSendDiagnosticsData(true);
 
   setAnalyticsManager(analyticsManager);
-}
 
-const reportChange = (uri: string) => {
-  // TODO
-};
-
-export function setupCLISystemsForTest() {
   setLogProvider(undefined);
   setOriginalContentProvider(undefined);
-  setEditorManager(undefined);
+
+  const reportChange = (uri: string) => {
+    // TODO
+  };
+
+  const reportChangeInTask = (id: string) => {
+    // TODO
+  };
 
   setLogProvider({
-    reportChange,
+    reportChangeInTask,
   });
 
   setOriginalContentProvider({
     reportChange,
   });
 
+  setEditorManager(new CLIEditorManager());
+}
+
+export function setupCLISystemsForTest() {
+  setEditorManager(undefined);
   setEditorManager(new CLIEditorManager());
 }

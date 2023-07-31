@@ -14,9 +14,9 @@
     // "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
     // "noUnusedParameters": true,  /* Report errors on unused parameters. */
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "declaration": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "examples/**/*", "score/**/*", "tests/**/*"],
   "exclude": ["node_modules"]
 }

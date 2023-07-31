@@ -1,10 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import {
-  EditorDocument,
-  EditorRange,
-  EditorUri,
-} from '../managers/EditorManager';
+import { EditorDocument, EditorRange, EditorUri } from '../managers/EditorManager';
 
 export class CLIEditorDocument implements EditorDocument {
   readonly languageId: string;
@@ -34,11 +30,7 @@ export class CLIEditorDocument implements EditorDocument {
 
   getText(range?: EditorRange): string {
     // Return joined text from _textLines array within given range or whole text if range is not provided
-    return (
-      range
-        ? this._textLines.slice(range.start.line, range.end.line)
-        : this._textLines
-    ).join('\n');
+    return (range ? this._textLines.slice(range.start.line, range.end.line) : this._textLines).join('\n');
   }
 
   lineAt(line: number): {
@@ -61,10 +53,7 @@ export class CLIEditorDocument implements EditorDocument {
     const existingText = this.lineAt(start.line).text;
 
     // Insert the new text at the character position
-    const newText =
-      existingText.slice(0, start.character) +
-      text +
-      existingText.slice(start.character);
+    const newText = existingText.slice(0, start.character) + text + existingText.slice(start.character);
 
     // Update the line with the new text
     this._textLines[start.line] = newText;
@@ -96,10 +85,12 @@ export class CLIEditorDocument implements EditorDocument {
       // Update start, end lines and remove lines between them
       this._textLines[startLineNumber] = newTextStart;
       this._textLines[endLineNumber] = newTextEnd;
-      this._textLines.splice(
-        startLineNumber + 1,
-        endLineNumber - startLineNumber,
-      );
+      this._textLines.splice(startLineNumber + 1, endLineNumber - startLineNumber);
     }
+  }
+
+  save() {
+    // Write the text back to the file synchronously for simplicity. Consider using async I/O in production code
+    fs.writeFileSync(this.uri.fsPath, this._textLines.join('\n'), 'utf8');
   }
 }

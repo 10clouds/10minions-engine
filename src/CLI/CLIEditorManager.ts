@@ -1,14 +1,11 @@
-import {
-  EditorDocument,
-  EditorManager,
-  EditorUri,
-  WorkspaceEdit,
-} from '../managers/EditorManager';
+import { EditorDocument, EditorManager, EditorUri, WorkspaceEdit } from '../managers/EditorManager';
 import { CLIWorkspaceEdit } from './CLIWorkspaceEdit';
 import { CLIEditorDocument } from './CLIEditorDocument';
 
 export class CLIEditorManager implements EditorManager {
   openDocuments: EditorDocument[] = [];
+
+  constructor(public dryRun = false) {}
 
   applyWorkspaceEdit(fillEdit: (edit: WorkspaceEdit) => Promise<void>) {
     const edit = new CLIWorkspaceEdit();
@@ -36,20 +33,24 @@ export class CLIEditorManager implements EditorManager {
           document.insert(range.start, text);
         }
       });
+
+      if (!this.dryRun) {
+        document.save();
+      }
     });
 
     // Await for all the promises to complete.
     await Promise.all(promises);
   }
 
-  showErrorMessage(message: string): void {}
+  showErrorMessage(message: string): void {
+    console.error(message);
+  }
 
   showInformationMessage(message: string): void {}
 
   async openTextDocument(uri: EditorUri) {
-    const existingDocument = this.openDocuments.find(
-      (doc) => doc.uri.toString() === uri.toString(),
-    );
+    const existingDocument = this.openDocuments.find((doc) => doc.uri.toString() === uri.toString());
     if (existingDocument) {
       return existingDocument;
     }
@@ -61,7 +62,7 @@ export class CLIEditorManager implements EditorManager {
 
   createUri(uri: string): EditorUri {
     return {
-      fsPath: uri + '.original.txt',
+      fsPath: uri,
       toString: () => uri,
     };
   }

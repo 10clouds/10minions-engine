@@ -8,20 +8,28 @@
   "scripts": {
     "compile": "rimraf dist/* && tsc",
     "lint": "eslint src --ext ts",
-    "prepareTest": "npx tsx ./src/test/prepareTestFiles.ts",
-    "test": "npx tsx ./src/test/runTest.ts",
-    "test-score": "npx tsx ./src/test/runScore.ts -c 3",
+    "prepareTest": "npx tsx ./tests/prepareTestFiles.ts",
+    "test": "npx tsx ./tests/runTests.ts",
+    "test-score": "npx tsx ./score/runScore.ts -c 3",
+    "example-custom-task": "npx tsx ./examples/customTask.ts",
+    "example-minion-task": "npx tsx ./examples/minionTask.ts",
+    "example-step-evolve": "npx tsx ./examples/stepEvolveBasic.ts",
+    "example-step-evolve-llm": "npx tsx ./examples/stepEvolveBasicLLM.ts",
+    "example-step-evolve-custom-task": "npx tsx ./examples/stepEvolveCustomTask.ts",
     "watch": "tsc --watch"
   },
   "dependencies": {
     "async-lock": "^1.4.0",
+    "dotenv": "^16.3.1",
     "firebase": "^9.22.2",
     "firebase-admin": "^11.9.0",
     "gpt-tokenizer": "^2.1.1",
     "jsonschema": "^1.4.1",
     "langchain": "^0.0.77",
     "node-fetch": "^3.3.1",
-    "openai": "^3.2.1"
+    "openai": "^3.2.1",
+    "zod": "^3.21.4",
+    "zod-to-json-schema": "^3.21.4"
   },
   "devDependencies": {
     "@inquirer/confirm": "^2.0.4",

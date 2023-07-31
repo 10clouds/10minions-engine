@@ -1,14 +1,8 @@
-import { MinionTask } from '../MinionTask';
+import { MinionTask } from '../minionTasks/MinionTask';
 
 import { initializeApp } from 'firebase/app';
-import {
-  addDoc,
-  collection,
-  doc,
-  getFirestore,
-  setDoc,
-} from 'firebase/firestore';
-import { serializeMinionTask } from '../SerializedMinionTask';
+import { addDoc, collection, doc, getFirestore, setDoc } from 'firebase/firestore';
+import { serializeMinionTask } from '../minionTasks/SerializedMinionTask';
 
 import * as crypto from 'crypto';
 
@@ -49,6 +43,7 @@ export class AnalyticsManager {
     pluginVersion: string;
     timestamp: Date;
   }> {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const packageJson = require('../../package.json');
     return {
       installationId: this.installationId,
@@ -105,11 +100,7 @@ export class AnalyticsManager {
 
     // Store the data in Firestore
     try {
-      await setDoc(
-        doc(firestore, 'minionTasks', serializedMinionTask.id),
-        firestoreData,
-        { merge: true },
-      );
+      await setDoc(doc(firestore, 'minionTasks', serializedMinionTask.id), firestoreData, { merge: true });
     } catch (error) {
       console.error(`Error updating minion task in Firestore: ${error}`);
     }
@@ -122,10 +113,7 @@ export class AnalyticsManager {
   }
 
   // TODO: replace unknown with generic type
-  public async reportOpenAICall(
-    requestData: unknown,
-    responseData: unknown,
-  ): Promise<void> {
+  public async reportOpenAICall(requestData: unknown, responseData: unknown): Promise<void> {
     // Check if sending diagnostics data is allowed by the user settings
     if (!this.sendDiagnosticsData) {
       return;

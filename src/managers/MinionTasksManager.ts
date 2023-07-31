@@ -1,4 +1,4 @@
-import { MinionTask } from '../MinionTask';
+import { MinionTask } from '../minionTasks/MinionTask';
 import { EditorDocument, EditorRange } from './EditorManager';
 
 export interface MinionTasksManager {
@@ -12,23 +12,13 @@ export interface MinionTasksManager {
   addExecution(execution: MinionTask): void;
   removeExecution(id: string): void;
   getExecutionById(minionTaskId: string): MinionTask | undefined;
-  getExecutionByUserQueryAndDoc(
-    task: string,
-    document: EditorDocument,
-  ): MinionTask | undefined;
+  getExecutionByUserQueryAndDoc(task: string, document: EditorDocument): MinionTask | undefined;
   clearExecutions(): void;
-  runMinionOnCurrentSelectionAndEditor(
-    userQuery: string,
-    customDocument?: EditorDocument,
-    customSelection?: EditorRange,
-  ): Promise<void>;
+  runMinionOnCurrentSelectionAndEditor(userQuery: string, customDocument?: EditorDocument, customSelection?: EditorRange): Promise<void>;
   acquireMinionIndex(): number;
   notifyExecutionsUpdated(minionTask: MinionTask): void;
   reRunExecution(minionTaskId: string, newUserQuery?: string): Promise<void>;
-  notifyExecutionsUpdatedImmediate(
-    minionTask?: MinionTask,
-    importantChange?: boolean,
-  ): void;
+  notifyExecutionsUpdatedImmediate(minionTask?: MinionTask, importantChange?: boolean): void;
   stopExecution(minionTaskId: string): void;
   closeExecution(minionTaskId: string): Promise<void>;
 }
