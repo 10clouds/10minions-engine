@@ -38,6 +38,8 @@ export async function stepEvolve<S>({
       break;
     }
 
+    currentIteration++;
+
     const candidateSolutions = await current.nextPossibleSolutions();
 
     for (const candidateSolution of candidateSolutions) {
@@ -58,7 +60,6 @@ export async function stepEvolve<S>({
 
       await Promise.all(observers.map((o) => o.onProgressMade?.(current, currentIteration)));
 
-      currentIteration++;
       await new Promise((r) => {
         setTimeout(r, 0);
       });
