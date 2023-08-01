@@ -13,8 +13,8 @@ export function mutateRunTask<T extends TaskContext<T>>(task: T) {
       return;
     }
 
-    task.resolveProgress = resolve;
-    task.rejectProgress = reject;
+    task.onSuccess = resolve;
+    task.onErrorOrCancel = reject;
     task.currentStageIndex = 0;
 
     try {
@@ -35,7 +35,7 @@ export function mutateRunTask<T extends TaskContext<T>>(task: T) {
         }, 0);
 
         task.progress = weigtsNextStepTotal / calculateTotalWeights(task);
-        task.onChanged(false);
+        task.onChange(false);
         task.currentStageIndex++;
       }
     } catch (error) {

@@ -78,14 +78,14 @@ Let's take it step by step.
 }
 
 export async function mutateCreateModification(task: MinionTask) {
-  if (task.strategy === undefined) {
+  if (task.strategyId === undefined) {
     throw new Error('Classification is undefined');
   }
 
   task.modificationDescription = '';
 
   const document = await task.document();
-  const classification = task.strategy;
+  const classification = task.strategyId;
   const userQuery = task.userQuery;
   const selectedText = task.selectedText;
   const fullFileContents = task.originalContent;

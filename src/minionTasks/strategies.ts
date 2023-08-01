@@ -6,6 +6,9 @@ import { mutateCreateAnswer } from './mutators/mutateCreateAnswer';
 import { Stage } from '../tasks/Stage';
 import { mutateCreateModificationProcedure } from './mutators/mutateCreateModificationProcedure';
 import { MinionTask } from './MinionTask';
+import { Strategy } from '../tasks/Strategy';
+import { z } from 'zod';
+import { createChooseStrategyPrompt } from './createChooseStrategyPrompt';
 
 export type TASK_STRATEGY_ID = 'AnswerQuestion' | 'AutonomousAgent' | 'VectorizeAndExecute' | 'WorkspaceWide' | 'CodeChange';
 
@@ -20,15 +23,11 @@ export const PRE_STAGES: Stage<MinionTask>[] = [
   {
     name: 'Understanding ...',
     weight: 50,
-    execution: mutateStageChooseStrategy,
+    execution: (task: MinionTask) => mutateStageChooseStrategy(task, TASK_STRATEGIES, createChooseStrategyPrompt),
   },
 ];
 
-export const TASK_STRATEGIES: {
-  name: TASK_STRATEGY_ID;
-  description: string;
-  stages: Stage<MinionTask>[];
-}[] = [
+export const TASK_STRATEGIES: Strategy<MinionTask>[] = [
   /*{
     name: "AutonomousAgent",
     description:
@@ -81,7 +80,7 @@ export const TASK_STRATEGIES: {
     ],
   },*/
   {
-    name: 'AnswerQuestion',
+    id: 'AnswerQuestion',
     description:
       "Choose this classification if you don't want to modify code when doing this task or it's not appropriate to modifiy code based on this task. The result is not code, but textual description. A good example of this is when you are asked a question, and you need to answer it. For example: For example: are strings immutable in java? explain how this works, come up with 5 ideas for a name etc.",
     stages: [
@@ -96,9 +95,10 @@ export const TASK_STRATEGIES: {
         execution: mutateStageFinishing,
       },
     ],
+    outputSchema: z.string(),
   },
   {
-    name: 'CodeChange',
+    id: 'CodeChange',
     description:
       "Choose if it's makes sense to modify code for this task. For example: fix a bug, add a feature, add a test, are there any bugs?, critisize this code, refactor this code, document this code etc.",
     stages: [
@@ -118,5 +118,6 @@ export const TASK_STRATEGIES: {
         execution: mutateStageFinishing,
       },
     ],
+    outputSchema: z.string(),
   },
 ];

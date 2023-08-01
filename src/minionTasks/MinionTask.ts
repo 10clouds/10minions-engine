@@ -5,6 +5,7 @@ import { getOriginalContentProvider } from '../managers/OriginalContentProvider'
 import { APPLIED_STAGE_NAME, APPLYING_STAGE_NAME, CANCELED_STAGE_NAME, FINISHED_STAGE_NAME } from '../tasks/stageNames';
 import { Stage } from '../tasks/Stage';
 import { PRE_STAGES, TASK_STRATEGY_ID } from './strategies';
+import { TaskContext } from '../tasks/TaskContext';
 
 export enum ApplicationStatus {
   APPLIED = 'applied',
@@ -12,7 +13,7 @@ export enum ApplicationStatus {
   APPLIED_AS_FALLBACK = 'applied as fallback',
 }
 
-export class MinionTask {
+export class MinionTask implements TaskContext<MinionTask> {
   readonly userQuery: string;
   readonly minionIndex: number;
 
@@ -24,7 +25,7 @@ export class MinionTask {
 
   readonly id: string;
 
-  readonly onChanged: (important: boolean) => Promise<void>;
+  readonly onChange: (important: boolean) => Promise<void>;
 
   shortName: string;
   totalCost: number;
@@ -34,7 +35,7 @@ export class MinionTask {
   startTime: number;
   stopped = true;
   progress = 1;
-  strategy?: TASK_STRATEGY_ID;
+  strategyId?: TASK_STRATEGY_ID;
   stages: Stage<MinionTask>[] = PRE_STAGES;
 
   get isError(): boolean {
@@ -139,13 +140,13 @@ export class MinionTask {
     this.contentAfterApply = finalContent;
     this.contentWhenDismissed = contentWhenDismissed;
     this.startTime = startTime;
-    this.onChanged = onChanged;
+    this.onChange = onChanged;
     this.shortName = shortName;
     this.modificationDescription = modificationDescription;
     this.modificationProcedure = modificationProcedure;
     this.inlineMessage = inlineMessage;
     this.executionStage = executionStage;
-    this.strategy = strategy;
+    this.strategyId = strategy;
     this.logContent = logContent;
     this.totalCost = totalCost;
     this.aplicationStatus = aplicationStatus;
