@@ -44,9 +44,9 @@ export function mutateRunTask<T extends TaskContext<T>>(task: T) {
         console.error('Error in execution', error);
       }
 
-      mutateStopExecution(task, error instanceof Error ? `Error: ${error.message}` : String(error));
+      await mutateStopExecution(task, error instanceof Error ? `Error: ${error.message}` : String(error));
     } finally {
-      mutateStopExecution(task);
+      await mutateStopExecution(task);
 
       const executionTime = Date.now() - task.startTime;
       const formattedExecutionTime = calculateAndFormatExecutionTime(executionTime);

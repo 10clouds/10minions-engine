@@ -1,14 +1,13 @@
-import { mutateStageStarting } from './mutators/mutateStageStarting';
+import { Stage } from '../tasks/Stage';
+import { Strategy } from '../tasks/Strategy';
 import { mutateStageChooseStrategy } from '../tasks/mutators/mutateStageChooseStrategy';
 import { mutateStageFinishing } from '../tasks/mutators/mutateStageFinishing';
-import { mutateCreateModification } from './mutators/mutateCreateModification';
-import { mutateCreateAnswer } from './mutators/mutateCreateAnswer';
-import { Stage } from '../tasks/Stage';
-import { mutateCreateModificationProcedure } from './mutators/mutateCreateModificationProcedure';
 import { MinionTask } from './MinionTask';
-import { Strategy } from '../tasks/Strategy';
-import { z } from 'zod';
 import { createChooseStrategyPrompt } from './createChooseStrategyPrompt';
+import { mutateCreateAnswer } from './mutators/mutateCreateAnswer';
+import { mutateCreateModification } from './mutators/mutateCreateModification';
+import { mutateCreateModificationProcedure } from './mutators/mutateCreateModificationProcedure';
+import { mutateStageStarting } from './mutators/mutateStageStarting';
 
 export type TASK_STRATEGY_ID = 'AnswerQuestion' | 'AutonomousAgent' | 'VectorizeAndExecute' | 'WorkspaceWide' | 'CodeChange';
 
@@ -95,7 +94,6 @@ export const TASK_STRATEGIES: Strategy<MinionTask>[] = [
         execution: mutateStageFinishing,
       },
     ],
-    outputSchema: z.string(),
   },
   {
     id: 'CodeChange',
@@ -118,6 +116,5 @@ export const TASK_STRATEGIES: Strategy<MinionTask>[] = [
         execution: mutateStageFinishing,
       },
     ],
-    outputSchema: z.string(),
   },
 ];

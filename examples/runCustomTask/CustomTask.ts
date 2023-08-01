@@ -1,6 +1,6 @@
 import { Stage } from '../../src/tasks/Stage';
 import { TaskContext } from '../../src/tasks/TaskContext';
-import { CUSTOM_STAGES } from './stages';
+import { CUSTOM_PRE_STAGES } from './stages';
 
 export class CustomTask implements TaskContext<CustomTask> {
   id: string;
@@ -16,8 +16,13 @@ export class CustomTask implements TaskContext<CustomTask> {
   onErrorOrCancel?: ((error: string) => void) | undefined;
   onSuccess?: (() => void) | undefined;
 
+  //custom
+  userInput: string;
+  answer: string;
+
   constructor({
     id,
+    userInput,
     totalCost,
     stopped,
     currentStageIndex,
@@ -30,6 +35,7 @@ export class CustomTask implements TaskContext<CustomTask> {
     resolveTask: resolveTask,
   }: {
     id: string;
+    userInput: string;
     totalCost: number;
     stopped: boolean;
     currentStageIndex: number;
@@ -42,7 +48,9 @@ export class CustomTask implements TaskContext<CustomTask> {
     resolveTask?: (() => void) | undefined;
   }) {
     this.id = id;
-    this.stages = CUSTOM_STAGES;
+    this.userInput = userInput;
+    this.answer = '';
+    this.stages = CUSTOM_PRE_STAGES;
     this.totalCost = totalCost;
     this.stopped = stopped;
     this.currentStageIndex = currentStageIndex;

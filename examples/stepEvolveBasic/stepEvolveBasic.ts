@@ -1,7 +1,7 @@
-import { FitnessAndNextSolutionsFunction, SolutionWithMeta } from '../src/stepEvolve/FitnessFunction';
-import { stepEvolve } from '../src/stepEvolve/stepEvolve';
-import { createSolutionWithMetaWithFitness } from '../src/stepEvolve/createSolutionWithMetaWithFitness';
-import { createSolutionsFromFixes } from '../src/stepEvolve/createSolutionsFromFixes';
+import { FitnessAndNextSolutionsFunction, SolutionWithMeta } from '../../src/stepEvolve/FitnessFunction';
+import { stepEvolve } from '../../src/stepEvolve/stepEvolve';
+import { createSolutionWithMetaWithFitness } from '../../src/stepEvolve/createSolutionWithMetaWithFitness';
+import { createSolutionsFromFixes } from '../../src/stepEvolve/createSolutionsFromFixes';
 
 const INTRO = `
 This example searches for a maximum of a example function.
@@ -85,11 +85,9 @@ function createFitnessAndNextSolutionsFunction(task: TaskDefinition): FitnessAnd
           );
         },
         onFinalSolution: async (solutionWithMeta, iteration) => {
-          console.log('Final solution is: ' + solutionWithMeta.solution + '.');
+          console.log('The final solution is: ' + solutionWithMeta.solution + '.');
         },
       },
     ],
-  }).then((solutionWithMeta) => {
-    console.log('Solution is: ' + solutionWithMeta.solution + '.');
   });
 })();

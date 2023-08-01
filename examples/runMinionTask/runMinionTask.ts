@@ -1,9 +1,9 @@
 import path from 'path';
-import { initCLISystems } from '../src/CLI/setupCLISystems';
-import { getEditorManager } from '../src/managers/EditorManager';
-import { MinionTask } from '../src/minionTasks/MinionTask';
-import { mutateRunTask } from '../src/tasks/mutators/mutateRunTask';
-import { mutatorApplyMinionTask } from '../src/minionTasks/mutators/mutateApplyMinionTask';
+import { initCLISystems } from '../../src/CLI/setupCLISystems';
+import { getEditorManager } from '../../src/managers/EditorManager';
+import { MinionTask } from '../../src/minionTasks/MinionTask';
+import { mutateRunTask } from '../../src/tasks/mutators/mutateRunTask';
+import { mutatorApplyMinionTask } from '../../src/minionTasks/mutators/mutateApplyMinionTask';
 
 const INTRO = `
 This example creates a minion task and runs it.
