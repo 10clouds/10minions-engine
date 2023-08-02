@@ -13,7 +13,7 @@ const TASK =
 const ITERATIONS = 10;
 const MAX_STALE_ITERATIONS = 3;
 const THRESHOLD = 120;
-export const BRANCHING = 3;
+const BRANCHING = 1;
 
 (async function () {
   console.log(INTRO);
@@ -25,7 +25,7 @@ export const BRANCHING = 3;
       solution: await createNewSolutionFix({ task: TASK })(),
       createdWith: 'initial',
       parent: undefined,
-      fitnessAndNextSolutionsFunction: createFitnessAndNextSolutionsFunction({ task: TASK }),
+      fitnessAndNextSolutionsFunction: createFitnessAndNextSolutionsFunction({ task: { task: TASK }, maxBranching: BRANCHING }),
     }),
     threshold: THRESHOLD,
     maxNumIterations: ITERATIONS,
