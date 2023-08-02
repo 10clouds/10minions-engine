@@ -6,7 +6,6 @@ import { calculateTotalWeights } from '../utils/calculateTotalWeights';
 import { mutateAppendToLog } from './mutateAppendToLog';
 import { mutateStopExecution } from './mutateStopExecution';
 
-//TODO: mutateGenerateShortName(task);
 export function mutateRunTask<T extends TaskContext<T>>(task: T) {
   return new Promise<void>(async (resolve, reject) => {
     if (task.stopped) {
