@@ -16,6 +16,7 @@ export async function rateSolution(task: TaskDefinition, solutionWithMeta: Solut
         PROBLEM: task.task,
         SOLUTION: solutionWithMeta.solution,
         CRITERIA: shuffleArray(criteriaDefinition.slice())
+          .filter((c) => c.calculate === 'GPT')
           .map((c) => `${c.name} - Max of ${c.maxPoints}pts if ${c.maxPointsIf}`)
           .join('\n'),
       },
@@ -31,16 +32,31 @@ export async function rateSolution(task: TaskDefinition, solutionWithMeta: Solut
               criteria: z.string().describe('Name of the criteria'),
               reasoning: z.string().describe('Reasoning for the rating on this criteria'),
               rating: z.number().describe('Rating for the criteria'),
-            })
+            }),
           )
           .describe('Components of the final rating, from the CRITERIA section'),
       })
       .describe('Rating of the solution'),
   });
 
-  console.log(rawResult.result);
+  const results = [
+    ...criteriaDefinition
+      .filter((c) => c.calculate !== 'GPT')
+      .map((c) => {
+        return {
+          rating: c.calculate !== 'GPT' ? c.calculate(solutionWithMeta.solution) : 0,
+          criteria: c.name,
+          reasoning: '',
+        };
+      }),
+    ...rawResult.result.criteria,
+  ];
 
-  const criteria = rawResult.result.criteria;
-  const finalRating = sum(criteria.map((c) => c.rating as number));
-  return finalRating;
+  console.log('results', results);
+
+  const finalRating = sum(results.map((c) => c.rating as number));
+  return {
+    finalRating,
+    criteriaRatings: results,
+  };
 }

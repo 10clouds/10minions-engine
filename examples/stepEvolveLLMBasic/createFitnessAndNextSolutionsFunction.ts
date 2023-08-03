@@ -2,6 +2,7 @@ import { FitnessAndNextSolutionsFunction, SolutionWithMeta } from '../../src/ste
 import { createSolutionsFromFixes } from '../../src/stepEvolve/createSolutionsFromFixes';
 import { TaskDefinition } from './TaskDefinition';
 import { createFixesForSolution } from './createFixesForSolution';
+import { criteriaDefinition } from './criteriaDefinition';
 import { rateSolution } from './rateSolution';
 
 export function createFitnessAndNextSolutionsFunction({
@@ -12,10 +13,21 @@ export function createFitnessAndNextSolutionsFunction({
   maxBranching: number;
 }): FitnessAndNextSolutionsFunction<string> {
   const fitnessAndNextSolutionsFunction = async (solutionWithMeta: SolutionWithMeta<string>) => {
+    const { finalRating, criteriaRatings } = await rateSolution(task, solutionWithMeta);
+
+    const criteriaWithRatings = criteriaDefinition.map((c) => {
+      const criteriaRating = criteriaRatings.find((cr) => cr.criteria === c.name);
+      return {
+        ...c,
+        rating: criteriaRating?.rating ?? 0,
+        reasoning: criteriaRating?.reasoning ?? '',
+      };
+    });
+
     return {
-      fitness: await rateSolution(task, solutionWithMeta),
+      fitness: finalRating,
       nextPossibleSolutions: async (): Promise<SolutionWithMeta<string>[]> => {
-        const fixes = await createFixesForSolution(task, solutionWithMeta);
+        const fixes = await createFixesForSolution(task, solutionWithMeta, criteriaWithRatings);
 
         return createSolutionsFromFixes({
           solutionWithMeta,

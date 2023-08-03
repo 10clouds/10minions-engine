@@ -3,44 +3,72 @@ import { createFullPromptFromSections } from '../../src/gpt/createFullPromptFrom
 import { gptExecute } from '../../src/gpt/gptExecute';
 import { GPTMode } from '../../src/gpt/types';
 import { SolutionWithMeta } from '../../src/stepEvolve/FitnessFunction';
+import { getRandomElement } from '../../src/utils/random/getRandomElement';
 import { shuffleArray } from '../../src/utils/random/shuffleArray';
+import { Criterion } from './Criterion';
 import { TaskDefinition } from './TaskDefinition';
 import { createNewSolutionFix } from './fixCreateNewSolution';
 import { improveSolutionFix } from './fixImproveSolution';
-import { criteriaDefinition } from './criteriaDefinition';
-import { getRandomElement } from '../../src/utils/random/getRandomElement';
 
-export async function createFixesForSolution(task: TaskDefinition, solutionWithMeta: SolutionWithMeta<string>) {
-  const result = await gptExecute({
-    fullPrompt: createFullPromptFromSections({
-      intro: `You are a ${getRandomElement([
-        'CEO',
-        'Social Media Specialist',
-        'PR Specialist',
-        'LinkedIn specialist',
-      ])}. provide suggestions on how to improve the SOLUTION in order to maximize the judging CRITERIA.`,
-      sections: {
-        PROBLEM: task.task,
-        SOLUTION: solutionWithMeta.solution,
-        CRITERIA: shuffleArray(criteriaDefinition.slice())
-          .map((c) => `${c.name} - Max of ${c.maxPoints}pts if ${c.maxPointsIf}`)
-          .join('\n'),
-      },
-    }),
-    maxTokens: 500,
-    mode: GPTMode.FAST,
-    outputName: 'suggestions',
-    outputSchema: z
-      .object({
-        suggestions: z.array(z.string().describe('Suggestion to the user, what should be improved in order to maximize criteria.')).describe('Suggestions'),
-      })
-      .describe('Suggestions'),
-  });
+export async function createFixesForSolution(
+  task: TaskDefinition,
+  solutionWithMeta: SolutionWithMeta<string>,
+  criteriaWithRatings: (Criterion<string> & { rating: number; reasoning: string })[],
+) {
+  let averageCriteriaRating = 0;
+  if (criteriaWithRatings.length > 0) {
+    averageCriteriaRating = criteriaWithRatings.map((c) => c.rating).reduce((a, b) => a + b, 0) / criteriaWithRatings.length;
+  }
+
+  const criteriaWithBelowAverageRating = criteriaWithRatings.filter((c) => c.rating <= averageCriteriaRating);
+
+  const criteriaGPT = criteriaWithBelowAverageRating.filter((c) => c.suggestions === 'GPT');
+  const criteriaCalculate = criteriaWithBelowAverageRating.filter((c) => c.suggestions !== 'GPT');
+
+  const result =
+    criteriaGPT.length > 0
+      ? await gptExecute({
+          fullPrompt: createFullPromptFromSections({
+            intro: `You are a ${getRandomElement([
+              'CEO',
+              'Social Media Specialist',
+              'PR Specialist',
+              'LinkedIn specialist',
+            ])}. provide suggestions on how to improve the SOLUTION in order to maximize the judging CRITERIA.`,
+            sections: {
+              PROBLEM: task.task,
+              SOLUTION: solutionWithMeta.solution,
+              CRITERIA: shuffleArray(criteriaGPT.slice())
+                .map((c) => `${c.name} - Max of ${c.maxPoints}pts if ${c.maxPointsIf}`)
+                .join('\n'),
+            },
+          }),
+          maxTokens: 500,
+          mode: GPTMode.FAST,
+          outputName: 'suggestions',
+          outputSchema: z
+            .object({
+              suggestions: z
+                .array(z.string().describe('Suggestion to the user, what should be improved in order to maximize criteria.'))
+                .describe('Suggestions'),
+            })
+            .describe('Suggestions'),
+        })
+      : { result: { suggestions: [] } };
+
+  const allSuggestions = [
+    ...result.result.suggestions,
+    ...criteriaCalculate.map((c) => (c.suggestions !== 'GPT' ? c.suggestions(solutionWithMeta.solution) : [])).flat(),
+  ];
+
+  console.log('allSuggestions', allSuggestions);
 
   const fixes = [
     createNewSolutionFix(task),
-    ...result.result.suggestions.map((s) => improveSolutionFix({ task, solutionWithMeta, suggestions: s })),
-    improveSolutionFix({ task, solutionWithMeta, suggestions: result.result.suggestions.join('\n') }),
+    ...allSuggestions.map((s) => improveSolutionFix({ task, solutionWithMeta, suggestions: s })),
+    improveSolutionFix({ task, solutionWithMeta, suggestions: allSuggestions.join('\n') }),
+    improveSolutionFix({ task, solutionWithMeta, suggestions: allSuggestions.join('\n') }),
+    improveSolutionFix({ task, solutionWithMeta, suggestions: allSuggestions.join('\n') }),
   ];
 
   return fixes;

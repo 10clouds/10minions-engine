@@ -33,11 +33,16 @@ const BRANCHING = 1;
     observers: [
       {
         onInitialSolution: async (solutionWithMeta, iteration) => {
-          console.log('Initial solution is: ' + solutionWithMeta.solution + '.');
+          console.log('Initial solution is: ' + solutionWithMeta.solution + ' ' + solutionWithMeta.fitness + ' (' + solutionWithMeta.createdWith + ')' + '.');
         },
         onAccept: async (oldSolutionWithMeta, solutionWithMeta, iteration) => {
           console.log(
             'New best ' + iteration + ': ' + solutionWithMeta.solution + ' ' + solutionWithMeta.fitness + ' (' + solutionWithMeta.createdWith + ')' + '.',
+          );
+        },
+        onReject: async (oldSolutionWithMeta, solutionWithMeta, iteration) => {
+          console.log(
+            'Rejected ' + iteration + ': ' + solutionWithMeta.solution + ' ' + solutionWithMeta.fitness + ' (' + solutionWithMeta.createdWith + ')' + '.',
           );
         },
         onFinalSolution: async (solutionWithMeta, iteration) => {
