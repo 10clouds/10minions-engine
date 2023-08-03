@@ -9,27 +9,27 @@ export const criteriaDefinition: Criterion<string>[] = [
     suggestions: 'GPT',
   },
   {
-    name: 'Up to 600 characters',
-    maxPointsIf: 'The lengty of the post is between 500 and 600 characters',
+    name: '700-800 characters long',
+    maxPointsIf: 'The length of the post is between 700 and 800 characters',
     maxPoints: 20,
     calculate: (solution) => {
-      if (solution.length > 600) {
-        return 20 - (solution.length - 600) / 20;
+      if (solution.length > 800) {
+        return 20 - (solution.length - 800) / 20;
       }
 
-      if (solution.length < 500) {
-        return 20 - (500 - solution.length) / 20;
+      if (solution.length < 700) {
+        return 20 - (700 - solution.length) / 20;
       }
 
       return 20;
     },
     suggestions: (solution) => {
-      if (solution.length > 600) {
-        return ['Shorten the post (keep to maximum of 600 characters)'];
+      if (solution.length > 800) {
+        return ['Shorten the post (keep to maximum of 800 characters)'];
       }
 
-      if (solution.length < 500) {
-        return ['Make the post longer (to at least 500 characters total)'];
+      if (solution.length < 700) {
+        return ['Make the post longer (to at least 700 characters total)'];
       }
 
       return [];

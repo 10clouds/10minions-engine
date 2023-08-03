@@ -10,7 +10,7 @@ This example uses LLMs to write and improve on a linkedin post that meets given 
 
 const TASK =
   'Create a world class best official annoucement on linkedin by the CEO of 10Clouds that announces 10Clouds AI Labs. Output only post text, do not add any section markers or additional sections in your response.';
-const ITERATIONS = 10;
+const ITERATIONS = 50;
 const MAX_STALE_ITERATIONS = 3;
 const THRESHOLD = 120;
 const BRANCHING = 1;
@@ -20,30 +20,42 @@ const BRANCHING = 1;
 
   initCLISystems();
 
+  const initialSolutions = [];
+  for (let i = 0; i < 10; i++) {
+    initialSolutions.push(
+      await createSolutionWithMetaWithFitness({
+        solution: await createNewSolutionFix({ task: TASK })(),
+        createdWith: 'initial1',
+        parent: undefined,
+        fitnessAndNextSolutionsFunction: createFitnessAndNextSolutionsFunction({ task: { task: TASK }, maxBranching: BRANCHING }),
+      }),
+    );
+  }
+
   stepEvolve({
-    initialSolution: await createSolutionWithMetaWithFitness({
-      solution: await createNewSolutionFix({ task: TASK })(),
-      createdWith: 'initial',
-      parent: undefined,
-      fitnessAndNextSolutionsFunction: createFitnessAndNextSolutionsFunction({ task: { task: TASK }, maxBranching: BRANCHING }),
-    }),
+    initialSolutions,
     threshold: THRESHOLD,
     maxNumIterations: ITERATIONS,
     maxStaleIterations: MAX_STALE_ITERATIONS,
     observers: [
       {
-        onInitialSolution: async (solutionWithMeta, iteration) => {
-          console.log('Initial solution is: ' + solutionWithMeta.solution + ' ' + solutionWithMeta.fitness + ' (' + solutionWithMeta.createdWith + ')' + '.');
+        onInitialSolutions: async (solutionsWithMeta, iteration) => {
+          for (const solutionWithMeta of solutionsWithMeta) {
+            console.log('Initial solution is: ' + solutionWithMeta.solution + ' ' + solutionWithMeta.fitness + ' (' + solutionWithMeta.createdWith + ')' + '.');
+          }
         },
-        onAccept: async (oldSolutionWithMeta, solutionWithMeta, iteration) => {
+        onAccept: async (oldSolutionsWithMeta, solutionWithMeta, iteration) => {
           console.log(
             'New best ' + iteration + ': ' + solutionWithMeta.solution + ' ' + solutionWithMeta.fitness + ' (' + solutionWithMeta.createdWith + ')' + '.',
           );
         },
-        onReject: async (oldSolutionWithMeta, solutionWithMeta, iteration) => {
+        onReject: async (oldSolutionsWithMeta, solutionWithMeta, iteration) => {
           console.log(
             'Rejected ' + iteration + ': ' + solutionWithMeta.solution + ' ' + solutionWithMeta.fitness + ' (' + solutionWithMeta.createdWith + ')' + '.',
           );
+        },
+        onProgressMade: async (oldSolutionsWithMeta, iteration) => {
+          console.log('Solutions', oldSolutionsWithMeta.map((s) => s.solution).join(', '));
         },
         onFinalSolution: async (solutionWithMeta, iteration) => {
           console.log('Final solution is:');

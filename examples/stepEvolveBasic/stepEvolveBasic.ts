@@ -15,22 +15,32 @@ const THRESHOLD = -0.000932;
 (async () => {
   console.log(INTRO);
 
+  const initialSolutions = [];
+  for (let i = 0; i < 10; i++) {
+    initialSolutions.push(
+      await createSolutionWithMetaWithFitness({
+        solution: Math.random() * (RANGE_SEEK_END - RANGE_SEEK_START) + RANGE_SEEK_START,
+        createdWith: 'initial',
+        parent: undefined,
+        fitnessAndNextSolutionsFunction: createFitnessAndNextSolutionsFunction({ avoidThoseNumbers: [0, 5000, 10000] }),
+      }),
+    );
+  }
+
   stepEvolve({
-    initialSolution: await createSolutionWithMetaWithFitness({
-      solution: Math.random() * (RANGE_SEEK_END - RANGE_SEEK_START) + RANGE_SEEK_START,
-      createdWith: 'initial',
-      parent: undefined,
-      fitnessAndNextSolutionsFunction: createFitnessAndNextSolutionsFunction({ avoidThoseNumbers: [0, 5000, 10000] }),
-    }),
+    initialSolutions,
     threshold: THRESHOLD,
     maxNumIterations: ITERATIONS,
     maxStaleIterations: MAX_STALE_ITERATIONS,
     observers: [
       {
-        onInitialSolution: async (solutionWithMeta, iteration) => {
-          console.log('Initial solution is: ' + solutionWithMeta.solution + '.');
+        onInitialSolutions: async (solutionsWithMeta, iteration) => {
+          for (const solutionWithMeta of solutionsWithMeta) {
+            console.log('Initial solution is: ' + solutionWithMeta.solution + '.');
+          }
         },
-        onAccept: async (oldSolutionWithMeta, acceptedSolutionWithMeta, iteration) => {
+        onAccept: async (oldSolutionsWithMeta, acceptedSolutionWithMeta, iteration) => {
+          console.log(oldSolutionsWithMeta.map((s) => s.solution).join(', '));
           console.log(
             'New best ' +
               iteration +
