@@ -13,7 +13,7 @@ export interface TaskContext<T extends TaskContext<T>> {
   logContent: string;
 
   strategyId?: string;
-  //relevantKnowledge: string[];
+  //TODO: relevantKnowledge, when knowledge is implemented
 
   onChange: (importantChange: boolean) => Promise<void>;
   onErrorOrCancel?: (error: string) => void;

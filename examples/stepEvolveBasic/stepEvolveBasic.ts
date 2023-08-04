@@ -41,18 +41,9 @@ const THRESHOLD = -0.000932;
         },
         onAccept: async (oldSolutionsWithMeta, acceptedSolutionWithMeta, iteration) => {
           console.log(oldSolutionsWithMeta.map((s) => s.solution).join(', '));
-          console.log(
-            'New best ' +
-              iteration +
-              ': ' +
-              acceptedSolutionWithMeta.solution +
-              ' ' +
-              acceptedSolutionWithMeta.fitness +
-              ' (' +
-              acceptedSolutionWithMeta.createdWith +
-              ')' +
-              '.',
-          );
+
+          const { solution, fitness, createdWith } = acceptedSolutionWithMeta;
+          console.log('New best ' + iteration + ': ' + solution + ' ' + fitness + ' (' + createdWith + ')' + '.');
         },
         onFinalSolution: async (solutionWithMeta, iteration) => {
           console.log('The final solution is: ' + solutionWithMeta.solution + '.');

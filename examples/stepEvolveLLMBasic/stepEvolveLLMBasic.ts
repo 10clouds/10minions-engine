@@ -58,12 +58,14 @@ const BRANCHING = 1;
           console.log('Solutions', oldSolutionsWithMeta.map((s) => s.solution).join(', '));
         },
         onFinalSolution: async (solutionWithMeta, iteration) => {
+          const { fitness, solution, iteration: solutionIteration } = solutionWithMeta;
+
           console.log('Final solution is:');
           console.log('```');
-          console.log(solutionWithMeta.solution);
+          console.log(solution);
           console.log('```');
-          console.log('Fitness: ' + solutionWithMeta.fitness);
-          console.log('Iteration: ' + iteration + ' (Best solution found in iteration: ' + solutionWithMeta.iteration + ')');
+          console.log('Fitness: ' + fitness);
+          console.log('Iteration: ' + iteration + ' (Best solution found in iteration: ' + solutionIteration + ')');
         },
       },
     ],
