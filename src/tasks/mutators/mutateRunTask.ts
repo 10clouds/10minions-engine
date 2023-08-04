@@ -6,15 +6,14 @@ import { calculateTotalWeights } from '../utils/calculateTotalWeights';
 import { mutateAppendToLog } from './mutateAppendToLog';
 import { mutateStopExecution } from './mutateStopExecution';
 
-//TODO: mutateGenerateShortName(task);
 export function mutateRunTask<T extends TaskContext<T>>(task: T) {
   return new Promise<void>(async (resolve, reject) => {
     if (task.stopped) {
       return;
     }
 
-    task.resolveProgress = resolve;
-    task.rejectProgress = reject;
+    task.onSuccess = resolve;
+    task.onErrorOrCancel = reject;
     task.currentStageIndex = 0;
 
     try {
@@ -35,7 +34,7 @@ export function mutateRunTask<T extends TaskContext<T>>(task: T) {
         }, 0);
 
         task.progress = weigtsNextStepTotal / calculateTotalWeights(task);
-        task.onChanged(false);
+        task.onChange(false);
         task.currentStageIndex++;
       }
     } catch (error) {
@@ -44,9 +43,9 @@ export function mutateRunTask<T extends TaskContext<T>>(task: T) {
         console.error('Error in execution', error);
       }
 
-      mutateStopExecution(task, error instanceof Error ? `Error: ${error.message}` : String(error));
+      await mutateStopExecution(task, error instanceof Error ? `Error: ${error.message}` : String(error));
     } finally {
-      mutateStopExecution(task);
+      await mutateStopExecution(task);
 
       const executionTime = Date.now() - task.startTime;
       const formattedExecutionTime = calculateAndFormatExecutionTime(executionTime);

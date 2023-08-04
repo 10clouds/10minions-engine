@@ -6,11 +6,11 @@ import { mutateStopExecution } from '../../tasks/mutators/mutateStopExecution';
 import { mutateReportSmallProgress } from '../../tasks/mutators/mutateReportSmallProgress';
 
 export async function mutateCreateModificationProcedure(task: MinionTask) {
-  if (task.strategy === undefined) {
+  if (task.strategyId === undefined) {
     throw new Error('Classification is undefined');
   }
 
-  if (task.strategy === 'AnswerQuestion') {
+  if (task.strategyId === 'AnswerQuestion') {
     return;
   }
 

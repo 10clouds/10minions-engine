@@ -50,7 +50,7 @@ export function serializeMinionTask(minionTask: MinionTask): SerializedMinionTas
     modificationProcedure: minionTask.modificationProcedure,
     inlineMessage: minionTask.inlineMessage,
     executionStage: minionTask.executionStage,
-    strategy: minionTask.strategy === undefined ? null : minionTask.strategy,
+    strategy: minionTask.strategyId === undefined ? null : minionTask.strategyId,
     logContent: minionTask.logContent,
     contentWhenDismissed: minionTask.contentWhenDismissed,
     aplicationStatus: minionTask.aplicationStatus,

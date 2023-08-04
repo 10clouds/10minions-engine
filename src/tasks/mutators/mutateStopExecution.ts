@@ -9,11 +9,11 @@ export async function mutateStopExecution<T extends TaskContext<T>>(task: T, err
   task.stopped = true;
   task.executionStage = error ? error : FINISHED_STAGE_NAME;
 
-  if (task.rejectProgress && error) task.rejectProgress(error);
-  else if (task.resolveProgress) task.resolveProgress();
+  if (task.onErrorOrCancel && error) task.onErrorOrCancel(error);
+  else if (task.onSuccess) task.onSuccess();
 
-  task.rejectProgress = undefined;
-  task.resolveProgress = undefined;
+  task.onErrorOrCancel = undefined;
+  task.onSuccess = undefined;
 
-  await task.onChanged(important);
+  await task.onChange(important);
 }

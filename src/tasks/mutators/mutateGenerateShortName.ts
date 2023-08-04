@@ -12,7 +12,7 @@ export interface ShortNameContext {
 
 export async function mutateGenerateShortName<T extends TaskContext<T>>(task: TaskContext<T> & ShortNameContext) {
   task.shortName = '...';
-  task.onChanged(true);
+  task.onChange(true);
 
   const context = task.selectedText
     ? `
@@ -45,6 +45,6 @@ ${context}
   }).then(({ result, cost }) => {
     task.shortName = result || task.baseName;
     task.totalCost += cost;
-    task.onChanged(true);
+    task.onChange(true);
   });
 }

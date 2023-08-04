@@ -18,11 +18,11 @@ export async function mutatorApplyMinionTask(minionTask: MinionTask) {
 
   minionTask.executionStage = APPLYING_STAGE_NAME;
   minionTask.progress = 0;
-  await minionTask.onChanged(true);
+  await minionTask.onChange(true);
 
   const interval = setInterval(() => {
     minionTask.progress = minionTask.progress + (1 - minionTask.progress) * 0.3;
-    minionTask.onChanged(false);
+    minionTask.onChange(false);
   }, 100);
 
   try {
@@ -36,7 +36,7 @@ export async function mutatorApplyMinionTask(minionTask: MinionTask) {
       minionTask.executionStage = APPLIED_STAGE_NAME;
       minionTask.progress = 1;
 
-      minionTask.onChanged(true);
+      minionTask.onChange(true);
       getEditorManager().showErrorMessage(`Already applied.`);
 
       return;
@@ -69,7 +69,7 @@ export async function mutatorApplyMinionTask(minionTask: MinionTask) {
     minionTask.contentAfterApply = document.getText();
     minionTask.progress = 1;
     mutateAppendToLog(minionTask, `Applied modification as plain top comments\n\n`);
-    minionTask.onChanged(true);
+    minionTask.onChange(true);
     return;
   } finally {
     clearInterval(interval);
@@ -79,6 +79,6 @@ export async function mutatorApplyMinionTask(minionTask: MinionTask) {
   minionTask.contentAfterApply = document.getText();
   minionTask.progress = 1;
   mutateAppendToLog(minionTask, LOG_NO_FALLBACK_MARKER);
-  minionTask.onChanged(true);
+  minionTask.onChange(true);
   getEditorManager().showInformationMessage(`Modification applied successfully.`);
 }
