@@ -60,7 +60,8 @@ export async function gptExecute<OutputTypeSchema extends z.ZodType<any, any>>({
     throw new Error('OpenAI API key not found. Please set it in the settings.');
   }
 
-  const requestData: GPTRequestData = {
+  // TODO: upadte GPTRequestData type
+  const requestData: any = {
     model,
     messages: [
       {
@@ -79,14 +80,14 @@ export async function gptExecute<OutputTypeSchema extends z.ZodType<any, any>>({
             {
               name: outputName,
               description: outputSchema.description || 'Output',
-              parameters: zodToJsonSchema(outputSchema, 'parameters').definitions!.parameters,
+              parameters: zodToJsonSchema(outputSchema, 'parameters').definitions?.parameters,
             },
           ],
         }),
   };
 
   if (DEBUG_RESPONSES) {
-    console.log(requestData);
+    console.log('REQUEST DATA:', requestData);
   }
 
   const cachedResult = await getOpenAICacheManager().getCachedResult(requestData);

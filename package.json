@@ -8,7 +8,7 @@
   "scripts": {
     "compile": "rimraf dist/* && tsc",
     "lint": "eslint src --ext ts",
-    "prepareTest": "npx tsx ./tests/prepareTestFiles.ts",
+    "prepareTest": "npx tsx ./score/prepareTestFiles.ts",
     "test": "npx tsx ./tests/runTests.ts",
     "test-score": "npx tsx ./score/runScore.ts -c 3",
     "example-custom-task": "npx tsx ./examples/customTask.ts",
