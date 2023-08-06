@@ -15,5 +15,5 @@ export function mutateReportSmallProgress<T extends TaskContext<T>>(task: T, fra
   const totalPending = remainingProgress - currentProgress;
   const increment = totalPending * fractionOfBigTask;
   task.progress = task.progress + increment;
-  task.onChanged(false);
+  task.onChange(false);
 }
