@@ -19,8 +19,9 @@ import { mutateRunTask } from '../src/tasks/mutators/mutateRunTask';
 
 // main types
 
-import { initMinionTask } from './initTestMinionTask';
 import { TestDefinition, functionReturnTypeCheckSchema, gptAssertSchema, simpleStringFindSchema } from './types';
+import { countTokens } from '../src/gpt/countTokens';
+import { initMinionTask } from './initTestMinionTask';
 
 interface ScoringTestOptions extends OptionValues {
   iterations: number;
@@ -119,8 +120,11 @@ async function gptAssert({
   mode?: GPTMode;
   assertion: string;
 }) {
+  const fullPrompt = `Resulting code:\n${resultingCode}\n\nPlease analyse the resulting code and answer: does the resulting code passes this test: "${assertion}"\n\n`;
+  const maxTokens = countTokens(fullPrompt, GPTMode.FAST);
+
   const response = await gptExecute({
-    fullPrompt: `Original code:\n${originalCode}\n\nResulting code:\n${resultingCode}\n\nPlease analyse the resulting code and answer: does the resulting code passes this test: "${assertion}"\n\n`,
+    fullPrompt,
     maxTokens: 100,
     mode,
     outputName: 'reportTestResult',
@@ -141,13 +145,7 @@ async function gptAssert({
 }
 
 async function runTest({ fileName, iterations = defaultIternationsNumber }: { fileName: string; iterations?: number }): Promise<void> {
-  //TODO: fix this linter error
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const tests: TestDefinition[] = require(path.join(__dirname, 'score', fileName + '.tests.json'));
-  const statistics = {
-    total: 0,
-    passed: 0,
-  };
+  const tests: TestDefinition[] = JSON.parse(fs.readFileSync(path.join(__dirname, 'score', `${fileName}/tests.json`), 'utf8'));
 
   // Create a validator instance
   const validator = new Validator();
@@ -161,24 +159,29 @@ async function runTest({ fileName, iterations = defaultIternationsNumber }: { fi
       throw new Error(`Test validation failed for '${fileName}': ${validation.errors.join(', ')}`);
     }
   }
-  const userQuery = fs.readFileSync(path.join(__dirname, 'score', `${fileName}.userQuery.txt`), 'utf8');
+
+  const userQuery = fs.readFileSync(path.join(__dirname, 'score', `${fileName}/userQuery.txt`), 'utf8');
+
+  const statistics = {
+    total: 0,
+    passed: 0,
+  };
 
   logToFile(`Running test for '${fileName} (${iterations} iterations)'`);
+  console.log(`Running test for '${fileName} (${iterations} iterations)'`);
+  const directoryPath = path.resolve(__dirname, `score/${fileName}/temp.txt`);
+  const originalFileContent = fs.readFileSync(path.join(__dirname, 'score', `${fileName}/original.txt`), 'utf8');
 
   for (let i = 0; i < iterations; i++) {
     setupCLISystemsForTest();
-    const { execution } = await initMinionTask(userQuery, fileName);
-
-    await mutateRunTask(execution);
-    await mutatorApplyMinionTask(execution);
-
-    logToFile(`Iteration ${i + 1} of ${iterations}`);
-
-    await mutateRunTask(execution);
-    await mutatorApplyMinionTask(execution);
-
     logToFile(`Iteration ${i + 1} of ${iterations}`);
     console.log('ITERATION: ', i);
+    fs.writeFileSync(directoryPath, originalFileContent);
+
+    const { execution } = await initMinionTask(userQuery, fileName, 'temp.txt');
+
+    await mutateRunTask(execution);
+    await mutatorApplyMinionTask(execution);
 
     const resultingCode = (await execution.document()).getText();
 
@@ -198,7 +201,6 @@ async function runTest({ fileName, iterations = defaultIternationsNumber }: { fi
         logToFile(`Test failed: Fallback comment applied`);
       }
     }
-
     for (const test of tests) {
       statistics.total++;
 
@@ -210,7 +212,6 @@ async function runTest({ fileName, iterations = defaultIternationsNumber }: { fi
         });
         console.log('PASSES:', passessTest);
         console.log('COMMENT:', comment);
-
         if (!passessTest) {
           logToFile(`Test failed: ${test.assertion}`);
           logToFile(`Comment: ${comment}`);
@@ -242,6 +243,7 @@ async function runTest({ fileName, iterations = defaultIternationsNumber }: { fi
         }
       }
     }
+    fs.unlinkSync(directoryPath);
   }
 
   const score = ((100 * statistics.passed) / statistics.total).toFixed();
@@ -257,15 +259,9 @@ async function runScoring(options: ScoringTestOptions): Promise<void> {
   logToFile('\n\nRunning tests...\n\n');
 
   initCLISystems();
-  // this probably will be parametrized in the future
-  const TEST_FILE_POSTFIX = '.original.txt';
-  // Use glob to get all .original.txt file paths from the 'score' directory
-  const testBaseNames = glob
-    .sync(`**/${options.pattern}${TEST_FILE_POSTFIX}`, {
-      cwd: path.join(__dirname, 'score'),
-    })
-    // Remove the '.original.txt' postfix from the file names
-    .map((fileName) => fileName.slice(0, -TEST_FILE_POSTFIX.length));
+  const testBaseNames = glob.sync(`**/${options.pattern}`, {
+    cwd: path.join(__dirname, 'score'),
+  });
 
   console.log('Tests: ', testBaseNames);
   await mapLimit(

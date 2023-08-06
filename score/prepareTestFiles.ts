@@ -15,6 +15,9 @@ export interface TestRequiredData {
   modificationProcedure: string;
   modificationDescription: string;
   documentURI: string;
+  id: string;
+  pluginVersion: string;
+  vsCodeVersion: string;
 }
 
 enum TestType {
@@ -78,10 +81,23 @@ function createTestFile(content: string, fileName: string) {
   }
 }
 
+const createTestInfoFile = (testData: TestRequiredData, path: string) => {
+  const { id, pluginVersion, vsCodeVersion } = testData;
+  const testInfo = `
+    minionTaskId: ${id}
+    pluginVersion: ${pluginVersion}
+    vsCodeVersion: ${vsCodeVersion}
+    date of test: ${Date.now().toLocaleString()}
+  `;
+  createTestFile(testInfo, `${path}/test.info`);
+};
+
 const createScoreTestFiles = async (testData: TestRequiredData, config: TestConfig): Promise<void> => {
   const { selectedText, originalContent, userQuery } = testData;
   const languageFileExtension = TestLanguagesExtensions[config.language];
-  const testFileNamePrefix = `${SCORE_TEST_FILE_PATH}/${config.testName}.${languageFileExtension}.`;
+  const testDirPath = createTestsDirectory(config.testType, `${config.testName}.${languageFileExtension}`);
+  const testFileNamePrefix = `${testDirPath}/`;
+  createTestInfoFile(testData, testFileNamePrefix);
 
   if (config.withSelectedText) {
     createTestFile(selectedText, `${testFileNamePrefix}selectedText.txt`);

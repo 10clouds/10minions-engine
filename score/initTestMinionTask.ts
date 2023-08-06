@@ -3,8 +3,8 @@ import fs from 'fs';
 import { MinionTask } from '../src/minionTasks/MinionTask';
 import { getEditorManager } from '../src/managers/EditorManager';
 
-export const initMinionTask = async (userQuery: string, fileName: string) => {
-  const checkPath = path.join(__dirname, 'score', fileName + '.selectedText.txt'); // Path to the selectedText file
+export const initMinionTask = async (userQuery: string, fileName: string, originalCodeFile: string) => {
+  const checkPath = path.join(__dirname, 'score', `${fileName}/selectedText.txt`); // Path to the selectedText file
   const selectedTextExists = fs.existsSync(checkPath); // Check if selectedText file exists
   const readSelectedText = selectedTextExists ? fs.readFileSync(checkPath, 'utf8') : ''; // Read the selectedText file if it exists, else "".
 
@@ -22,7 +22,7 @@ export const initMinionTask = async (userQuery: string, fileName: string) => {
   }
   const execution = await MinionTask.create({
     userQuery,
-    document: await getEditorManager().openTextDocument(getEditorManager().createUri(path.join(__dirname, 'score', `${fileName}.original.txt`))),
+    document: await getEditorManager().openTextDocument(getEditorManager().createUri(path.join(__dirname, 'score', `${fileName}/${originalCodeFile}`))),
     // Use dynamically calculated 'start' and 'end'
     selection: { start, end },
     selectedText: readSelectedText,

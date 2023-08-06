@@ -1,17 +1,23 @@
 import z from 'zod';
 import { GPTMode } from '../src/gpt/types';
 
-export type GPT_ASSERT = 'gptAssert';
-export type SIMPLE_STRING_FIND = 'simpleStringFind';
-export type FUNCTION_RETURN_TYPE_CHECK = 'functionReturnTypeCheck';
+export const GPT_ASSERT = 'gptAssert';
+export const SIMPLE_STRING_FIND = 'simpleStringFind';
+export const FUNCTION_RETURN_TYPE_CHECK = 'functionReturnTypeCheck';
 
-type TestDefinitionType = GPT_ASSERT | SIMPLE_STRING_FIND | FUNCTION_RETURN_TYPE_CHECK;
+export type GPT_ASSERT_TYPE = typeof GPT_ASSERT;
+export type SIMPLE_STRING_FIND_TYPE = typeof SIMPLE_STRING_FIND;
+export type FUNCTION_RETURN_TYPE_CHECK_TYPE = typeof FUNCTION_RETURN_TYPE_CHECK;
+
+type TestDefinitionType = typeof GPT_ASSERT | typeof SIMPLE_STRING_FIND | typeof FUNCTION_RETURN_TYPE_CHECK;
+
+export const listOfTypes = [GPT_ASSERT, SIMPLE_STRING_FIND, FUNCTION_RETURN_TYPE_CHECK];
 
 export type TestDefinition =
-  | { type: GPT_ASSERT; mode: GPTMode; assertion: string }
-  | { type: SIMPLE_STRING_FIND; stringToFind: string }
+  | { type: GPT_ASSERT_TYPE; mode: GPTMode; assertion: string }
+  | { type: SIMPLE_STRING_FIND_TYPE; stringToFind: string }
   | {
-      type: FUNCTION_RETURN_TYPE_CHECK;
+      type: FUNCTION_RETURN_TYPE_CHECK_TYPE;
       functionName: string;
       expectedType: string;
     };
