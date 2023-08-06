@@ -18,20 +18,10 @@ import { format as dtFormat } from 'date-and-time';
 import { mutateRunTask } from '../src/tasks/mutators/mutateRunTask';
 
 // main types
-type GPT_ASSERT = 'gptAssert';
-type SIMPLE_STRING_FIND = 'simpleStringFind';
-type FUNCTION_RETURN_TYPE_CHECK = 'functionReturnTypeCheck';
 
-type TestDefinitionType = GPT_ASSERT | SIMPLE_STRING_FIND | FUNCTION_RETURN_TYPE_CHECK;
-
-export type TestDefinition =
-  | { type: GPT_ASSERT; mode: GPTMode; assertion: string }
-  | { type: SIMPLE_STRING_FIND; stringToFind: string }
-  | {
-      type: FUNCTION_RETURN_TYPE_CHECK;
-      functionName: string;
-      expectedType: string;
-    };
+import { TestDefinition, functionReturnTypeCheckSchema, gptAssertSchema, simpleStringFindSchema } from './types';
+import { countTokens } from '../src/gpt/countTokens';
+import { initMinionTask } from './initTestMinionTask';
 
 interface ScoringTestOptions extends OptionValues {
   iterations: number;
@@ -39,51 +29,12 @@ interface ScoringTestOptions extends OptionValues {
   concurrency: number;
 }
 
-interface BaseSchema {
-  properties: {
-    type: { type: 'string'; pattern: TestDefinitionType };
-    mode?: { type: 'string' };
-    assertion?: { type: 'string' };
-    stringToFind?: { type: 'string' };
-    functionName?: { type: 'string' };
-    expectedType?: { type: 'string' };
-  };
-  required: ('type' | 'mode' | 'assertion' | 'stringToFind' | 'functionName' | 'expectedType')[];
-}
-
-// consts
-const TEST_FILE_POSTFIX = '.original.txt';
-
-const gptAssertSchema: BaseSchema = {
-  properties: {
-    type: { type: 'string', pattern: 'gptAssert' },
-    mode: { type: 'string' },
-    assertion: { type: 'string' },
-  },
-  required: ['type', 'mode', 'assertion'],
-};
-
-const simpleStringFindSchema: BaseSchema = {
-  properties: {
-    type: { type: 'string', pattern: 'simpleStringFind' },
-    stringToFind: { type: 'string' },
-  },
-  required: ['type', 'stringToFind'],
-};
-
-const functionReturnTypeCheckSchema: BaseSchema = {
-  properties: {
-    type: { type: 'string', pattern: 'functionReturnTypeCheck' },
-    functionName: { type: 'string' },
-    expectedType: { type: 'string' },
-  },
-  required: ['type', 'functionName', 'expectedType'],
-};
-
-const TestDefinitionSchema = {
+export const TestDefinitionSchema = {
   id: '/TestDefinition',
   oneOf: [gptAssertSchema, simpleStringFindSchema, functionReturnTypeCheckSchema],
 };
+
+const defaultIternationsNumber = 10;
 
 async function checkFunctionReturnType({ code, functionName }: { code: string; functionName: string }): Promise<string> {
   try {
@@ -169,8 +120,11 @@ async function gptAssert({
   mode?: GPTMode;
   assertion: string;
 }) {
+  const fullPrompt = `Resulting code:\n${resultingCode}\n\nPlease analyse the resulting code and answer: does the resulting code passes this test: "${assertion}"\n\n`;
+  const maxTokens = countTokens(fullPrompt, GPTMode.FAST);
+
   const response = await gptExecute({
-    fullPrompt: `Original code:\n${originalCode}\n\nResulting code:\n${resultingCode}\n\nPlease analyse the resulting code and answer: does the resulting code passes this test: "${assertion}"\n\n`,
+    fullPrompt,
     maxTokens: 100,
     mode,
     outputName: 'reportTestResult',
@@ -190,8 +144,8 @@ async function gptAssert({
   };
 }
 
-async function runTest({ fileName, iterations }: { fileName: string; iterations: number }): Promise<void> {
-  const tests: TestDefinition[] = JSON.parse(fs.readFileSync(path.join(__dirname, 'score', `${fileName}.tests.json`), 'utf8'));
+async function runTest({ fileName, iterations = defaultIternationsNumber }: { fileName: string; iterations?: number }): Promise<void> {
+  const tests: TestDefinition[] = JSON.parse(fs.readFileSync(path.join(__dirname, 'score', `${fileName}/tests.json`), 'utf8'));
 
   // Create a validator instance
   const validator = new Validator();
@@ -205,7 +159,8 @@ async function runTest({ fileName, iterations }: { fileName: string; iterations:
       throw new Error(`Test validation failed for '${fileName}': ${validation.errors.join(', ')}`);
     }
   }
-  const userQuery = fs.readFileSync(path.join(__dirname, 'score', `${fileName}.userQuery.txt`), 'utf8');
+
+  const userQuery = fs.readFileSync(path.join(__dirname, 'score', `${fileName}/userQuery.txt`), 'utf8');
 
   const statistics = {
     total: 0,
@@ -213,47 +168,22 @@ async function runTest({ fileName, iterations }: { fileName: string; iterations:
   };
 
   logToFile(`Running test for '${fileName} (${iterations} iterations)'`);
+  console.log(`Running test for '${fileName} (${iterations} iterations)'`);
+  const directoryPath = path.resolve(__dirname, `score/${fileName}/temp.txt`);
+  const originalFileContent = fs.readFileSync(path.join(__dirname, 'score', `${fileName}/original.txt`), 'utf8');
 
   for (let i = 0; i < iterations; i++) {
     setupCLISystemsForTest();
-
     logToFile(`Iteration ${i + 1} of ${iterations}`);
+    console.log('ITERATION: ', i);
+    fs.writeFileSync(directoryPath, originalFileContent);
 
-    const checkPath = path.join(__dirname, 'score', fileName + '.selectedText.txt'); // Path to the selectedText file
-    const selectedTextExists = fs.existsSync(checkPath); // Check if selectedText file exists
-    const readSelectedText = selectedTextExists ? fs.readFileSync(checkPath, 'utf8') : ''; // Read the selectedText file if it exists, else "".
+    const { execution } = await initMinionTask(userQuery, fileName, 'temp.txt');
 
-    let start = { line: 0, character: 0 };
-    let end = { line: 0, character: 0 };
-
-    if (readSelectedText !== '') {
-      const startIndex = userQuery.indexOf(readSelectedText);
-      const endIndex = startIndex + readSelectedText.length;
-
-      // For simplicity, we're considering flat characters indices in file
-      // A more advanced implementation would consider \n character to split lines
-      start = { line: startIndex, character: 0 };
-      end = { line: endIndex, character: 0 };
-    }
-
-    const execution = await MinionTask.create({
-      userQuery,
-      document: await getEditorManager().openTextDocument(getEditorManager().createUri(path.join(__dirname, 'score', fileName) + '.original.txt')),
-
-      // Use dynamically calculated 'start' and 'end'
-      selection: { start, end },
-
-      selectedText: readSelectedText,
-      minionIndex: 0,
-      onChanged: async () => {},
-    });
     await mutateRunTask(execution);
     await mutatorApplyMinionTask(execution);
 
     const resultingCode = (await execution.document()).getText();
-
-    logToFile('File contents');
-    logToFile(resultingCode);
 
     statistics.total++;
     const includesNormalModification = execution.logContent.includes(LOG_NORMAL_MODIFICATION_MARKER);
@@ -271,7 +201,6 @@ async function runTest({ fileName, iterations }: { fileName: string; iterations:
         logToFile(`Test failed: Fallback comment applied`);
       }
     }
-
     for (const test of tests) {
       statistics.total++;
 
@@ -281,7 +210,8 @@ async function runTest({ fileName, iterations }: { fileName: string; iterations:
           resultingCode,
           assertion: test.assertion,
         });
-
+        console.log('PASSES:', passessTest);
+        console.log('COMMENT:', comment);
         if (!passessTest) {
           logToFile(`Test failed: ${test.assertion}`);
           logToFile(`Comment: ${comment}`);
@@ -313,6 +243,7 @@ async function runTest({ fileName, iterations }: { fileName: string; iterations:
         }
       }
     }
+    fs.unlinkSync(directoryPath);
   }
 
   const score = ((100 * statistics.passed) / statistics.total).toFixed();
@@ -328,16 +259,11 @@ async function runScoring(options: ScoringTestOptions): Promise<void> {
   logToFile('\n\nRunning tests...\n\n');
 
   initCLISystems();
-  // this probably will be parametrized in the future
+  const testBaseNames = glob.sync(`**/${options.pattern}`, {
+    cwd: path.join(__dirname, 'score'),
+  });
 
-  // Use glob to get all .original.txt file paths from the 'score' directory
-  const testBaseNames = glob
-    .sync(`**/${options.pattern}${TEST_FILE_POSTFIX}`, {
-      cwd: path.join(__dirname, 'score'),
-    })
-    // Remove the '.original.txt' postfix from the file names
-    .map((fileName) => fileName.slice(0, -TEST_FILE_POSTFIX.length));
-
+  console.log('Tests: ', testBaseNames);
   await mapLimit(
     testBaseNames.map((fileName) => ({
       fileName,
