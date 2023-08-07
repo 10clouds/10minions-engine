@@ -15,6 +15,8 @@ export class CustomTask implements TaskContext<CustomTask> {
   logContent: string;
   onErrorOrCancel?: ((error: string) => void) | undefined;
   onSuccess?: (() => void) | undefined;
+  strategyId?: string | undefined;
+  relevantKnowledgeIds?: string[];
 
   //custom
   userInput: string;
@@ -62,4 +64,5 @@ export class CustomTask implements TaskContext<CustomTask> {
     this.onErrorOrCancel = rejectTask;
     this.onSuccess = resolveTask;
   }
+  
 }
