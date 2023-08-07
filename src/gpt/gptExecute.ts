@@ -1,14 +1,14 @@
-import { z } from 'zod';
 import fetch from 'node-fetch';
+import { z } from 'zod';
+import zodToJsonSchema from 'zod-to-json-schema';
 import { DEBUG_RESPONSES } from '../const';
 import { getAnalyticsManager } from '../managers/AnalyticsManager';
 import { getOpenAICacheManager } from '../managers/OpenAICacheManager';
-import { GPTModel, GPTMode, GPTExecuteRequestData as GPTRequestData, MODEL_DATA } from './types';
+import { isZodString } from '../utils/isZodString';
+import { calculateCosts } from './calculateCosts';
 import { ensureICanRunThis } from './ensureIcanRunThis';
 import { processOpenAIResponseStream } from './processOpenAIResponseStream';
-import { calculateCosts } from './calculateCosts';
-import zodToJsonSchema from 'zod-to-json-schema';
-import { isZodString } from '../utils/isZodString';
+import { GPTMode, GPTModel, GPTExecuteRequestData, MODEL_DATA, GPTExecuteRequestMessage } from './types';
 
 let openAIApiKey: string | undefined;
 
@@ -27,7 +27,7 @@ export async function gptExecute<OutputTypeSchema extends z.ZodType<any, any>>({
   outputSchema,
   outputName = 'output',
 }: {
-  fullPrompt: string;
+  fullPrompt: string | Array<GPTExecuteRequestMessage>;
   onChunk?: (chunk: string) => Promise<void>;
   isCancelled?: () => boolean;
   maxTokens?: number;
@@ -42,10 +42,13 @@ export async function gptExecute<OutputTypeSchema extends z.ZodType<any, any>>({
 }> {
   let model: GPTModel = 'gpt-4-0613';
 
+  const messages: GPTExecuteRequestMessage[] = Array.isArray(fullPrompt) ? fullPrompt : [{ role: 'user', content: fullPrompt }];
+  const messagesAsString = JSON.stringify(messages);
+
   if (mode === GPTMode.FAST) {
     model = 'gpt-3.5-turbo-16k-0613';
 
-    const usedTokens = MODEL_DATA[model].encode(fullPrompt).length + maxTokens;
+    const usedTokens = MODEL_DATA[model].encode(messagesAsString).length + maxTokens;
 
     if (usedTokens < MODEL_DATA['gpt-3.5-turbo-0613'].maxTokens) {
       model = 'gpt-3.5-turbo-0613';
@@ -60,14 +63,9 @@ export async function gptExecute<OutputTypeSchema extends z.ZodType<any, any>>({
     throw new Error('OpenAI API key not found. Please set it in the settings.');
   }
 
-  const requestData: GPTRequestData = {
+  const requestData: GPTExecuteRequestData = {
     model,
-    messages: [
-      {
-        role: 'user',
-        content: fullPrompt,
-      },
-    ],
+    messages,
     max_tokens: maxTokens,
     temperature,
     stream: true,
