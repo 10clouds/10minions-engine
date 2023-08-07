@@ -8,7 +8,7 @@ import { isZodString } from '../utils/isZodString';
 import { calculateCosts } from './calculateCosts';
 import { ensureICanRunThis } from './ensureIcanRunThis';
 import { processOpenAIResponseStream } from './processOpenAIResponseStream';
-import { GPTMode, GPTModel, GPTExecuteRequestData, MODEL_DATA, GPTExecuteRequestMessage } from './types';
+import { GPTExecuteRequestData, GPTExecuteRequestMessage, GPTExecuteRequestPrompt, GPTMode, GPTModel, MODEL_DATA } from './types';
 
 let openAIApiKey: string | undefined;
 
@@ -27,7 +27,7 @@ export async function gptExecute<OutputTypeSchema extends z.ZodType<any, any>>({
   outputSchema,
   outputName = 'output',
 }: {
-  fullPrompt: string | Array<GPTExecuteRequestMessage>;
+  fullPrompt: GPTExecuteRequestPrompt;
   onChunk?: (chunk: string) => Promise<void>;
   isCancelled?: () => boolean;
   maxTokens?: number;

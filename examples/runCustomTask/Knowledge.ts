@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const knowledgeSchema = z.object({
-  name: z.string(),
+  id: z.string(),
   description: z.string(),
   content: z.string(),
 });

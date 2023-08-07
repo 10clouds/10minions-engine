@@ -18,6 +18,7 @@ export type FunctionDef = {
 
 export type GPTExecuteRequestData = CreateChatCompletionRequest;
 export type GPTExecuteRequestMessage = ChatCompletionRequestMessage;
+export type GPTExecuteRequestPrompt = string | GPTExecuteRequestMessage[];
 
 export type ModelData = {
   [key in GPTModel]: {

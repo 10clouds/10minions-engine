@@ -1,4 +1,4 @@
-import { Knowledge } from '../tasks/Knowledge';
+import { Knowledge } from '../../examples/runCustomTask/Knowledge';
 import { Stage } from '../tasks/Stage';
 import { Strategy } from '../tasks/Strategy';
 import { TaskContext } from '../tasks/TaskContext';
