@@ -1,3 +1,4 @@
+import { GPTMode } from '../gpt/types';
 import { Stage } from './Stage';
 
 export interface TaskContext<T extends TaskContext<T>> {
@@ -13,7 +14,7 @@ export interface TaskContext<T extends TaskContext<T>> {
   logContent: string;
 
   strategyId?: string;
-  //TODO: relevantKnowledge, when knowledge is implemented
+  relevantKnowledgeIds: string[];
 
   onChange: (importantChange: boolean) => Promise<void>;
   onErrorOrCancel?: (error: string) => void;

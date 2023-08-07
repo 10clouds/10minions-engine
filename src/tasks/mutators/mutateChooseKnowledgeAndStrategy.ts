@@ -1,15 +1,15 @@
 import { z } from 'zod';
 import { Knowledge } from '../../../examples/runCustomTask/Knowledge';
 import { DEBUG_PROMPTS } from '../../const';
-import { GPTExecuteRequestMessage, GPTExecuteRequestPrompt, GPTMode, MODEL_DATA, MODEL_NAMES } from '../../gpt/types';
+import { getModel } from '../../gpt/getModel';
+import { GPTExecuteRequestMessage, GPTMode, MODEL_DATA } from '../../gpt/types';
 import { shuffleArray } from '../../utils/random/shuffleArray';
+import { formatPrompt } from '../../utils/string/formatPrompt';
 import { Strategy } from '../Strategy';
 import { TaskContext } from '../TaskContext';
 import { mutateAppendSectionToLog } from './mutateAppendSectionToLog';
 import { mutateAppendToLog } from './mutateAppendToLog';
 import { mutateGPTExecute } from './mutateGPTExecute';
-import { getModel } from '../../gpt/getModel';
-import { formatPrompt } from '../../utils/string/formatPrompt';
 
 export async function mutateChooseKnowledgeAndStrategy<T extends TaskContext<T>>({
   task,
@@ -52,11 +52,6 @@ export async function mutateChooseKnowledgeAndStrategy<T extends TaskContext<T>>
 
         ${shuffleArray(availableKnowledge.map((c) => `* ${c.id} - ${c.description}`)).join('\n')}
 
-        3. Choose one of the modes: 'FAST' or 'QUALITY'.
-
-        Choose 'QUALITY' if the command requires precise analysis or reasoning.
-        Choose 'FAST' for simple tasks that have some leeway in terms of accuracy, like summarisation or creative writing.
-
         Do not perform the actual command, revise the result or generate any code.
       `),
     },
@@ -83,11 +78,10 @@ export async function mutateChooseKnowledgeAndStrategy<T extends TaskContext<T>>
     outputName: 'choose',
     outputSchema: z
       .object({
-        relevantMaterials: z.array(z.string()),
+        neededKnowledge: z.array(z.enum([availableKnowledge[0].id, ...availableKnowledge.slice(1).map((s) => s.id)])),
         strategy: z.enum([availableStrategies[0].id, ...availableStrategies.slice(1).map((s) => s.id)]),
-        mode: z.enum([GPTMode.FAST, GPTMode.QUALITY]),
       })
-      .describe('Choose appropriate materials, strategy and mode for the task'),
+      .describe('Choose needed knowledge and strategy for the task'),
   });
 
   mutateAppendToLog(task, '\n\n');
@@ -99,7 +93,8 @@ export async function mutateChooseKnowledgeAndStrategy<T extends TaskContext<T>>
     throw new Error(`Could not find strategy in the text: ${result}`);
   }
 
-  task.strategyId = matchingStrategies[0].id;
+  task.strategyId = matchingStrategies[0].id; //TODO: Error checking
+  task.relevantKnowledgeIds = result.neededKnowledge; //TODO: Error checking
 
   task.currentStageIndex = task.stages.length - 1;
   task.stages = [...task.stages, ...matchingStrategies[0].stages];
