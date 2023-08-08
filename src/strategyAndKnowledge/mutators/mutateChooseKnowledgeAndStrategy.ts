@@ -1,17 +1,19 @@
 import { z } from 'zod';
-import { Knowledge } from '../../../examples/runCustomTask/Knowledge';
+import { Knowledge } from '../Knowledge';
 import { DEBUG_PROMPTS } from '../../const';
 import { getModel } from '../../gpt/getModel';
 import { GPTExecuteRequestMessage, GPTMode, MODEL_DATA } from '../../gpt/types';
 import { shuffleArray } from '../../utils/random/shuffleArray';
 import { formatPrompt } from '../../utils/string/formatPrompt';
 import { Strategy } from '../Strategy';
-import { TaskContext } from '../TaskContext';
-import { mutateAppendSectionToLog } from './mutateAppendSectionToLog';
-import { mutateAppendToLog } from './mutateAppendToLog';
-import { mutateGPTExecute } from './mutateGPTExecute';
+import { TaskContext } from '../../tasks/TaskContext';
+import { mutateAppendSectionToLog } from '../../tasks/mutators/mutateAppendSectionToLog';
+import { mutateAppendToLog } from '../../tasks/mutators/mutateAppendToLog';
+import { taskGPTExecute } from '../../tasks/mutators/taskGPTExecute';
+import { StrategyContext } from '../StrategyContext';
+import { KnowledgeContext } from '../KnowledgeContext';
 
-export async function mutateChooseKnowledgeAndStrategy<T extends TaskContext<T>>({
+export async function mutateChooseKnowledgeAndStrategy<T extends TaskContext<T> & StrategyContext<T> & KnowledgeContext<T>>({
   task,
   originalCommand,
   originalResult,
@@ -71,7 +73,7 @@ export async function mutateChooseKnowledgeAndStrategy<T extends TaskContext<T>>
     mutateAppendToLog(task, '<<<< EXECUTION >>>>\n\n');
   }
 
-  const result = await mutateGPTExecute(task, {
+  const result = await taskGPTExecute(task, {
     fullPrompt: promptWithContext,
     mode,
     maxTokens: 100,

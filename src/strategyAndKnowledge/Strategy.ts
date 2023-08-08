@@ -1,5 +1,5 @@
-import { Stage } from './Stage';
-import { TaskContext } from './TaskContext';
+import { Stage } from '../tasks/Stage';
+import { TaskContext } from '../tasks/TaskContext';
 
 export type Strategy<T extends TaskContext<T>> = {
   id: string;

@@ -1,6 +1,6 @@
 import { Stage } from '../tasks/Stage';
-import { Strategy } from '../tasks/Strategy';
-import { mutateStageChooseStrategy } from '../tasks/mutators/mutateStageChooseStrategy';
+import { Strategy } from '../strategyAndKnowledge/Strategy';
+import { mutateStageChooseStrategy } from '../strategyAndKnowledge/mutators/mutateStageChooseStrategy';
 import { mutateStageFinishing } from '../tasks/mutators/mutateStageFinishing';
 import { MinionTask } from './MinionTask';
 import { createChooseStrategyPrompt } from './createChooseStrategyPrompt';

@@ -1,9 +1,9 @@
 import { GPTMode } from '../gpt/types';
 import { Stage } from './Stage';
 
-export interface TaskContext<T extends TaskContext<T>> {
+export interface TaskContext<TC extends TaskContext<TC>> {
   id: string;
-  stages: Stage<T>[];
+  stages: Stage<TC>[];
   totalCost: number;
   stopped: boolean;
   currentStageIndex: number;
@@ -12,9 +12,6 @@ export interface TaskContext<T extends TaskContext<T>> {
   progress: number;
   startTime: number;
   logContent: string;
-
-  strategyId?: string;
-  relevantKnowledgeIds?: string[];
 
   onChange: (importantChange: boolean) => Promise<void>;
   onErrorOrCancel?: (error: string) => void;

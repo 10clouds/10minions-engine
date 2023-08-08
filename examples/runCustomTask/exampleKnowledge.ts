@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs';
-import { Knowledge } from './Knowledge';
+import { Knowledge } from '../../src/strategyAndKnowledge/Knowledge';
 
 export const EXAMPLE_KNOWLEDGE: Knowledge[] = [
   {

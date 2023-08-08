@@ -2,7 +2,7 @@ import { Stage } from '../../src/tasks/Stage';
 import { mutateAppendToLog } from '../../src/tasks/mutators/mutateAppendToLog';
 import { CUSTOM_STRATEGIES } from './strategies';
 import { CustomTask } from './CustomTask';
-import { mutateChooseKnowledgeAndStrategy } from '../../src/tasks/mutators/mutateChooseKnowledgeAndStrategy';
+import { mutateChooseKnowledgeAndStrategy } from '../../src/strategyAndKnowledge/mutators/mutateChooseKnowledgeAndStrategy';
 import { EXAMPLE_KNOWLEDGE } from './exampleKnowledge';
 
 export const CUSTOM_PRE_STAGES: Stage<CustomTask>[] = [

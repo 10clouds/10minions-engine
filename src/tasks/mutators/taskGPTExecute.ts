@@ -7,7 +7,7 @@ import { TaskContext } from '../TaskContext';
 import { mutateAppendToLog } from './mutateAppendToLog';
 import { mutateReportSmallProgress } from './mutateReportSmallProgress';
 
-export async function mutateGPTExecute<T extends TaskContext<T>, OutputTypeSchema extends z.ZodType<any, any>>(
+export async function taskGPTExecute<T extends TaskContext<T>, OutputTypeSchema extends z.ZodType<any, any>>(
   task: T,
   {
     fullPrompt,

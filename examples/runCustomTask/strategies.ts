@@ -1,8 +1,8 @@
-import { Strategy } from '../../src/tasks/Strategy';
+import { Strategy } from '../../src/strategyAndKnowledge/Strategy';
 import { mutateAppendToLog } from '../../src/tasks/mutators/mutateAppendToLog';
 import { CustomTask } from './CustomTask';
 import { EXAMPLE_KNOWLEDGE } from './exampleKnowledge';
-import { mutateCreateCustomAnswer } from './mutateCreateCustomAnswer';
+import { mutateCreateSimpleAnswer } from '../../src/strategyAndKnowledge/mutators/mutateCreateSimpleAnswer';
 
 export const CUSTOM_STRATEGIES: Strategy<CustomTask>[] = [
   {
@@ -14,7 +14,13 @@ export const CUSTOM_STRATEGIES: Strategy<CustomTask>[] = [
         weight: 100,
         execution: async function (this, task) {
           mutateAppendToLog(task, this.name + '\n');
-          await mutateCreateCustomAnswer(task, 'Answer to this in Polish language', EXAMPLE_KNOWLEDGE);
+          await mutateCreateSimpleAnswer({
+            task,
+            prePrompt: 'Answer to this in Polish language',
+            inputField: 'userInput',
+            outputField: 'answer',
+            availableKnowledge: EXAMPLE_KNOWLEDGE,
+          });
         },
       },
     ],
@@ -28,7 +34,13 @@ export const CUSTOM_STRATEGIES: Strategy<CustomTask>[] = [
         weight: 100,
         execution: async function (this, task) {
           mutateAppendToLog(task, this.name + '\n');
-          await mutateCreateCustomAnswer(task, 'Answer to this with a poem', EXAMPLE_KNOWLEDGE);
+          await mutateCreateSimpleAnswer({
+            task,
+            prePrompt: 'Answer to this with a poem',
+            inputField: 'userInput',
+            outputField: 'answer',
+            availableKnowledge: EXAMPLE_KNOWLEDGE,
+          });
         },
       },
     ],
@@ -42,7 +54,13 @@ export const CUSTOM_STRATEGIES: Strategy<CustomTask>[] = [
         weight: 100,
         execution: async function (this, task) {
           mutateAppendToLog(task, this.name + '\n');
-          await mutateCreateCustomAnswer(task, 'Answer to this as Javascript code', EXAMPLE_KNOWLEDGE);
+          await mutateCreateSimpleAnswer({
+            task,
+            prePrompt: 'Answer to this as Javascript code',
+            inputField: 'userInput',
+            outputField: 'answer',
+            availableKnowledge: EXAMPLE_KNOWLEDGE,
+          });
         },
       },
     ],

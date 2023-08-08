@@ -1,8 +1,10 @@
 import { Stage } from '../../src/tasks/Stage';
 import { TaskContext } from '../../src/tasks/TaskContext';
+import { KnowledgeContext } from '../../src/strategyAndKnowledge/KnowledgeContext';
+import { StrategyContext } from '../../src/strategyAndKnowledge/StrategyContext';
 import { CUSTOM_PRE_STAGES } from './stages';
 
-export class CustomTask implements TaskContext<CustomTask> {
+export class CustomTask implements TaskContext<CustomTask>, StrategyContext<CustomTask>, KnowledgeContext<CustomTask> {
   id: string;
   stages: Stage<CustomTask>[];
   totalCost: number;
@@ -15,8 +17,8 @@ export class CustomTask implements TaskContext<CustomTask> {
   logContent: string;
   onErrorOrCancel?: ((error: string) => void) | undefined;
   onSuccess?: (() => void) | undefined;
-  strategyId?: string | undefined;
-  relevantKnowledgeIds?: string[];
+  strategyId = '';
+  relevantKnowledgeIds: string[] = [];
 
   //custom
   userInput: string;
