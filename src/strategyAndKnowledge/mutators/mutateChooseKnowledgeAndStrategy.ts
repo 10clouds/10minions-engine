@@ -40,7 +40,7 @@ export async function mutateChooseKnowledgeAndStrategy<T extends TaskContext<T> 
 
         1. Establish the strategy to execute the command, it can be one of the following values:
 
-        ${shuffleArray(availableStrategies.map((c) => `* ${c.id} - ${c.description}`)).join('\n')}
+        ${shuffleArray(availableStrategies.map((c) => `* ${c.id} - ${c.description}`)).join('\n        ')}
 
         2. Figure out and provide a list of materials that are needed to execute the command, and output the sum of tokens for it.
 
@@ -52,7 +52,7 @@ export async function mutateChooseKnowledgeAndStrategy<T extends TaskContext<T> 
 
         You have access to the following materials:
 
-        ${shuffleArray(availableKnowledge.map((c) => `* ${c.id} - ${c.description}`)).join('\n')}
+        ${shuffleArray(availableKnowledge.map((c) => `* ${c.id} - ${c.description}`)).join('\n        ')}
 
         Do not perform the actual command, revise the result or generate any code.
       `),
@@ -69,7 +69,7 @@ export async function mutateChooseKnowledgeAndStrategy<T extends TaskContext<T> 
   if (DEBUG_PROMPTS) {
     mutateAppendSectionToLog(task, task.executionStage);
     mutateAppendToLog(task, '<<<< PROMPT >>>>\n\n');
-    mutateAppendToLog(task, promptWithContext + '\n\n');
+    mutateAppendToLog(task, promptWithContext.map((m) => m.content).join(',') + '\n\n');
     mutateAppendToLog(task, '<<<< EXECUTION >>>>\n\n');
   }
 

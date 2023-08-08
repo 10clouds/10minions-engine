@@ -39,8 +39,8 @@ export async function mutateCreateSimpleAnswer<TC extends TaskContext<TC> & Know
     outputField,
     await taskGPTExecute(task, {
       fullPrompt: fullPrompt,
-      mode: GPTMode.FAST,
-      maxTokens: 200,
+      mode: GPTMode.QUALITY,
+      maxTokens: 400,
       outputSchema: z.string(),
     }),
   );

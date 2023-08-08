@@ -65,8 +65,8 @@ export async function createFixesForSolution(
 
   const fixes = [
     createNewSolutionFix(task),
-    ...allSuggestions.map((suggestions) => improveSolutionFix({task, solutionWithMeta, suggestions})),
-    ...Array(3).fill(improveSolutionFix({task, solutionWithMeta, suggestions: allSuggestions.join('\n')})),
+    ...allSuggestions.map((suggestions) => improveSolutionFix({ task, solutionWithMeta, suggestions })),
+    ...Array(3).fill(improveSolutionFix({ task, solutionWithMeta, suggestions: allSuggestions.join('\n') })),
   ];
 
   return fixes;
