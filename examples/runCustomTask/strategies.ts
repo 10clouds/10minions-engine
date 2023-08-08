@@ -1,6 +1,7 @@
 import { Strategy } from '../../src/tasks/Strategy';
 import { mutateAppendToLog } from '../../src/tasks/mutators/mutateAppendToLog';
 import { CustomTask } from './CustomTask';
+import { EXAMPLE_KNOWLEDGE } from './exampleKnowledge';
 import { mutateCreateCustomAnswer } from './mutateCreateCustomAnswer';
 
 export const CUSTOM_STRATEGIES: Strategy<CustomTask>[] = [
@@ -13,7 +14,7 @@ export const CUSTOM_STRATEGIES: Strategy<CustomTask>[] = [
         weight: 100,
         execution: async function (this, task) {
           mutateAppendToLog(task, this.name + '\n');
-          await mutateCreateCustomAnswer(task, 'Answer to this in Polish language');
+          await mutateCreateCustomAnswer(task, 'Answer to this in Polish language', EXAMPLE_KNOWLEDGE);
         },
       },
     ],
@@ -27,7 +28,7 @@ export const CUSTOM_STRATEGIES: Strategy<CustomTask>[] = [
         weight: 100,
         execution: async function (this, task) {
           mutateAppendToLog(task, this.name + '\n');
-          await mutateCreateCustomAnswer(task, 'Answer to this with a poem');
+          await mutateCreateCustomAnswer(task, 'Answer to this with a poem', EXAMPLE_KNOWLEDGE);
         },
       },
     ],
@@ -41,7 +42,7 @@ export const CUSTOM_STRATEGIES: Strategy<CustomTask>[] = [
         weight: 100,
         execution: async function (this, task) {
           mutateAppendToLog(task, this.name + '\n');
-          await mutateCreateCustomAnswer(task, 'Answer to this as Javascript code');
+          await mutateCreateCustomAnswer(task, 'Answer to this as Javascript code', EXAMPLE_KNOWLEDGE);
         },
       },
     ],

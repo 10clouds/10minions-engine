@@ -64,5 +64,4 @@ export class CustomTask implements TaskContext<CustomTask> {
     this.onErrorOrCancel = rejectTask;
     this.onSuccess = resolveTask;
   }
-  
 }

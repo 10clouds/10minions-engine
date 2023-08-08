@@ -15,7 +15,6 @@
     "example-minion-task": "npx tsx ./examples/runMinionTask/runMinionTask.ts",
     "example-step-evolve": "npx tsx ./examples/stepEvolveBasic/stepEvolveBasic.ts",
     "example-step-evolve-llm": "npx tsx ./examples/stepEvolveLLMBasic/stepEvolveLLMBasic.ts",
-    "example-step-evolve-custom-task": "npx tsx ./examples/stepEvolveCustomTask/stepEvolveCustomTask.ts",
     "watch": "tsc --watch"
   },
   "dependencies": {
