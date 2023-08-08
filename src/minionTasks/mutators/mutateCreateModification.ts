@@ -78,7 +78,7 @@ Let's take it step by step.
 }
 
 export async function mutateCreateModification(task: MinionTask) {
-  if (task.strategyId === undefined) {
+  if (task.strategyId === '') {
     throw new Error('Classification is undefined');
   }
 

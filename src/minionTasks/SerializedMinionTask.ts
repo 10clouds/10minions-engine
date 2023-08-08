@@ -50,7 +50,7 @@ export function serializeMinionTask(minionTask: MinionTask): SerializedMinionTas
     modificationProcedure: minionTask.modificationProcedure,
     inlineMessage: minionTask.inlineMessage,
     executionStage: minionTask.executionStage,
-    strategy: minionTask.strategyId === undefined ? null : minionTask.strategyId,
+    strategy: minionTask.strategyId === '' ? null : minionTask.strategyId,
     logContent: minionTask.logContent,
     contentWhenDismissed: minionTask.contentWhenDismissed,
     aplicationStatus: minionTask.aplicationStatus,
@@ -82,7 +82,7 @@ export function deserializeMinionTask(data: SerializedMinionTask): MinionTask {
     modificationProcedure: data.modificationProcedure,
     inlineMessage: data.inlineMessage,
     executionStage: data.executionStage,
-    strategy: data.strategy === null ? undefined : (data.strategy as TASK_STRATEGY_ID),
+    strategyId: data.strategy === null ? '' : (data.strategy as TASK_STRATEGY_ID),
     onChanged: async (important: boolean) => {
       getMinionTasksManager().updateExecution(important, minionTask);
     },
