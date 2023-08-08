@@ -4,9 +4,10 @@ import path from 'path';
 import fs from 'fs';
 import { input, select, confirm } from '@inquirer/prompts';
 import chalk from 'chalk';
+import { prepareScoreTest } from './prepareScoreTest';
 import { extractFileNameFromPath } from '../src/utils/extractFileNameFromPath';
 
-interface TestRequiredData {
+export interface TestRequiredData {
   selectedText: string;
   originalContent: string;
   finalContent: string;
@@ -14,6 +15,9 @@ interface TestRequiredData {
   modificationProcedure: string;
   modificationDescription: string;
   documentURI: string;
+  id: string;
+  pluginVersion: string;
+  vsCodeVersion: string;
 }
 
 enum TestType {
@@ -38,13 +42,16 @@ interface TestConfig {
 }
 
 const baseDir = path.resolve(__dirname);
-const serviceAccount = JSON.parse(readFileSync(path.resolve(baseDir, '../CLI/serviceAccount.json'), 'utf8'));
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+const serviceAccount = JSON.parse(readFileSync(path.resolve(baseDir, '../src/CLI/serviceAccount.json'), 'utf8'));
 
-const REPLACE_PROCEDURE_TEST_FILE_PATH = 'replaceProcedure';
-const CREATE_PROCEDURE_TEST_FILE_PATH = 'createProcedure';
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+}
+
+const REPLACE_PROCEDURE_TEST_FILE_PATH = '../tests/replaceProcedure';
+const CREATE_PROCEDURE_TEST_FILE_PATH = '../tests/createProcedure';
 const SCORE_TEST_FILE_PATH = 'score';
 
 const getTestFilePath = (testType: TestType) => {
@@ -74,28 +81,31 @@ function createTestFile(content: string, fileName: string) {
   }
 }
 
+const createTestInfoFile = (testData: TestRequiredData, path: string) => {
+  const { id, pluginVersion, vsCodeVersion } = testData;
+  const testInfo = `
+    minionTaskId: ${id}
+    pluginVersion: ${pluginVersion}
+    vsCodeVersion: ${vsCodeVersion}
+    date of test: ${Date.now().toLocaleString()}
+  `;
+  createTestFile(testInfo, `${path}/test.info`);
+};
+
 const createScoreTestFiles = async (testData: TestRequiredData, config: TestConfig): Promise<void> => {
   const { selectedText, originalContent, userQuery } = testData;
   const languageFileExtension = TestLanguagesExtensions[config.language];
-
-  const testFileNamePrefix = `${SCORE_TEST_FILE_PATH}/${config.testName}.${languageFileExtension}.`;
+  const testDirPath = createTestsDirectory(config.testType, `${config.testName}.${languageFileExtension}`);
+  const testFileNamePrefix = `${testDirPath}/`;
+  createTestInfoFile(testData, testFileNamePrefix);
 
   if (config.withSelectedText) {
     createTestFile(selectedText, `${testFileNamePrefix}selectedText.txt`);
   }
   createTestFile(originalContent, `${testFileNamePrefix}original.txt`);
   createTestFile(userQuery, `${testFileNamePrefix}userQuery.txt`);
-  createTestFile(
-    `[
-      {
-        "type": "gptAssert",
-        "mode": "FAST",
-        "assertion": "The code is a valid typescript code"
-      }
-    ]
-    `,
-    `${testFileNamePrefix}tests.json`,
-  );
+  const test = await prepareScoreTest(userQuery, `${config.testName}.${languageFileExtension}`, testData);
+  createTestFile(test ?? '', `${testFileNamePrefix}tests.json`);
 };
 
 const createProcedureTestFiles = async (testData: TestRequiredData, config: TestConfig) => {
@@ -187,8 +197,6 @@ const prepareTestFiles = async () => {
         language: 'typescript',
       });
     });
-
-    // createTestFiles(testData, testType);
   } catch (error) {
     console.error(error);
   }

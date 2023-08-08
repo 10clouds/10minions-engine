@@ -77,14 +77,14 @@ export async function gptExecute<OutputTypeSchema extends z.ZodType<any, any>>({
             {
               name: outputName,
               description: outputSchema.description || 'Output',
-              parameters: zodToJsonSchema(outputSchema, 'parameters').definitions!.parameters,
+              parameters: zodToJsonSchema(outputSchema, 'parameters').definitions?.parameters,
             },
           ],
         }),
   };
 
   if (DEBUG_RESPONSES) {
-    console.log(requestData);
+    console.log('REQUEST DATA:', requestData);
   }
 
   const cachedResult = await getOpenAICacheManager().getCachedResult(requestData);
