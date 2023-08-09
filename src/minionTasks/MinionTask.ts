@@ -6,6 +6,7 @@ import { APPLIED_STAGE_NAME, APPLYING_STAGE_NAME, CANCELED_STAGE_NAME, FINISHED_
 import { Stage } from '../tasks/Stage';
 import { PRE_STAGES, TASK_STRATEGY_ID } from './strategies';
 import { TaskContext } from '../tasks/TaskContext';
+import { StrategyContext } from '../strategyAndKnowledge/StrategyContext';
 
 export enum ApplicationStatus {
   APPLIED = 'applied',
@@ -13,7 +14,7 @@ export enum ApplicationStatus {
   APPLIED_AS_FALLBACK = 'applied as fallback',
 }
 
-export class MinionTask implements TaskContext<MinionTask> {
+export class MinionTask implements TaskContext<MinionTask>, StrategyContext<MinionTask> {
   readonly userQuery: string;
   readonly minionIndex: number;
 
