@@ -1,6 +1,6 @@
 import { createFullPromptFromSections } from '../gpt/createFullPromptFromSections';
 import { MinionTask } from './MinionTask';
-import { TASK_STRATEGIES } from './strategies';
+import { MINION_TASK_STRATEGIES } from './strategies';
 
 export async function createChooseStrategyPrompt(task: MinionTask) {
   const document = await task.document();

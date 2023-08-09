@@ -1,7 +1,7 @@
 import { getLogProvider } from '../../managers/LogProvider';
 import { TaskContext } from '../TaskContext';
 
-export function mutateClearLog<T extends TaskContext<T>>(task: T) {
+export function mutateClearLog(task: TaskContext) {
   task.logContent = '';
   getLogProvider().reportChangeInTask(task.id);
 }

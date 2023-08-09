@@ -1,27 +1,26 @@
-import { z } from 'zod';
+import { mapLimit } from 'async';
+import chalk from 'chalk';
+import { OptionValues, program } from 'commander';
+import { format as dtFormat } from 'date-and-time';
 import fs from 'fs';
 import * as glob from 'glob';
 import { Validator } from 'jsonschema'; // Imported the jsonschema library
 import path from 'path';
 import ts from 'typescript';
+import { z } from 'zod';
 import { initCLISystems, setupCLISystemsForTest } from '../src/CLI/setupCLISystems';
-import { MinionTask } from '../src/minionTasks/MinionTask';
-import { getEditorManager } from '../src/managers/EditorManager';
 import { gptExecute } from '../src/gpt/gptExecute';
-import { LOG_NO_FALLBACK_MARKER as LOG_NORMAL_MODIFICATION_MARKER, mutatorApplyMinionTask } from '../src/minionTasks/mutators/mutateApplyMinionTask';
-import { LOG_PLAIN_COMMENT_MARKER as LOG_FALLBACK_COMMENT_MARKER } from '../src/minionTasks/mutators/mutateApplyFallback';
-import chalk from 'chalk';
 import { GPTMode } from '../src/gpt/types';
-import { OptionValues, program } from 'commander';
-import { mapLimit } from 'async';
-import { format as dtFormat } from 'date-and-time';
-import { mutateRunTask } from '../src/tasks/mutators/mutateRunTask';
+import { LOG_PLAIN_COMMENT_MARKER as LOG_FALLBACK_COMMENT_MARKER } from '../src/minionTasks/mutators/mutateApplyFallback';
+import { LOG_NO_FALLBACK_MARKER as LOG_NORMAL_MODIFICATION_MARKER, mutatorApplyMinionTask } from '../src/minionTasks/mutators/mutateApplyMinionTask';
+import { mutateRunTaskStages } from '../src/tasks/mutators/mutateRunTaskStages';
 
 // main types
 
-import { TestDefinition, functionReturnTypeCheckSchema, gptAssertSchema, simpleStringFindSchema } from './types';
 import { countTokens } from '../src/gpt/countTokens';
+import { mutateExecuteMinionTaskStages } from '../src/minionTasks/mutateExecuteMinionTaskStages';
 import { initMinionTask } from './initTestMinionTask';
+import { TestDefinition, functionReturnTypeCheckSchema, gptAssertSchema, simpleStringFindSchema } from './types';
 
 interface ScoringTestOptions extends OptionValues {
   iterations: number;
@@ -180,7 +179,7 @@ async function runTest({ fileName, iterations = defaultIternationsNumber }: { fi
 
     const { execution } = await initMinionTask(userQuery, fileName, 'temp.txt');
 
-    await mutateRunTask(execution);
+    await mutateRunTaskStages(execution, mutateExecuteMinionTaskStages);
     await mutatorApplyMinionTask(execution);
 
     const resultingCode = (await execution.document()).getText();

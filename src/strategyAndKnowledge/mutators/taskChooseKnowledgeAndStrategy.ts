@@ -10,10 +10,8 @@ import { TaskContext } from '../../tasks/TaskContext';
 import { mutateAppendSectionToLog } from '../../tasks/mutators/mutateAppendSectionToLog';
 import { mutateAppendToLog } from '../../tasks/mutators/mutateAppendToLog';
 import { taskGPTExecute } from '../../tasks/mutators/taskGPTExecute';
-import { StrategyContext } from '../StrategyContext';
-import { KnowledgeContext } from '../KnowledgeContext';
 
-export async function mutateChooseKnowledgeAndStrategy<T extends TaskContext<T> & StrategyContext<T> & KnowledgeContext<T>>({
+export async function taskChooseKnowledgeAndStrategy<TC extends TaskContext>({
   task,
   originalCommand,
   originalResult,
@@ -22,13 +20,13 @@ export async function mutateChooseKnowledgeAndStrategy<T extends TaskContext<T> 
   availableKnowledge,
   taskToPrompt,
 }: {
-  task: T;
-  originalCommand?: T;
+  task: TC;
+  originalCommand?: TC;
   originalResult?: string;
   systemDescription: string;
-  availableStrategies: Strategy<T>[];
+  availableStrategies: Strategy[];
   availableKnowledge: Knowledge[];
-  taskToPrompt: (task: T) => Promise<string>;
+  taskToPrompt: (task: TC) => Promise<string>;
 }) {
   const mode = GPTMode.FAST;
 
@@ -95,13 +93,18 @@ export async function mutateChooseKnowledgeAndStrategy<T extends TaskContext<T> 
     throw new Error(`Could not find strategy in the text: ${result}`);
   }
 
-  task.strategyId = matchingStrategies[0].id; //TODO: Error checking
-  task.relevantKnowledgeIds = result.neededKnowledge; //TODO: Error checking
-
-  task.currentStageIndex = task.stages.length - 1;
-  task.stages = [...task.stages, ...matchingStrategies[0].stages];
+  const pickedStrategy = matchingStrategies[0];
 
   if (DEBUG_PROMPTS) {
-    mutateAppendToLog(task, `Strategy: ${task.strategyId}\n\n`);
+    mutateAppendToLog(task, `Strategy: ${pickedStrategy.id}\n\n`);
   }
+
+  const relevantKnowledge = (result.neededKnowledge || [])
+    .map((knowledgeId) => availableKnowledge.find((k) => k.id === knowledgeId))
+    .filter((k) => k !== undefined) as Knowledge[]; //TODO: Error checking
+
+  return {
+    strategy: matchingStrategies[0],
+    relevantKnowledge,
+  };
 }

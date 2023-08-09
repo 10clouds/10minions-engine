@@ -1,15 +1,11 @@
-import { GPTMode } from '../gpt/types';
-import { Stage } from './Stage';
-
-export interface TaskContext<TC extends TaskContext<TC>> {
+export interface TaskContext {
   id: string;
-  stages: Stage<TC>[];
   totalCost: number;
   stopped: boolean;
-  currentStageIndex: number;
 
   executionStage: string;
   progress: number;
+  stageTargetProgress: number;
   startTime: number;
   logContent: string;
 

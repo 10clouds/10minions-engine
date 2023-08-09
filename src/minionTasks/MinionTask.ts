@@ -2,11 +2,9 @@ import { randomUUID } from 'crypto';
 import * as path from 'path';
 import { EditorDocument, EditorRange, EditorUri, getEditorManager } from '../managers/EditorManager';
 import { getOriginalContentProvider } from '../managers/OriginalContentProvider';
-import { APPLIED_STAGE_NAME, APPLYING_STAGE_NAME, CANCELED_STAGE_NAME, FINISHED_STAGE_NAME } from '../tasks/stageNames';
-import { Stage } from '../tasks/Stage';
-import { PRE_STAGES, TASK_STRATEGY_ID } from './strategies';
 import { TaskContext } from '../tasks/TaskContext';
-import { StrategyContext } from '../strategyAndKnowledge/StrategyContext';
+import { APPLIED_STAGE_NAME, APPLYING_STAGE_NAME, CANCELED_STAGE_NAME, FINISHED_STAGE_NAME } from '../tasks/stageNames';
+import { MINION_TASK_STRATEGY_ID } from './strategies';
 
 export enum ApplicationStatus {
   APPLIED = 'applied',
@@ -14,7 +12,7 @@ export enum ApplicationStatus {
   APPLIED_AS_FALLBACK = 'applied as fallback',
 }
 
-export class MinionTask implements TaskContext<MinionTask>, StrategyContext<MinionTask> {
+export class MinionTask implements TaskContext {
   readonly userQuery: string;
   readonly minionIndex: number;
 
@@ -36,8 +34,8 @@ export class MinionTask implements TaskContext<MinionTask>, StrategyContext<Mini
   startTime: number;
   stopped = true;
   progress = 1;
-  strategyId: TASK_STRATEGY_ID | '';
-  stages: Stage<MinionTask>[] = PRE_STAGES;
+  stageTargetProgress = 1;
+  strategyId: MINION_TASK_STRATEGY_ID | '';
 
   get isError(): boolean {
     if (!this.stopped) {
@@ -126,7 +124,7 @@ export class MinionTask implements TaskContext<MinionTask>, StrategyContext<Mini
     modificationProcedure?: string;
     executionStage?: string;
     inlineMessage?: string;
-    strategyId?: TASK_STRATEGY_ID | '';
+    strategyId?: MINION_TASK_STRATEGY_ID | '';
     logContent?: string;
     totalCost?: number;
     aplicationStatus?: ApplicationStatus;

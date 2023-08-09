@@ -6,11 +6,11 @@ import { countTokens } from '../../gpt/countTokens';
 import { GPTMode } from '../../gpt/types';
 import { z } from 'zod';
 import { mutateAppendToLog } from '../../tasks/mutators/mutateAppendToLog';
-import { TASK_STRATEGY_ID } from '../strategies';
+import { MINION_TASK_STRATEGY_ID } from '../strategies';
 import { mutateReportSmallProgress } from '../../tasks/mutators/mutateReportSmallProgress';
 
 function createPrompt(
-  classification: TASK_STRATEGY_ID,
+  classification: MINION_TASK_STRATEGY_ID,
   selectedText: string,
   document: EditorDocument,
   fullFileContents: string,

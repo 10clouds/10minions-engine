@@ -1,7 +1,7 @@
 import { TaskContext } from '../TaskContext';
 import { FINISHED_STAGE_NAME } from '../stageNames';
 
-export async function mutateStopExecution<T extends TaskContext<T>>(task: T, error?: string, important = true) {
+export async function mutateStopExecution(task: TaskContext, error?: string, important = true) {
   if (task.stopped) {
     return;
   }
