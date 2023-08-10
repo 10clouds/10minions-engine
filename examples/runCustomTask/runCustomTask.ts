@@ -76,15 +76,21 @@ const EXAMPLE_KNOWLEDGE: Knowledge[] = [
 
   console.log('Running task ...');
   await mutateRunTaskStages(task, async (task) => {
-    mutateStartStage(task, 'Stage 1', 0.5 / 3);
+    const FULL_PROGRESS = 1;
+    const NUMBER_OF_PRE_STAGES = 3;
+    const PROGRESS_FOR_PRE_STAGES = 0.5;
+    const PROGRESS_FOR_STRATEGY_STAGES = FULL_PROGRESS - PROGRESS_FOR_PRE_STAGES;
+    const PROGRESS_PER_PRE_STAGE = PROGRESS_FOR_PRE_STAGES / NUMBER_OF_PRE_STAGES;
+
+    mutateStartStage(task, 'Stage 1', PROGRESS_PER_PRE_STAGE);
     mutateAppendToLog(task, 'Stage 1' + '\n');
     mutateEndStage(task);
 
-    mutateStartStage(task, 'Stage 2', 0.5 / 3);
+    mutateStartStage(task, 'Stage 2', PROGRESS_PER_PRE_STAGE);
     mutateAppendToLog(task, 'Stage 2' + '\n');
     mutateEndStage(task);
 
-    mutateStartStage(task, 'Stage 3: Choose Strategy', 0.5 / 3);
+    mutateStartStage(task, 'Stage 3: Choose Strategy', PROGRESS_PER_PRE_STAGE);
     mutateAppendToLog(task, 'Stage 3: Choose Strategy' + '\n');
     const { strategy, relevantKnowledge } = await taskChooseKnowledgeAndStrategy({
       task,
@@ -104,7 +110,7 @@ const EXAMPLE_KNOWLEDGE: Knowledge[] = [
 
     switch (strategy.id) {
       case 'AnswerWithPolish':
-        mutateStartStage(task, 'Stage 4 (AnswerWithPolish)', 0.5);
+        mutateStartStage(task, 'Stage 4 (AnswerWithPolish)', PROGRESS_FOR_STRATEGY_STAGES);
         mutateAppendToLog(task, 'Stage 4 (AnswerWithPolish)' + '\n');
         task.answer = await mutateCreateSimpleAnswer({
           task,
@@ -116,7 +122,7 @@ const EXAMPLE_KNOWLEDGE: Knowledge[] = [
         mutateEndStage(task);
         break;
       case 'AnswerWithPoem':
-        mutateStartStage(task, 'Stage 4 (AnswerWithPolish)', 0.5);
+        mutateStartStage(task, 'Stage 4 (AnswerWithPolish)', PROGRESS_FOR_STRATEGY_STAGES);
         mutateAppendToLog(task, 'Stage 4 (AnswerWithPolish)' + '\n');
         task.answer = await mutateCreateSimpleAnswer({
           task,
@@ -128,7 +134,7 @@ const EXAMPLE_KNOWLEDGE: Knowledge[] = [
         mutateEndStage(task);
         break;
       case 'AnswerWithCode':
-        mutateStartStage(task, 'Stage 4 (AnswerWithCode)', 0.5);
+        mutateStartStage(task, 'Stage 4 (AnswerWithCode)', PROGRESS_FOR_STRATEGY_STAGES);
         mutateAppendToLog(task, 'Stage 4 (AnswerWithCode)' + '\n');
         task.answer = await mutateCreateSimpleAnswer({
           task,
