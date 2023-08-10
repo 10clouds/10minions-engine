@@ -2,13 +2,13 @@ import { z } from 'zod';
 import { DEBUG_RESPONSES } from '../../const';
 import { ensureICanRunThis } from '../../gpt/ensureIcanRunThis';
 import { gptExecute } from '../../gpt/gptExecute';
-import { GPTMode } from '../../gpt/types';
+import { GPTExecuteRequestPrompt, GPTMode } from '../../gpt/types';
 import { TaskContext } from '../TaskContext';
 import { mutateAppendToLog } from './mutateAppendToLog';
 import { mutateReportSmallProgress } from './mutateReportSmallProgress';
 
-export async function mutateGPTExecute<T extends TaskContext<T>, OutputTypeSchema extends z.ZodType<any, any>>(
-  task: T,
+export async function taskGPTExecute<OutputTypeSchema extends z.ZodType<any, any>>(
+  task: TaskContext,
   {
     fullPrompt,
     maxTokens = 2000,
@@ -18,7 +18,7 @@ export async function mutateGPTExecute<T extends TaskContext<T>, OutputTypeSchem
     outputName = 'output',
     controller,
   }: {
-    fullPrompt: string;
+    fullPrompt: GPTExecuteRequestPrompt;
     maxTokens?: number;
     mode: GPTMode;
     temperature?: number;

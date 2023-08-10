@@ -1,14 +1,14 @@
 import { z } from 'zod';
 import { DEBUG_PROMPTS } from '../../const';
 import { GPTMode, MODEL_NAMES } from '../../gpt/types';
-import { TaskContext } from '../TaskContext';
-import { mutateAppendSectionToLog } from './mutateAppendSectionToLog';
-import { mutateAppendToLog } from './mutateAppendToLog';
+import { TaskContext } from '../../tasks/TaskContext';
+import { mutateAppendSectionToLog } from '../../tasks/mutators/mutateAppendSectionToLog';
+import { mutateAppendToLog } from '../../tasks/mutators/mutateAppendToLog';
 import { Strategy } from '../Strategy';
-import { mutateGPTExecute } from './mutateGPTExecute';
+import { taskGPTExecute } from '../../tasks/mutators/taskGPTExecute';
 import { shuffleArray } from '../../utils/random/shuffleArray';
 
-export async function mutateStageChooseStrategy<T extends TaskContext<T>>(task: T, strategies: Strategy<T>[], taskToPrompt: (task: T) => Promise<string>) {
+export async function taskChooseStrategy<TC extends TaskContext>(task: TC, strategies: Strategy[], taskToPrompt: (task: TC) => Promise<string>) {
   const promptWithContext = `
 ${await taskToPrompt(task)}
 
@@ -25,7 +25,7 @@ Now choose strategy for the task.
     mutateAppendToLog(task, '<<<< EXECUTION >>>>\n\n');
   }
 
-  const result = await mutateGPTExecute(task, {
+  const result = await taskGPTExecute(task, {
     fullPrompt: promptWithContext,
     mode: GPTMode.FAST,
     maxTokens: 50,
@@ -48,12 +48,11 @@ Now choose strategy for the task.
     throw new Error(`Could not find strategy in the text: ${result}`);
   }
 
-  task.strategyId = matchingStrategies[0].id;
-
-  task.currentStageIndex = task.stages.length - 1;
-  task.stages = [...task.stages, ...matchingStrategies[0].stages];
-
   if (DEBUG_PROMPTS) {
-    mutateAppendToLog(task, `Strategy: ${task.strategyId}\n\n`);
+    mutateAppendToLog(task, `Strategy: ${matchingStrategies[0].id}\n\n`);
   }
+
+  return {
+    strategy: matchingStrategies[0],
+  };
 }

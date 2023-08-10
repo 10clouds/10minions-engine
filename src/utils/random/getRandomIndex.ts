@@ -1,5 +1,4 @@
-import { getRandomInt } from "./getRandomInt";
-
+import { getRandomInt } from './getRandomInt';
 
 export function getRandomIndex<T>(arr: T[], random = Math.random): number {
   if (arr.length === 0) {

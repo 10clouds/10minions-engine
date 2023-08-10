@@ -1,4 +1,3 @@
-
 export function convertToUnderscore(v: string) {
   return v
     .split(/(?=[A-Z][^A-Z_])/)

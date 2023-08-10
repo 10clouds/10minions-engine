@@ -15,7 +15,6 @@
     "example-minion-task": "npx tsx ./examples/runMinionTask/runMinionTask.ts",
     "example-step-evolve": "npx tsx ./examples/stepEvolveBasic/stepEvolveBasic.ts",
     "example-step-evolve-llm": "npx tsx ./examples/stepEvolveLLMBasic/stepEvolveLLMBasic.ts",
-    "example-step-evolve-custom-task": "npx tsx ./examples/stepEvolveCustomTask/stepEvolveCustomTask.ts",
     "watch": "tsc --watch"
   },
   "dependencies": {
@@ -25,7 +24,6 @@
     "firebase-admin": "^11.9.0",
     "gpt-tokenizer": "^2.1.1",
     "jsonschema": "^1.4.1",
-    "langchain": "^0.0.77",
     "node-fetch": "^3.3.1",
     "openai": "^3.2.1",
     "zod": "^3.21.4",

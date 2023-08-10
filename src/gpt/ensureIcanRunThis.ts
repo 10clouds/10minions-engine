@@ -1,9 +1,9 @@
 import { TokenError } from './TokenError';
 import { getModel } from './getModel';
-import { GPTMode, MODEL_DATA } from './types';
+import { GPTExecuteRequestPrompt, GPTMode, MODEL_DATA } from './types';
 
 interface EnsureICanRunThisParams {
-  prompt: string;
+  prompt: GPTExecuteRequestPrompt;
   maxTokens: number;
   mode: GPTMode;
 }
@@ -13,7 +13,9 @@ interface EnsureICanRunThisParams {
  */
 export const ensureICanRunThis = ({ prompt, maxTokens, mode }: EnsureICanRunThisParams) => {
   const model = getModel(mode);
-  const usedTokens = MODEL_DATA[model].encode(prompt).length + maxTokens;
+  const messages = Array.isArray(prompt) ? prompt : [{ role: 'user', content: prompt }];
+  const messagesAsString = JSON.stringify(messages);
+  const usedTokens = MODEL_DATA[model].encode(messagesAsString).length + maxTokens;
 
   if (usedTokens > MODEL_DATA[model].maxTokens) {
     console.error(`Not enough tokens to perform the modification. absolute minimum: ${usedTokens} available: ${MODEL_DATA[model].maxTokens}`);

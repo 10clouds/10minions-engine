@@ -1,5 +1,6 @@
 import { encode as encodeGPT35 } from 'gpt-tokenizer/cjs/model/gpt-3.5-turbo';
 import { encode as encodeGPT4 } from 'gpt-tokenizer/cjs/model/gpt-4';
+import { type ChatCompletionRequestMessage, type CreateChatCompletionRequest } from 'openai';
 import { JsonSchema7Type } from 'zod-to-json-schema/src/parseDef';
 
 export enum GPTMode {
@@ -15,22 +16,9 @@ export type FunctionDef = {
   parameters: JsonSchema7Type;
 };
 
-export interface GPTExecuteRequestData {
-  function_call?:
-    | {
-        name: string;
-      }
-    | undefined;
-  functions?: FunctionDef[] | undefined;
-  model: GPTModel;
-  messages: {
-    role: string;
-    content: string;
-  }[];
-  max_tokens: number;
-  temperature: number;
-  stream: boolean;
-}
+export type GPTExecuteRequestData = CreateChatCompletionRequest;
+export type GPTExecuteRequestMessage = ChatCompletionRequestMessage;
+export type GPTExecuteRequestPrompt = string | GPTExecuteRequestMessage[];
 
 export type ModelData = {
   [key in GPTModel]: {
