@@ -1,5 +1,6 @@
 import { ApplicationStatus, MinionTask } from '../MinionTask';
 import { mutateAppendToLog } from '../../tasks/mutators/mutateAppendToLog';
+import { mutateAppendToLogNoNewline } from '../../tasks/mutators/mutateAppendToLogNoNewline';
 import { FINISHED_STAGE_NAME, APPLYING_STAGE_NAME, APPLIED_STAGE_NAME } from '../../tasks/stageNames';
 import { getEditorManager } from '../../managers/EditorManager';
 import { mutatorApplyFallback } from './mutateApplyFallback';
@@ -68,7 +69,8 @@ export async function mutatorApplyMinionTask(minionTask: MinionTask) {
     minionTask.executionStage = APPLIED_STAGE_NAME;
     minionTask.contentAfterApply = document.getText();
     minionTask.progress = 1;
-    mutateAppendToLog(minionTask, `Applied modification as plain top comments\n\n`);
+    mutateAppendToLog(minionTask, `Applied modification as plain top comments`);
+    mutateAppendToLog(minionTask, ``);
     minionTask.onChange(true);
     return;
   } finally {
@@ -78,7 +80,7 @@ export async function mutatorApplyMinionTask(minionTask: MinionTask) {
   minionTask.executionStage = APPLIED_STAGE_NAME;
   minionTask.contentAfterApply = document.getText();
   minionTask.progress = 1;
-  mutateAppendToLog(minionTask, LOG_NO_FALLBACK_MARKER);
+  mutateAppendToLogNoNewline(minionTask, LOG_NO_FALLBACK_MARKER);
   minionTask.onChange(true);
   getEditorManager().showInformationMessage(`Modification applied successfully.`);
 }

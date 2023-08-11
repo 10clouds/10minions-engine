@@ -7,6 +7,7 @@ import { gptExecute } from '../../gpt/gptExecute';
 import { GPTMode } from '../../gpt/types';
 import { EditorDocument, EditorPosition } from '../../managers/EditorManager';
 import { mutateAppendToLog } from '../../tasks/mutators/mutateAppendToLog';
+import { mutateAppendToLogNoNewline } from '../../tasks/mutators/mutateAppendToLogNoNewline';
 import { mutateAppendSectionToLog } from '../../tasks/mutators/mutateAppendSectionToLog';
 import { mutateReportSmallProgress } from '../../tasks/mutators/mutateReportSmallProgress';
 
@@ -65,9 +66,9 @@ export async function stageExtractRelevantCode(task: MinionTask) {
   if (DEBUG_PROMPTS) {
     mutateReportSmallProgress(task);
     mutateAppendSectionToLog(task, task.executionStage);
-    mutateAppendToLog(task, '<<<< PROMPT >>>>\n\n');
-    mutateAppendToLog(task, promptWithContext + '\n\n');
-    mutateAppendToLog(task, '<<<< EXECUTION >>>>\n\n');
+    mutateAppendToLog(task, '<<<< PROMPT >>>>\n');
+    mutateAppendToLog(task, promptWithContext + '\n');
+    mutateAppendToLog(task, '<<<< EXECUTION >>>>\n');
   }
 
   const tokensNeeded = countTokens(fullFileContents, GPTMode.QUALITY);
@@ -83,9 +84,9 @@ export async function stageExtractRelevantCode(task: MinionTask) {
     onChunk: async (chunk: string) => {
       mutateReportSmallProgress(task);
       if (DEBUG_RESPONSES) {
-        mutateAppendToLog(task, chunk);
+        mutateAppendToLogNoNewline(task, chunk);
       } else {
-        mutateAppendToLog(task, '.');
+        mutateAppendToLogNoNewline(task, '.');
       }
     },
     isCancelled: () => {
@@ -114,5 +115,6 @@ export async function stageExtractRelevantCode(task: MinionTask) {
 
   task.totalCost += cost;
 
-  mutateAppendToLog(task, '\n\n');
+  mutateAppendToLog(task, '');
+  mutateAppendToLog(task, '');
 }

@@ -7,7 +7,7 @@ import { TaskContext } from '../TaskContext';
 import { mutateAppendToLog } from './mutateAppendToLog';
 import { mutateReportSmallProgress } from './mutateReportSmallProgress';
 
-export async function taskGPTExecute<OutputTypeSchema extends z.ZodType<any, any>>(
+export async function taskGPTExecute<OutputTypeSchema extends z.ZodType>(
   task: TaskContext,
   {
     fullPrompt,
@@ -50,7 +50,8 @@ export async function taskGPTExecute<OutputTypeSchema extends z.ZodType<any, any
     temperature,
   });
 
-  mutateAppendToLog(task, '\n\n');
+  mutateAppendToLog(task, '');
+  mutateAppendToLog(task, '');
 
   task.totalCost += cost;
 

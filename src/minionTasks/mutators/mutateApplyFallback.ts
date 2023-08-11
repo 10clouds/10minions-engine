@@ -1,5 +1,5 @@
 import { ApplicationStatus, MinionTask } from '../MinionTask';
-import { mutateAppendToLog } from '../../tasks/mutators/mutateAppendToLog';
+import { mutateAppendToLogNoNewline } from '../../tasks/mutators/mutateAppendToLogNoNewline';
 import { getEditorManager } from '../../managers/EditorManager';
 import { decomposeMarkdownString } from '../../utils/string/decomposeMarkdownString';
 
@@ -18,7 +18,7 @@ ${minionTask.modificationDescription}
     language,
   ).join('\n');
 
-  mutateAppendToLog(minionTask, LOG_PLAIN_COMMENT_MARKER);
+  mutateAppendToLogNoNewline(minionTask, LOG_PLAIN_COMMENT_MARKER);
 
   minionTask.originalContent = document.getText();
   minionTask.aplicationStatus = ApplicationStatus.APPLIED_AS_FALLBACK;

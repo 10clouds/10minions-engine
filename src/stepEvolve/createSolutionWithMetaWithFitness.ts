@@ -8,7 +8,7 @@ export async function createSolutionWithMetaWithFitness<S>({
 }: {
   solution: S;
   createdWith: string;
-  parent: SolutionWithMeta<S> | undefined;
+  parent?: SolutionWithMeta<S>;
   fitnessAndNextSolutionsFunction: FitnessAndNextSolutionsFunction<S>;
 }): Promise<SolutionWithMeta<S>> {
   let solutionWithMeta: SolutionWithMeta<S> = {

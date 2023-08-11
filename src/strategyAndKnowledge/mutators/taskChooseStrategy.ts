@@ -4,9 +4,9 @@ import { GPTMode, MODEL_NAMES } from '../../gpt/types';
 import { TaskContext } from '../../tasks/TaskContext';
 import { mutateAppendSectionToLog } from '../../tasks/mutators/mutateAppendSectionToLog';
 import { mutateAppendToLog } from '../../tasks/mutators/mutateAppendToLog';
-import { Strategy } from '../Strategy';
 import { taskGPTExecute } from '../../tasks/mutators/taskGPTExecute';
 import { shuffleArray } from '../../utils/random/shuffleArray';
+import { Strategy } from '../Strategy';
 
 export async function taskChooseStrategy<TC extends TaskContext>(task: TC, strategies: Strategy[], taskToPrompt: (task: TC) => Promise<string>) {
   const promptWithContext = `
@@ -20,9 +20,12 @@ Now choose strategy for the task.
 
   if (DEBUG_PROMPTS) {
     mutateAppendSectionToLog(task, task.executionStage);
-    mutateAppendToLog(task, '<<<< PROMPT >>>>\n\n');
-    mutateAppendToLog(task, promptWithContext + '\n\n');
-    mutateAppendToLog(task, '<<<< EXECUTION >>>>\n\n');
+    mutateAppendToLog(task, '<<<< PROMPT >>>>');
+    mutateAppendToLog(task, '');
+    mutateAppendToLog(task, promptWithContext);
+    mutateAppendToLog(task, '');
+    mutateAppendToLog(task, '<<<< EXECUTION >>>>');
+    mutateAppendToLog(task, '');
   }
 
   const result = await taskGPTExecute(task, {
@@ -39,7 +42,8 @@ Now choose strategy for the task.
       .describe('Choose appropriate strategy'),
   });
 
-  mutateAppendToLog(task, '\n\n');
+  mutateAppendToLog(task, '');
+  mutateAppendToLog(task, '');
 
   //find classification in text
   const matchingStrategies = strategies.filter((c) => result.strategy === c.id);
@@ -49,7 +53,8 @@ Now choose strategy for the task.
   }
 
   if (DEBUG_PROMPTS) {
-    mutateAppendToLog(task, `Strategy: ${matchingStrategies[0].id}\n\n`);
+    mutateAppendToLog(task, `Strategy: ${matchingStrategies[0].id}`);
+    mutateAppendToLog(task, '');
   }
 
   return {

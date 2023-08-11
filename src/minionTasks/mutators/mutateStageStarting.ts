@@ -10,10 +10,10 @@ export async function mutateStageStarting(task: MinionTask) {
   task.originalContent = document.getText();
 
   mutateClearLog(task);
-  mutateAppendToLog(task, 'Id: ' + task.id + '\n');
-  mutateAppendToLog(task, 'File: ' + task.baseName + '\n');
-  mutateAppendToLog(task, 'Task: ' + task.userQuery + '\n');
-  mutateAppendToLog(task, '\n');
+  mutateAppendToLog(task, 'Id: ' + task.id + '');
+  mutateAppendToLog(task, 'File: ' + task.baseName + '');
+  mutateAppendToLog(task, 'Task: ' + task.userQuery + '');
+  mutateAppendToLog(task, '');
 
   mutateGenerateShortName(task); // Intentionally no await
 }

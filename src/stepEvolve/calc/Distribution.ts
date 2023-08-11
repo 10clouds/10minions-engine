@@ -1,7 +1,4 @@
-import {
-  sum,
-  withDefault,
-} from '../../utils/utils';
+import { sum, withDefault } from '../../utils/utils';
 import { uniqueWeightedRandomElements } from '../../utils/random/uniqueWeightedRandomElements';
 import { weightedRandomElements } from '../../utils/random/weightedRandomElements';
 import { weightedRandomElement } from '../../utils/random/weightedRandomElement';

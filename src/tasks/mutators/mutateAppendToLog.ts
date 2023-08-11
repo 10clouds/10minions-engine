@@ -1,8 +1,6 @@
-import { getLogProvider } from '../../managers/LogProvider';
 import { TaskContext } from '../TaskContext';
+import { mutateAppendToLogNoNewline } from './mutateAppendToLogNoNewline';
 
 export function mutateAppendToLog(task: TaskContext, content: string): void {
-  task.logContent += content;
-
-  getLogProvider().reportChangeInTask(task.id);
+  mutateAppendToLogNoNewline(task, content + '\n');
 }

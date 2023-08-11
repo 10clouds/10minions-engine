@@ -6,15 +6,15 @@ export async function stepEvolve<S>({
   initialSolutions,
   threshold,
   startIterationFrom = 0,
-  maxNumIterations,
-  maxStaleIterations,
+  maxNumIterations = 5,
+  maxStaleIterations = 2,
   observers,
 }: {
   initialSolutions: SolutionWithMeta<S>[];
   threshold: number;
   startIterationFrom?: number;
-  maxNumIterations: number;
-  maxStaleIterations: number;
+  maxNumIterations?: number;
+  maxStaleIterations?: number;
   observers: FitnessObserver<S>[];
 }): Promise<SolutionWithMeta<S>> {
   const current = initialSolutions.slice();

@@ -1,8 +1,8 @@
 import { TaskContext } from '../TaskContext';
-import { mutateAppendToLog } from './mutateAppendToLog';
+import { mutateAppendToLogNoNewline } from './mutateAppendToLogNoNewline';
 
 export function mutateAppendSectionToLog(task: TaskContext, section: string): void {
-  mutateAppendToLog(
+  mutateAppendToLogNoNewline(
     task,
     [
       `////////////////////////////////////////////////////////////////////////////////`,

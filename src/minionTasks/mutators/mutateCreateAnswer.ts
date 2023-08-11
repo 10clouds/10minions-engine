@@ -6,6 +6,7 @@ import { ensureIRunThisInRange } from '../../gpt/ensureIRunThisInRange';
 import { GPTMode } from '../../gpt/types';
 import { z } from 'zod';
 import { mutateAppendToLog } from '../../tasks/mutators/mutateAppendToLog';
+import { mutateAppendToLogNoNewline } from '../../tasks/mutators/mutateAppendToLogNoNewline';
 import { mutateReportSmallProgress } from '../../tasks/mutators/mutateReportSmallProgress';
 import { createFullPromptFromSections } from '../../gpt/createFullPromptFromSections';
 
@@ -82,7 +83,7 @@ export async function mutateCreateAnswer(task: MinionTask) {
     fullPrompt: promptWithContext,
     onChunk: async (chunk: string) => {
       task.inlineMessage += chunk;
-      mutateAppendToLog(task, chunk);
+      mutateAppendToLogNoNewline(task, chunk);
       mutateReportSmallProgress(task);
     },
     isCancelled,
@@ -96,5 +97,6 @@ export async function mutateCreateAnswer(task: MinionTask) {
   task.totalCost += cost;
 
   mutateReportSmallProgress(task);
-  mutateAppendToLog(task, '\n\n');
+  mutateAppendToLog(task, '');
+  mutateAppendToLog(task, '');
 }
