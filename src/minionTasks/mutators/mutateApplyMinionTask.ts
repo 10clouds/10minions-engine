@@ -1,6 +1,6 @@
 import { ApplicationStatus, MinionTask } from '../MinionTask';
-import { mutateAppendToLog } from '../../tasks/mutators/mutateAppendToLog';
-import { mutateAppendToLogNoNewline } from '../../tasks/mutators/mutateAppendToLogNoNewline';
+import { mutateAppendToLog } from '../../tasks/logs/mutators/mutateAppendToLog';
+import { mutateAppendToLogNoNewline } from '../../tasks/logs/mutators/mutateAppendToLogNoNewline';
 import { FINISHED_STAGE_NAME, APPLYING_STAGE_NAME, APPLIED_STAGE_NAME } from '../../tasks/stageNames';
 import { getEditorManager } from '../../managers/EditorManager';
 import { mutatorApplyFallback } from './mutateApplyFallback';

@@ -5,7 +5,7 @@ import { ensureIRunThisInRange } from '../../gpt/ensureIRunThisInRange';
 import { countTokens } from '../../gpt/countTokens';
 import { GPTMode } from '../../gpt/types';
 import { z } from 'zod';
-import { mutateAppendToLogNoNewline } from '../../tasks/mutators/mutateAppendToLogNoNewline';
+import { mutateAppendToLogNoNewline } from '../../tasks/logs/mutators/mutateAppendToLogNoNewline';
 import { MINION_TASK_STRATEGY_ID } from '../strategies';
 import { mutateReportSmallProgress } from '../../tasks/mutators/mutateReportSmallProgress';
 

@@ -1,8 +1,8 @@
+import { mutateAppendToLog } from '../logs/mutators/mutateAppendToLog';
 import { getEditorManager } from '../../managers/EditorManager';
 import { calculateAndFormatExecutionTime } from '../../utils/calculateAndFormatExecutionTime';
 import { TaskContext } from '../TaskContext';
 import { TaskCanceled } from '../utils/TaskCanceled';
-import { mutateAppendToLog } from './mutateAppendToLog';
 import { mutateStopExecution } from './mutateStopExecution';
 
 export function mutateRunTaskStages<TC extends TaskContext>(task: TC, execute: (task: TC) => Promise<void>) {

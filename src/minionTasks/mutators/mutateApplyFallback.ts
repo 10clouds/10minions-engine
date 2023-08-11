@@ -1,5 +1,5 @@
 import { ApplicationStatus, MinionTask } from '../MinionTask';
-import { mutateAppendToLogNoNewline } from '../../tasks/mutators/mutateAppendToLogNoNewline';
+import { mutateAppendToLogNoNewline } from '../../tasks/logs/mutators/mutateAppendToLogNoNewline';
 import { getEditorManager } from '../../managers/EditorManager';
 import { decomposeMarkdownString } from '../../utils/string/decomposeMarkdownString';
 

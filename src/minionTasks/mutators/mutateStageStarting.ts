@@ -1,7 +1,7 @@
 import { MinionTask } from '../MinionTask';
 import { getEditorManager } from '../../managers/EditorManager';
-import { mutateAppendToLog } from '../../tasks/mutators/mutateAppendToLog';
-import { mutateClearLog } from '../../tasks/mutators/mutateClearLog';
+import { mutateAppendToLog } from '../../tasks/logs/mutators/mutateAppendToLog';
+import { mutateClearLog } from '../../tasks/logs/mutators/mutateClearLog';
 import { mutateGenerateShortName } from '../../tasks/mutators/mutateGenerateShortName';
 
 export async function mutateStageStarting(task: MinionTask) {

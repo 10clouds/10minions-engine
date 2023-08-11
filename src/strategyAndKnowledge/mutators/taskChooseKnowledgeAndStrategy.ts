@@ -7,8 +7,8 @@ import { shuffleArray } from '../../utils/random/shuffleArray';
 import { formatPrompt } from '../../utils/string/formatPrompt';
 import { Strategy } from '../Strategy';
 import { TaskContext } from '../../tasks/TaskContext';
-import { mutateAppendSectionToLog } from '../../tasks/mutators/mutateAppendSectionToLog';
-import { mutateAppendToLog } from '../../tasks/mutators/mutateAppendToLog';
+import { mutateAppendSectionToLog } from '../../tasks/logs/mutators/mutateAppendSectionToLog';
+import { mutateAppendToLog } from '../../tasks/logs/mutators/mutateAppendToLog';
 import { taskGPTExecute } from '../../tasks/mutators/taskGPTExecute';
 
 export async function taskChooseKnowledgeAndStrategy<TC extends TaskContext>({

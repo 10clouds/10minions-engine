@@ -8,7 +8,7 @@ import { Knowledge } from '../../src/strategyAndKnowledge/Knowledge';
 import { Strategy } from '../../src/strategyAndKnowledge/Strategy';
 import { mutateCreateSimpleAnswer } from '../../src/strategyAndKnowledge/mutators/mutateCreateSimpleAnswer';
 import { taskChooseKnowledgeAndStrategy } from '../../src/strategyAndKnowledge/mutators/taskChooseKnowledgeAndStrategy';
-import { mutateAppendToLog } from '../../src/tasks/mutators/mutateAppendToLog';
+import { mutateAppendToLog } from '../../src/tasks/logs/mutators/mutateAppendToLog';
 import { mutateEndStage } from '../../src/tasks/mutators/mutateEndStage';
 import { mutateRunTaskStages } from '../../src/tasks/mutators/mutateRunTaskStages';
 import { mutateStartStage } from '../../src/tasks/mutators/mutateStartStage';

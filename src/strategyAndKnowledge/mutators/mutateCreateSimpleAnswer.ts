@@ -2,8 +2,8 @@ import { z } from 'zod';
 import { createFullPromptFromSections } from '../../gpt/createFullPromptFromSections';
 import { GPTMode } from '../../gpt/types';
 import { TaskContext } from '../../tasks/TaskContext';
-import { mutateAppendSectionToLog } from '../../tasks/mutators/mutateAppendSectionToLog';
-import { mutateAppendToLogNoNewline } from '../../tasks/mutators/mutateAppendToLogNoNewline';
+import { mutateAppendSectionToLog } from '../../tasks/logs/mutators/mutateAppendSectionToLog';
+import { mutateAppendToLogNoNewline } from '../../tasks/logs/mutators/mutateAppendToLogNoNewline';
 import { taskGPTExecute } from '../../tasks/mutators/taskGPTExecute';
 import { Knowledge } from '../Knowledge';
 

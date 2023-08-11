@@ -5,8 +5,8 @@ import { countTokens } from '../../gpt/countTokens';
 import { ensureIRunThisInRange } from '../../gpt/ensureIRunThisInRange';
 import { GPTMode } from '../../gpt/types';
 import { z } from 'zod';
-import { mutateAppendToLog } from '../../tasks/mutators/mutateAppendToLog';
-import { mutateAppendToLogNoNewline } from '../../tasks/mutators/mutateAppendToLogNoNewline';
+import { mutateAppendToLog } from '../../tasks/logs/mutators/mutateAppendToLog';
+import { mutateAppendToLogNoNewline } from '../../tasks/logs/mutators/mutateAppendToLogNoNewline';
 import { mutateReportSmallProgress } from '../../tasks/mutators/mutateReportSmallProgress';
 import { createFullPromptFromSections } from '../../gpt/createFullPromptFromSections';
 

@@ -1,7 +1,7 @@
 import { MinionTask } from '../MinionTask';
 import { DEBUG_RESPONSES } from '../../const';
-import { mutateAppendToLog } from '../../tasks/mutators/mutateAppendToLog';
-import { mutateAppendToLogNoNewline } from '../../tasks/mutators/mutateAppendToLogNoNewline';
+import { mutateAppendToLog } from '../../tasks/logs/mutators/mutateAppendToLog';
+import { mutateAppendToLogNoNewline } from '../../tasks/logs/mutators/mutateAppendToLogNoNewline';
 import { createModificationProcedure } from '../createModificationProcedure';
 import { mutateStopExecution } from '../../tasks/mutators/mutateStopExecution';
 import { mutateReportSmallProgress } from '../../tasks/mutators/mutateReportSmallProgress';

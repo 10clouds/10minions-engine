@@ -4,7 +4,7 @@ import { ensureICanRunThis } from '../../gpt/ensureIcanRunThis';
 import { gptExecute } from '../../gpt/gptExecute';
 import { GPTExecuteRequestPrompt, GPTMode } from '../../gpt/types';
 import { TaskContext } from '../TaskContext';
-import { mutateAppendToLog } from './mutateAppendToLog';
+import { mutateAppendToLog } from '../logs/mutators/mutateAppendToLog';
 import { mutateReportSmallProgress } from './mutateReportSmallProgress';
 
 export async function taskGPTExecute<OutputTypeSchema extends z.ZodType>(

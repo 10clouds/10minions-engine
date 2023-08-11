@@ -1,4 +1,4 @@
-import { TaskContext } from '../TaskContext';
+import { TaskContext } from '../../TaskContext';
 import { mutateAppendToLogNoNewline } from './mutateAppendToLogNoNewline';
 
 export function mutateAppendToLog(task: TaskContext, content: string): void {
