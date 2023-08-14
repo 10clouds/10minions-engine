@@ -41,6 +41,15 @@ interface TestConfig {
   language: TestLanguages;
 }
 
+const getTodayDate = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+};
+
 const baseDir = path.resolve(__dirname);
 const serviceAccount = JSON.parse(readFileSync(path.resolve(baseDir, '../src/CLI/serviceAccount.json'), 'utf8'));
 
@@ -83,13 +92,15 @@ function createTestFile(content: string, fileName: string) {
 
 const createTestInfoFile = (testData: TestRequiredData, path: string) => {
   const { id, pluginVersion, vsCodeVersion } = testData;
-  const testInfo = `
-    minionTaskId: ${id}
-    pluginVersion: ${pluginVersion}
-    vsCodeVersion: ${vsCodeVersion}
-    date of test: ${Date.now().toLocaleString()}
+  const testInfo = `{
+    "minionTaskId": "${id}",
+    "pluginVersion": "${pluginVersion}",
+    "vsCodeVersion": "${vsCodeVersion}",
+    "date": "${getTodayDate()}", 
+    "score": "null"
+  }
   `;
-  createTestFile(testInfo, `${path}/test.info`);
+  createTestFile(testInfo, `${path}/testInfo.json`);
 };
 
 const createScoreTestFiles = async (testData: TestRequiredData, config: TestConfig): Promise<void> => {

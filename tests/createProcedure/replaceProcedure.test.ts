@@ -45,7 +45,10 @@ suite('Create procedure test suite', () => {
         const error = e as Error;
         modifiedContent = error.toString();
       }
-
+      console.log('MODIFIED CONTENT: ', modifiedContent);
+      if (modifiedContent) {
+        const t = fs.writeFileSync(path.resolve(baseDir, testDir, 'test.txt'), modifiedContent);
+      }
       assert.strictEqual(modifiedContent, expectedOutput);
     });
   }

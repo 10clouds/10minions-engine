@@ -6,29 +6,6 @@ import { MinionTask } from "../MinionTask";
 import { getEditorManager } from "../managers/EditorManager";
 import { applyMinionTask } from "../strategies/utils/applyMinionTask";
 import { GptMode, gptExecute } from "../openai";
-import * as ts from 'typescript';
-
-async function checkFunctionReturnType({ code, functionName }: { code: string; functionName: string }): Promise<string> {
-  try {
-    // Create and compile program
-    const program = ts.createSourceFile('temp.ts', code, ts.ScriptTarget.ES2017);
-    const checker = program.getTypeChecker();
-
-    const funcSym = checker.resolveName(functionName, undefined, ts.SymbolFlags.FunctionScoped, false);
-    if (!funcSym) {
-      throw new Error(`Function '${functionName}' not found in code.`);
-    }
-
-    const typeOfFuncSym = checker.getTypeOfSymbolAtLocation(funcSym, funcSym.valueDeclaration);
-    const returnType = checker.getReturnTypeOfSignature(typeOfFuncSym.getCallSignatures()[0]);
-
-    return checker.typeToString(returnType);
-  } catch (error) {
-    logToFile(`Error during return type check: ${error.message}`);
-
-    return "Error during return type check";
-  }
-}
 
 function logToFile(logMessage: string) {
   const directoryPath = path.join(__dirname, "logs");
@@ -101,6 +78,29 @@ async function gptAssert({
 
 export type TestDefinition = { type: "gptAssert"; mode: GptMode; assertion: string } | { type: "simpleStringFind"; stringToFind: string };
 
+import * as ts from 'typescript';
+
+async function checkFunctionReturnType({ code, functionName }: { code: string; functionName: string }): Promise<string> {
+  try {
+    // Create and compile program
+    const program = ts.createSourceFile('temp.ts', code, ts.ScriptTarget.ES2017);
+    const checker = program.getTypeChecker();
+
+    const funcSym = checker.resolveName(functionName, undefined, ts.SymbolFlags.FunctionScoped, false);
+    if (!funcSym) {
+      throw new Error(`Function '${functionName}' not found in code.`);
+    }
+
+    const typeOfFuncSym = checker.getTypeOfSymbolAtLocation(funcSym, funcSym.valueDeclaration);
+    const returnType = checker.getReturnTypeOfSignature(typeOfFuncSym.getCallSignatures()[0]);
+
+    return checker.typeToString(returnType);
+  } catch (error) {
+    logToFile(`Error during return type check: ${error.message}`);
+
+    return "Error during return type check";
+  }
+}
 async function runTest({ fileName, iterations = 5 }: { fileName: string; iterations?: number }) {
   let tests: TestDefinition[] = require(path.join(__dirname, "score", fileName + ".tests.json"));
   let userQuery = fs.readFileSync(path.join(__dirname, "score", fileName + ".userQuery.txt"), "utf8");
@@ -154,36 +154,23 @@ async function runTest({ fileName, iterations = 5 }: { fileName: string; iterati
     logToFile(resultingCode);
 
     for (let test of tests) {
-      statistics.total++;
+  statistics.total++;
 
-      if (test.type === "gptAssert") {
-        let { passessTest, comment } = await gptAssert({ originalCode: execution.originalContent, resultingCode, assertion: test.assertion });
-        logToFile(`Test: ${test.assertion}`);
-        logToFile(`Comment: ${comment}`);
+  if (test.type === "gptAssert") {
+    // ...
+  } else if (test.type === "simpleStringFind") {
+    // ...
+  } else if (test.type === "functionReturnTypeCheck") {
+    let returnType = await checkFunctionReturnType({ code: resultingCode, functionName: test.functionName });
+    logToFile(`Return type of function ${test.functionName}: ${returnType}`);
 
-        if (!passessTest) {
-          logToFile(`Test failed: ${test.assertion}`);
-          logToFile(`Comment: ${comment}`);
-        } else {
-          statistics.passed++;
-        }
-      } else if (test.type === "simpleStringFind") {
-        let passessTest = resultingCode.includes(test.stringToFind);
-        logToFile(`Test: ${test.stringToFind}`);
-
-        if (!passessTest) {
-          logToFile(`Test failed: ${test.stringToFind}`);
-        } else {
-          statistics.passed++;
-        }
-      } else if (test.type === "functionReturnTypeCheck") {
-        let returnType = await checkFunctionReturnType({ code: resultingCode, functionName: test.functionName });
-        logToFile(`Return type of function ${test.functionName}: ${returnType}`);
-
-        if (returnType !== test.expectedType) {
-          logToFile(`Test failed: The return type of function ${test.functionName} is not ${test.expectedType}`);
-        } else {
-          statistics.passed++;
+    if (returnType !== test.expectedType) {
+      logToFile(`Test failed: The return type of function ${test.functionName} is not ${test.expectedType}`);
+    } else {
+      statistics.passed++;
+    }
+  }
+}
         }
       }
     }
@@ -217,4 +204,3 @@ async function runScoring(): Promise<void> {
 }
 
 runScoring();
-
