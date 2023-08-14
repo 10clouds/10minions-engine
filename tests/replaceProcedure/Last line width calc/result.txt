@@ -133,7 +133,7 @@ export const SideBarWebViewInnerComponent: React.FC = () => {
 
   const [prefixWidth, setPrefixWidth] = React.useState(0);
 
-const getLastLineOfText = (text: string) => {
+  const getLastLineOfText = (text: string) => {
   const lines = text.split('\n');
   return lines[lines.length - 1];
 };
@@ -147,12 +147,12 @@ React.useEffect(() => {
       tempSpan.style.position = 'absolute';
       tempSpan.style.whiteSpace = 'pre'; // Preserve spaces and line breaks
       tempSpan.style.visibility = 'hidden'; // Hide the span from the view
-      tempSpan.style.font = `Cascadia Code`; // Set the font style same as textarea
+      tempSpan.style.font = `inherit`; // Inherit the font style from the parent
       tempSpan.textContent = getLastLineOfText(prefix); // Set the content to last line of the prefix
 
       document.body.appendChild(tempSpan); // Append the temporary span to the document
 
-      setPrefixWidth(tempSpan.clientWidth); // Retrieve the width from clientWidth and update prefixWidth state
+      setPrefixWidth(tempSpan.offsetWidth); // Retrieve the width from clientWidth and update prefixWidth state
       setPrefixLineCount(prefix.split('\n').length); // Update prefixLineCount state
 
       document.body.removeChild(tempSpan); // Remove the temporary span from the document
@@ -195,10 +195,11 @@ React.useEffect(() => {
                     position: "relative",
                     height: "20rem",
                     backgroundColor: "var(--vscode-editor-background)",
-                    color: "rgba(0,0,0,100)", // Transparent text color
+                    color: "rgba(0,0,0,100)",
                     borderColor: "var(--vscode-focusBorder)",
-                    caretColor: "var(--vscode-editor-foreground)", // Change cursor color to editor foreground color
-                    textIndent: prefixWidth + "px",
+                    caretColor: "var(--vscode-editor-foreground)",
+                    textIndent: `${prefixWidth}px`,
+                    marginTop: `${-(prefixLineCount - 1) * 16}px`,
                   }}
                   className="w-full h-96 mb-3 p-4 text-sm resize-none focus:outline-none"
                   placeholder={COMMAND_PLACEHOLDER}
@@ -224,8 +225,6 @@ React.useEffect(() => {
                       markJustClickedGo();
                     }
                   }}
-                  textIndent: `${prefixWidth}px`,
-                  marginTop: `-${(prefixLineCount - 1) * lineHeight}px`,
                 />
 
                 <div

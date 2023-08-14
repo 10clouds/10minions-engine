@@ -26,6 +26,12 @@ suite('Replace Procedure Test Suite', () => {
         }
       }
 
+      // console.log('MODIFIED CONTENT: ');
+      // console.log(modifiedContent);
+      // if (modifiedContent) {
+      //   const t = fs.writeFileSync(path.resolve(baseDir, testDir, 'test.txt'), modifiedContent);
+      // }
+
       assert.strictEqual(modifiedContent, expectedOutput);
     });
   }

@@ -1,0 +1,80 @@
+Firstly, I'll insert a helper function that gets the last line of text from a string by splitting it by newline characters and retrieving the last element of the obtained array. Secondly, I will replace the code responsible for updating the prefixWidth state so it also computes the width of the last line of the prefix and the total line count of the prefix. It does so by creating a temporary HTML span element, setting its styles similar to the textarea, and putting the last line of the prefix as its content. The temporary span is then appended to the document to measure its width and later removed from the document. Lastly, I will replace the textarea inline styles so that it indents the text both horizontally and vertically based on computed state variables.
+
+REPLACE
+```typescript
+React.useEffect(() => {
+    // Define a function to update the prefixWidth state if prefixSpanRef.current is defined
+    const updatePrefixWidth = () => {
+      if (prefixSpanRef.current) {
+        setPrefixWidth(prefixSpanRef.current.offsetWidth);
+      }
+    };
+
+    // Call the updatePrefixWidth function with a slight delay to ensure correct rendering
+    setTimeout(updatePrefixWidth, 0);
+  }, [prefixSpanRef.current, prefix]);
+```
+WITH
+```typescript
+const getLastLineOfText = (text: string) => {
+  const lines = text.split('\n');
+  return lines[lines.length - 1];
+};
+
+React.useEffect(() => {
+  // Define a function to update the prefixWidth state if prefixSpanRef.current is defined
+  const updatePrefixWidth = () => {
+    if (prefixSpanRef.current) {
+      // Create a temporary span element to measure the last line width (hidden from the view)
+      const tempSpan = document.createElement('span');
+      tempSpan.style.position = 'absolute';
+      tempSpan.style.whiteSpace = 'pre'; // Preserve spaces and line breaks
+      tempSpan.style.visibility = 'hidden'; // Hide the span from the view
+      tempSpan.style.font = `inherit`; // Inherit the font style from the parent
+      tempSpan.textContent = getLastLineOfText(prefix); // Set the content to last line of the prefix
+
+      document.body.appendChild(tempSpan); // Append the temporary span to the document
+
+      setPrefixWidth(tempSpan.offsetWidth); // Retrieve the width from clientWidth and update prefixWidth state
+      setPrefixLineCount(prefix.split('\n').length); // Update prefixLineCount state
+
+      document.body.removeChild(tempSpan); // Remove the temporary span from the document
+    }
+  };
+
+  // Call the updatePrefixWidth function with a slight delay to ensure correct rendering
+  setTimeout(updatePrefixWidth, 0);
+}, [prefixSpanRef.current, prefix]);
+```
+END_REPLACE
+
+REPLACE
+```typescript
+<textarea
+  ref={textAreaRef}
+  style={{
+    position: "relative",
+    height: "20rem",
+    backgroundColor: "var(--vscode-editor-background)",
+    color: "rgba(0,0,0,100)",
+    borderColor: "var(--vscode-focusBorder)",
+    caretColor: "var(--vscode-editor-foreground)",
+    textIndent: prefixWidth + "px",
+  }}
+```
+WITH
+```typescript
+<textarea
+  ref={textAreaRef}
+  style={{
+    position: "relative",
+    height: "20rem",
+    backgroundColor: "var(--vscode-editor-background)",
+    color: "rgba(0,0,0,100)",
+    borderColor: "var(--vscode-focusBorder)",
+    caretColor: "var(--vscode-editor-foreground)",
+    textIndent: `${prefixWidth}px`,
+    marginTop: `${-(prefixLineCount - 1) * 16}px`,
+  }}
+```
+END_REPLACE

@@ -111,10 +111,7 @@ export async function createModificationProcedure(
     },
   );
   const promptWithContext = createPrompt(refCode, modification, fileName);
-  //console.log("Prompt with context:");
-  //console.log(promptWithContext);
-
-  const tokensModification = countTokens(modification, GPTMode.QUALITY) + 50;
+  const tokensModification = countTokens(promptWithContext, GPTMode.QUALITY) + 50;
   const luxiouriosTokens = tokensModification * 1.5;
   const absoluteMinimumTokens = tokensModification;
 
@@ -125,16 +122,19 @@ export async function createModificationProcedure(
   }
 
   const mode: GPTMode = GPTMode.QUALITY;
+  const maxTokens = ensureIRunThisInRange({
+    prompt: promptWithContext,
+    mode,
+    preferedTokens: luxiouriosTokens,
+    minTokens: absoluteMinimumTokens,
+  });
+
+  console.log('TOKENS: ', maxTokens);
 
   return await gptExecute({
     fullPrompt: promptWithContext,
     onChunk,
-    maxTokens: ensureIRunThisInRange({
-      prompt: promptWithContext,
-      mode,
-      preferedTokens: luxiouriosTokens,
-      minTokens: absoluteMinimumTokens,
-    }),
+    maxTokens,
     temperature: 0,
     isCancelled,
     mode,
@@ -157,6 +157,8 @@ ${OUTPUT_FORMAT}
 * You MUST ALWAYS expand all comments like "// ...", "/* remainig code */" or "// ...rest of the code remains the same..." to the exact code that they refer to. You are producting final production ready code, so you need complete code.
 * If in the REQUESTED MODIFICATION section there are only comments, and user asked something that does not requrie modification of the code. Write the answer as a code comment in appropriate spot.
 * You must always leave a mark on the final file, if there is nothing to modify in the file, you must leave a comment in the file describing why there is nothing to modify.
+* Always check if brackets are closed and if code will compile correctly "{" have to end with "}",  "[" have to end with "]" etc.
+* Always check if the final result has all closing commands like END_REPLACE or END_INSERT or END_MODIFY_OTHER
 
 ==== ORIGINAL CODE ====
 ${refCode}

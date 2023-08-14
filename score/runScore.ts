@@ -124,7 +124,7 @@ async function gptAssert({
 
   const response = await gptExecute({
     fullPrompt,
-    maxTokens: 100,
+    maxTokens,
     mode,
     outputName: 'reportTestResult',
     outputSchema: z
@@ -174,7 +174,7 @@ async function runTest({ fileName, iterations = defaultIternationsNumber }: { fi
   for (let i = 0; i < iterations; i++) {
     setupCLISystemsForTest();
     logToFile(`Iteration ${i + 1} of ${iterations}`);
-    console.log('ITERATION: ', i);
+    console.log('ITERATION: ', i, ` of ${fileName}`);
     fs.writeFileSync(directoryPath, originalFileContent);
 
     const { execution } = await initMinionTask(userQuery, fileName, 'temp.txt');
@@ -209,6 +209,7 @@ async function runTest({ fileName, iterations = defaultIternationsNumber }: { fi
           resultingCode,
           assertion: test.assertion,
         });
+        console.log('ASSERTION: ', test.assertion);
         console.log('PASSES:', passessTest);
         console.log('COMMENT:', comment);
         if (!passessTest) {
@@ -242,6 +243,7 @@ async function runTest({ fileName, iterations = defaultIternationsNumber }: { fi
         }
       }
     }
+
     fs.unlinkSync(directoryPath);
   }
 
@@ -258,7 +260,7 @@ async function runScoring(options: ScoringTestOptions): Promise<void> {
   logToFile('\n\nRunning tests...\n\n');
 
   initCLISystems();
-  const testBaseNames = glob.sync(`**/${options.pattern}`, {
+  const testBaseNames = glob.sync(`${options.pattern}`, {
     cwd: path.join(__dirname, 'score'),
   });
 
@@ -305,7 +307,6 @@ program
 program.parse(process.argv);
 runScoring(program.opts<ScoringTestOptions>())
   .catch((e) => {
-    console.log(e);
     process.exit(1);
   })
   .then(() => {
