@@ -13,36 +13,32 @@ export function run(): Promise<void> {
     timeout: 600000,
     //diff: true,
     //bail: true,
-    //grep: "Create",
+    grep: 'Fix Node',
   });
 
   const testsRoot = path.resolve(__dirname);
 
   return new Promise((c, e) => {
-    glob(
-      '**/**.test.ts',
-      { cwd: testsRoot },
-      (err: Error | null, files: string[]) => {
-        if (err) {
-          return e(err);
-        }
+    glob('**/**.test.ts', { cwd: testsRoot }, (err: Error | null, files: string[]) => {
+      if (err) {
+        return e(err);
+      }
 
-        files.forEach((f: string) => mocha.addFile(path.resolve(testsRoot, f)));
+      files.forEach((f: string) => mocha.addFile(path.resolve(testsRoot, f)));
 
-        try {
-          mocha.run((failures) => {
-            if (failures > 0) {
-              e(new Error(`${failures} tests failed.`));
-            } else {
-              c();
-            }
-          });
-        } catch (err) {
-          console.error(err);
-          e(err);
-        }
-      },
-    );
+      try {
+        mocha.run((failures) => {
+          if (failures > 0) {
+            e(new Error(`${failures} tests failed.`));
+          } else {
+            c();
+          }
+        });
+      } catch (err) {
+        console.error(err);
+        e(err);
+      }
+    });
   });
 }
 

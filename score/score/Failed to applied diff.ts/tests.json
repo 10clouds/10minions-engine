@@ -1,0 +1,29 @@
+[
+  {
+    "type": "gptAssert",
+    "mode": "QUALITY",
+    "assertion": "The code is valid typescript code"
+  },
+  { "type": "simpleStringFind", "stringToFind": "onKeyDown" },
+  {
+    "type": "gptAssert",
+    "mode": "QUALITY",
+    "assertion": "There is a function that handles onKeyDown event for the Textarea"
+  },
+  {
+    "type": "gptAssert",
+    "mode": "FAST",
+    "assertion": "The onKeyDown event handling function checks for 'Tab' and 'Enter' key press, but does not check for 'CTRL + LEFT ARROW' or 'CTRL + RIGHT ARROW' key presses"
+  },
+  {
+    "type": "gptAssert",
+    "mode": "FAST",
+    "assertion": "Pressing 'CTRL + LEFT ARROW' is not currently bound to any function or action"
+  },
+  {
+    "type": "gptAssert",
+    "mode": "FAST",
+    "assertion": "Pressing 'CTRL + RIGHT ARROW' is not currently bound to any function or action"
+  },
+  { "type": "simpleStringFind", "stringToFind": "e.preventDefault();" }
+]

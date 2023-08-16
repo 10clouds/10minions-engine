@@ -84,9 +84,8 @@ export async function gptExecute<OutputTypeSchema extends z.ZodType<any, any>>({
   };
 
   if (DEBUG_RESPONSES) {
-    console.log('REQUEST DATA:', requestData);
+    // console.log('REQUEST DATA:', requestData);
   }
-
   const cachedResult = await getOpenAICacheManager().getCachedResult(requestData);
 
   function convertResult(result: string): z.infer<OutputTypeSchema> {
