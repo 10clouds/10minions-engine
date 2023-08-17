@@ -1,0 +1,104 @@
+/*
+Create a new directory named "logs" in the same directory as the script file to store the log files.
+*/
+
+import path from "path";
+import fs from "fs";
+import { CLIFileUri } from "../CLI/CLIFileUri";
+import { setupCLISystems } from "../CLI/setupCLISystems";
+import { MinionTask } from "../MinionTask";
+import { getEditorManager } from "../managers/EditorManager";
+import { applyMinionTask } from "../strategies/utils/applyMinionTask";
+import { GptMode, gptExecute } from "../openai";
+
+function logToFile(logMessage: string, logType: 'log' | 'error' = 'log') {
+    const filePath = path.join(__dirname, 'logs', `${logType}.log`)
+    fs.appendFileSync(filePath, logMessage + '\n');
+}
+async function gptAssert({ originalCode, resultingCode, mode = "FAST", assertion }: { originalCode: string; resultingCode: string; mode?: GptMode; assertion: string; }) {
+  let response = await gptExecute({
+    fullPrompt: `Original code:\n${originalCode}\n\nResulting code:\n${resultingCode}\n\nPlease analyse the resulting code and answer: does the resulting code passess this test: "${assertion}"\n\n`,
+    maxTokens: 100,
+    mode,
+    outputType: {
+      name: "reportTestResult",
+      description: `Report a result of the test, whanever the resulting code meets the criteria: ${assertion}, provide a comment explaining why it does not meet the criteria`,
+      parameters: {
+        type: "object",
+        properties: {
+          comment: { type: "string", description: "Desribe the reason for why the code passed (or did not pass) the test." },
+          passessTest: { type: "boolean" },
+        },
+        required: ["passessTest", "comment"],
+      },
+    },
+  });
+
+  let { passessTest, comment } = JSON.parse(response.result);
+
+  return {
+    passessTest,
+    comment,
+  };
+}
+
+export type TestDefinition = { type: "gptAssert"; mode: GptMode; assertion: string } | { type: "simpleStringFind"; stringToFind: string };
+
+async function runTest({ fileName, userQuery }: { fileName: string; userQuery: string; }) {
+
+  let tests: TestDefinition[] = require(path.join(__dirname, "score", fileName + ".tests.json"));
+
+  const execution = await MinionTask.create({
+    userQuery,
+    document: await getEditorManager().openTextDocument(new CLIFileUri(path.join(__dirname, "score", fileName))),
+    selection: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } },
+    selectedText: "",
+    minionIndex: 0,
+    onChanged: async (important) => {
+      console.log(".");
+    },
+  });
+
+  await execution.run();
+  await applyMinionTask(execution);
+
+  let resultingCode = (await execution.document()).getText();
+
+  logToFile("File contents");
+  logToFile(resultingCode);
+
+  for (let test of tests) {
+    if (test.type === "gptAssert") {
+      let { passessTest, comment } = await gptAssert({ originalCode: execution.originalContent, resultingCode, assertion: test.assertion });
+      console.log(`Test: ${test.assertion}`);
+
+      if (!passessTest) {
+        logToFile(`Test failed: ${test.assertion}`, 'error');
+        logToFile(`Comment: ${comment}`, 'error');
+      }
+    } else if (test.type === "simpleStringFind") {
+      let passessTest = resultingCode.includes(test.stringToFind);
+      console.log(`Test: ${test.stringToFind}`);
+
+      if (!passessTest) {
+        console.error("\x1b[31m%s\x1b[0m", `Test failed: ${test.stringToFind}`);
+      }
+    }
+  }
+  
+  logToFile("Done!", 'log');
+}
+
+async function runScoring(): Promise<void> {
+  console.log("Running tests...");
+
+  let userQuery = ``;
+
+  runTest({
+    fileName: "code-review.js",
+    userQuery,
+  });
+}
+
+setupCLISystems();
+runScoring();

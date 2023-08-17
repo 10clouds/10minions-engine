@@ -1,0 +1,57 @@
+I will replace the existing `applyEdit` method in the `TestEditorManager` class with the new implementation as described in the REQUESTED MODIFICATION section. This new implementation will loop over the entries of the provided `WorkspaceEditImplementation` instance, parse each command, and apply the appropriate operation (insert or replace) in the correct document, position or range, and with the correct text.
+
+REPLACE
+```typescript
+applyEdit(edit: WorkspaceEditImplementation) {
+  throw new Error("Method not implemented.");
+}
+```
+WITH
+```typescript
+applyEdit(edit: WorkspaceEditImplementation) {
+  // Loop through each entries
+  edit.entries().forEach((command: string) => {
+    // Parse the command
+    const [action, uriString, rangeStr, text] = command.split(',').map((part) => part.trim().slice(1, -1));
+    const uri = this.createUri(uriString)
+    
+    // Find or open the document to apply operation to
+    const document = this.openTextDocument(uri);
+    
+    if (action === "replace") {
+        // Parse the range string into start and end
+        const [startStr, endStr] = rangeStr.split(':');
+        const start = parseInt(startStr);
+        const end = parseInt(endStr);
+        
+        // Replace the range in the document with the new text
+        document.replace(new EditorRange(start, end), text);   
+    } else if (action === "insert") {
+        // Parse the position string into line and character
+        const [lineStr, charStr] = rangeStr.split(':');
+        const line = parseInt(lineStr);
+        const character = parseInt(charStr);
+        
+        // Insert the new text into the document at the specified position
+        document.insert(new EditorPosition(line, character), text);  
+    }
+  });
+}
+```
+END_REPLACE
+
+This modification assumes that there are replace and insert methods on the EditorDocument instances that respectively replace a range with some new text and insert new text at a specific position. If those methods don't exist yet or their signatures differ from what used here, then they should be created or modified. 
+
+MODIFY_OTHER
+```typescript
+// In the EditorDocument class, ensure that there are replace and insert methods that respectively replace a range with some new text and insert new text at a specific position. If those methods don't exist yet or their signatures differ from what used here, then they should be created or modified.
+```
+END_MODIFY_OTHER
+
+Also note that the EditorRange and EditorPosition instances are created assuming their constructors take two numbers as arguments respectively. If their constructors differ from what used here, then they should be modified or called with the correct arguments.
+
+MODIFY_OTHER
+```typescript
+// In the EditorRange and EditorPosition classes, ensure that their constructors take two numbers as arguments respectively. If their constructors differ from what used here, then they should be modified or called with the correct arguments.
+```
+END_MODIFY_OTHER

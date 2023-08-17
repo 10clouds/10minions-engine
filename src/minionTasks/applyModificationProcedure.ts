@@ -174,7 +174,7 @@ export async function applyModificationProcedure(originalCode: string, modificat
 
           await newCommand(outOfOrderNewCommand, line);
         } else {
-          params[inCommand.name] += (params[inCommand.name] ? '\n' : '') + line;
+          params[inCommand.name] += `${params[inCommand.name] ? '\n' : ''}${line}`;
         }
         continue;
       }

@@ -1,0 +1,51 @@
+I will insert the new class `MyEditorDocument` that implements the `EditorDocument` interface at the end of the original code. This class will have properties `languageId`, `lineCount`, `uri`, `_textLines`, and `_numberLines`. It will also have methods `initData`, `getText`, and `lineAt` as described in the requested modification.
+
+INSERT
+
+```typescript
+export class MyEditorDocument implements EditorDocument {
+  readonly languageId: string;
+  readonly lineCount: number;
+  readonly uri: EditorUri;
+  private _textLines: any[] = []; // This will store our text lines.
+  private _numberLines: number[] = []; // This will store our line numbers.
+
+  constructor(languageId: string, lineCount: number, uri: EditorUri) {
+    this.languageId = languageId;
+    this.lineCount = lineCount;
+    this.uri = uri;
+  }
+
+  // Here we'll provide logic to fill _textLines & _numberLines arrays. 
+  // This is needed for the operation of our `getText` and `lineAt` methods.
+  initData(textLines: any[], numberLines: number[]) {
+    this._textLines = textLines;
+    this._numberLines = numberLines;
+  }
+
+  getText(range?: EditorRange): string {
+    // Return joined text from _textLines array within given range 
+    // or whole text if range is not provided
+    return (range ? this._textLines.slice(range.start.line, range.end.line) : this._textLines).join("\n");
+  }
+
+  lineAt(line: number): {
+    readonly text: string;
+    readonly lineNumber: number;
+  } {
+    // Return object with text and line number from the given line
+    return {
+      text: this._textLines[line],
+      lineNumber: this._numberLines[line]
+    };
+  };
+}
+```
+
+BEFORE
+
+```typescript
+// ...rest of the code remains the same...
+```
+
+END_INSERT
