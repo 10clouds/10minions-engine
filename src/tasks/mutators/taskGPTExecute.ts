@@ -6,6 +6,7 @@ import { GPTExecuteRequestPrompt, GPTMode } from '../../gpt/types';
 import { TaskContext } from '../TaskContext';
 import { mutateAppendToLog } from '../logs/mutators/mutateAppendToLog';
 import { mutateReportSmallProgress } from './mutateReportSmallProgress';
+import { mutateAppendToLogNoNewline } from '../logs/mutators/mutateAppendToLogNoNewline';
 
 export async function taskGPTExecute<OutputTypeSchema extends z.ZodType>(
   task: TaskContext,
@@ -34,9 +35,9 @@ export async function taskGPTExecute<OutputTypeSchema extends z.ZodType>(
     onChunk: async (chunk: string) => {
       mutateReportSmallProgress(task);
       if (DEBUG_RESPONSES) {
-        mutateAppendToLog(task, chunk);
+        mutateAppendToLogNoNewline(task, chunk);
       } else {
-        mutateAppendToLog(task, '.');
+        mutateAppendToLogNoNewline(task, '.');
       }
     },
     isCancelled: () => {

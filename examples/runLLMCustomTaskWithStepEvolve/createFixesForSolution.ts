@@ -2,26 +2,25 @@ import { z } from 'zod';
 import { createFullPromptFromSections } from '../../src/gpt/createFullPromptFromSections';
 import { gptExecute } from '../../src/gpt/gptExecute';
 import { GPTMode } from '../../src/gpt/types';
-import { SolutionWithMeta } from '../../src/stepEvolve/FitnessFunction';
+import { Fix, SolutionWithMeta } from '../../src/stepEvolve/FitnessFunction';
 import { getRandomElement } from '../../src/utils/random/getRandomElement';
 import { shuffleArray } from '../../src/utils/random/shuffleArray';
 import { Criterion } from './Criterion';
 import { TaskDefinition } from './TaskDefinition';
-import { createNewSolutionFix } from './fixCreateNewSolution';
-import { improveSolutionFix } from './fixImproveSolution';
+import { createNewSolutionFix } from './fixes/fixCreateNewSolution';
+import { improveSolutionFix } from './fixes/fixImproveSolution';
 
 export async function createFixesForSolution(
   task: TaskDefinition,
   solutionWithMeta: SolutionWithMeta<string>,
   criteriaWithRatings: (Criterion<string> & { rating: number; reasoning: string })[],
-) {
+): Promise<Fix<string>[]> {
   let averageCriteriaRating = 0;
   if (criteriaWithRatings.length > 0) {
     averageCriteriaRating = criteriaWithRatings.map((c) => c.rating).reduce((a, b) => a + b, 0) / criteriaWithRatings.length;
   }
 
   const criteriaWithBelowAverageRating = criteriaWithRatings.filter((c) => c.rating <= averageCriteriaRating);
-
   const criteriaGPT = criteriaWithBelowAverageRating.filter((c) => c.suggestions === 'GPT');
   const criteriaCalculate = criteriaWithBelowAverageRating.filter((c) => c.suggestions !== 'GPT');
 
@@ -56,6 +55,7 @@ export async function createFixesForSolution(
         })
       : { result: { suggestions: [] } };
 
+  const criteriaWithAboveAverageRating = criteriaWithRatings.filter((c) => c.rating > averageCriteriaRating);
   const allSuggestions = [
     ...result.result.suggestions,
     ...criteriaCalculate.map((c) => (c.suggestions !== 'GPT' ? c.suggestions(solutionWithMeta.solution) : [])).flat(),
@@ -65,8 +65,12 @@ export async function createFixesForSolution(
 
   const fixes = [
     createNewSolutionFix(task),
-    ...allSuggestions.map((suggestions) => improveSolutionFix({ task, solutionWithMeta, suggestions })),
-    ...Array(3).fill(improveSolutionFix({ task, solutionWithMeta, suggestions: allSuggestions.join('\n') })),
+    ...allSuggestions.map((suggestions) =>
+      improveSolutionFix({ task, solutionWithMeta, suggestions: [suggestions, ...criteriaWithAboveAverageRating.map((c) => c.maintain)].join('\n') }),
+    ),
+    ...Array(3).fill(
+      improveSolutionFix({ task, solutionWithMeta, suggestions: [...allSuggestions, ...criteriaWithAboveAverageRating.map((c) => c.maintain)].join('\n') }),
+    ),
   ];
 
   return fixes;

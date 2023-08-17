@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'fs';
 import path from 'path';
 import { initCLISystems } from '../../src/CLI/setupCLISystems';
 import { SolutionWithMeta } from '../../src/stepEvolve/FitnessFunction';
@@ -15,7 +15,8 @@ import { mutateStartStage } from '../../src/tasks/mutators/mutateStartStage';
 import { formatPrompt } from '../../src/utils/string/formatPrompt';
 import { CustomTask } from './CustomTask';
 import { createFitnessAndNextSolutionsFunction } from './createFitnessAndNextSolutionsFunction';
-import { createNewSolutionFix } from './fixCreateNewSolution';
+import { createNewSolutionFix } from './fixes/fixCreateNewSolution';
+import { emptyDirSync } from './emptyDirSync';
 
 const TASK = formatPrompt(`
   Create a world class best official annoucement on linkedin by the CEO of 10Clouds that announces 10Clouds AI Labs.
@@ -29,16 +30,16 @@ const INTRO = formatPrompt(`
   The question is: "${TASK}"
 `);
 
-const ITERATIONS = 50;
+const ITERATIONS = 10;
 const MAX_STALE_ITERATIONS = 3;
 const THRESHOLD = 120;
 const BRANCHING = 3;
 
 const CUSTOM_STRATEGIES: Strategy[] = [
-  {
+  /*{
     id: 'SimpleQuickAnswer',
     description: 'For sumamrisations, creative writing and quick answers',
-  },
+  },*/
   {
     id: 'DeepAnalysis',
     description: 'Choose this when the answer requires sophisticated criteria and deep analysis',
@@ -55,6 +56,11 @@ const EXAMPLE_KNOWLEDGE: Knowledge[] = [
     id: 'InfoAboutCEO',
     description: 'Info About CEO of 10Clouds, use it if you need to know more about the CEO.',
     content: readFileSync(path.join(__dirname, 'knowledge', 'info-about-ceo.txt'), 'utf8'),
+  },
+  {
+    id: 'InfoAboutCEOPersonalBrandingStrategy',
+    description: 'Info About CEO of 10Clouds personal branding strategy, use it if you need to know more about the CEO personal branding strategy.',
+    content: readFileSync(path.join(__dirname, 'knowledge', 'info-about-ceo-branding-strategy.txt'), 'utf8'),
   },
   {
     id: 'InfoAboutAILabs',
@@ -97,6 +103,11 @@ const EXAMPLE_KNOWLEDGE: Knowledge[] = [
 
     mutateStartStage({ task, name: 'Stage 1', progressIncrement: PROGRESS_PER_PRE_STAGE });
     mutateAppendToLog(task, 'Stage 1');
+
+    // Before invoking the stepEvolve function, delete all log files
+    emptyDirSync(path.join(__dirname, 'logs'));
+    mkdirSync(path.join(__dirname, 'logs'));
+
     mutateEndStage(task);
 
     mutateStartStage({ task, name: 'Stage 2', progressIncrement: PROGRESS_PER_PRE_STAGE });
@@ -138,16 +149,18 @@ const EXAMPLE_KNOWLEDGE: Knowledge[] = [
         mutateStartStage({ task, name: 'Stage 4 (DeepAnalysis)', progressIncrement: PROGRESS_FOR_STRATEGY_STAGES });
         mutateAppendToLog(task, 'Stage 4 (DeepAnalysis)');
 
-        const initialSolutions = await Promise.all(
-          Array<Promise<SolutionWithMeta<string>>>(3).fill(
-            (async () =>
-              await createSolutionWithMetaWithFitness({
-                solution: await createNewSolutionFix({ task: TASK })(),
-                createdWith: 'initial',
-                fitnessAndNextSolutionsFunction: createFitnessAndNextSolutionsFunction({ task: { task: TASK }, maxBranching: BRANCHING }),
-              }))(),
-          ),
-        );
+        const initialSolutionsPromises = [];
+        for (let i = 0; i < 3; i++) {
+          initialSolutionsPromises.push(
+            createSolutionWithMetaWithFitness({
+              solution: await createNewSolutionFix({ task: TASK }).call(),
+              createdWith: 'initial',
+              fitnessAndNextSolutionsFunction: createFitnessAndNextSolutionsFunction({ task: { task: TASK }, maxBranching: BRANCHING }),
+            }),
+          );
+        }
+
+        const initialSolutions = await Promise.all(initialSolutionsPromises);
 
         const finalSolution = await stepEvolve({
           initialSolutions,
@@ -160,33 +173,36 @@ const EXAMPLE_KNOWLEDGE: Knowledge[] = [
                 for (const solutionWithMeta of solutionsWithMeta) {
                   mutateAppendToLog(
                     task,
-                    'Initial solution is: ' + solutionWithMeta.solution + ' ' + solutionWithMeta.fitness + ' (' + solutionWithMeta.createdWith + ')' + '.',
+                    'Initial solution is: ' + solutionWithMeta.solution + ' ' + solutionWithMeta.totalFitness + ' (' + solutionWithMeta.createdWith + ')' + '.',
+                  );
+                }
+                writeFileSync(path.join(__dirname, 'logs', `${iteration}.json`), JSON.stringify({ iteration, solutionsWithMeta }, null, 2));
+              },
+              onProgressMade: async (
+                oldSolutionsWithMeta: SolutionWithMeta<string>[],
+                accepted: SolutionWithMeta<string>[],
+                rejected: SolutionWithMeta<string>[],
+                newSolutions: SolutionWithMeta<string>[],
+                iteration: number,
+              ) => {
+                writeFileSync(path.join(__dirname, 'logs', `${iteration}.json`), JSON.stringify({ iteration, accepted, rejected, newSolutions }, null, 2));
+                //mutateAppendToLog(task, `Solutions ${oldSolutionsWithMeta.map((s) => s.solution).join(', ')}`);
+
+                for (const solutionWithMeta of accepted) {
+                  mutateAppendToLog(
+                    task,
+                    `New best ${iteration}: ${solutionWithMeta.solution} ${solutionWithMeta.totalFitness} (${solutionWithMeta.createdWith}).`,
                   );
                 }
               },
-              onAccept: async (oldSolutionsWithMeta, solutionWithMeta, iteration) => {
-                mutateAppendToLog(
-                  task,
-                  'New best ' + iteration + ': ' + solutionWithMeta.solution + ' ' + solutionWithMeta.fitness + ' (' + solutionWithMeta.createdWith + ')' + '.',
-                );
-              },
-              onReject: async (oldSolutionsWithMeta, solutionWithMeta, iteration) => {
-                mutateAppendToLog(
-                  task,
-                  'Rejected ' + iteration + ': ' + solutionWithMeta.solution + ' ' + solutionWithMeta.fitness + ' (' + solutionWithMeta.createdWith + ')' + '.',
-                );
-              },
-              onProgressMade: async (oldSolutionsWithMeta, iteration) => {
-                mutateAppendToLog(task, `Solutions ${oldSolutionsWithMeta.map((s) => s.solution).join(', ')}`);
-              },
               onFinalSolution: async (solutionWithMeta, iteration) => {
-                const { fitness, solution, iteration: solutionIteration } = solutionWithMeta;
+                const { totalFitness, solution, iteration: solutionIteration } = solutionWithMeta;
 
                 mutateAppendToLog(task, 'Final solution is:');
                 mutateAppendToLog(task, '```');
                 mutateAppendToLog(task, solution);
                 mutateAppendToLog(task, '```');
-                mutateAppendToLog(task, 'Fitness: ' + fitness);
+                mutateAppendToLog(task, 'Fitness: ' + totalFitness);
                 mutateAppendToLog(task, 'Iteration: ' + iteration + ' (Best solution found in iteration: ' + solutionIteration + ')');
               },
             },

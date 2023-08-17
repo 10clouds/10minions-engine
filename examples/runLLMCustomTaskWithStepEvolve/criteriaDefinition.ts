@@ -7,6 +7,7 @@ export const criteriaDefinition: Criterion<string>[] = [
     name: 'Avoid emojis',
     maxPointsIf: 'there are no emojis',
     maxPoints: 20,
+    maintain: 'Avoid emojis',
     calculate: (solution: string) => {
       const emojiPattern = emojiRegex();
       const emojis = solution.match(emojiPattern);
@@ -25,6 +26,7 @@ export const criteriaDefinition: Criterion<string>[] = [
     name: '700-800 characters long',
     maxPointsIf: 'The length of the post is between 700 and 800 characters',
     maxPoints: 20,
+    maintain: 'Keep the post between 700 and 800 characters',
     calculate: (solution) => {
       const distance = Math.max(Math.abs(750 - solution.length) - 50, 0);
       const points = 20 / (1 + distance / 50);
@@ -46,6 +48,7 @@ export const criteriaDefinition: Criterion<string>[] = [
     name: 'General style',
     maxPointsIf: 'the style is concise, to the point, funny and witty',
     maxPoints: 20,
+    maintain: 'Keep the style concise, to the point, funny and witty',
     calculate: 'GPT',
     suggestions: 'GPT',
   },
@@ -53,6 +56,7 @@ export const criteriaDefinition: Criterion<string>[] = [
     name: 'Personal story',
     maxPointsIf: 'the post contains a touching personal story',
     maxPoints: 20,
+    maintain: 'Keep the personal story in the post',
     calculate: 'GPT',
     suggestions: 'GPT',
   },
@@ -60,12 +64,14 @@ export const criteriaDefinition: Criterion<string>[] = [
     name: 'Virality',
     maxPointsIf: 'post should be written in a way so it can get a lot of likes',
     maxPoints: 20,
+    maintain: 'Keep the post in a way so it can get a lot of likes',
     calculate: 'GPT',
     suggestions: 'GPT',
   },
   {
     name: 'Style of great CEO',
     maxPointsIf: 'post should be written in a style that a person like Steve Jobs, Bill Gates or Elon Musk could have written it',
+    maintain: 'Keep the post in a style that a person like Steve Jobs, Bill Gates or Elon Musk could have written it',
     maxPoints: 20,
     calculate: 'GPT',
     suggestions: 'GPT',

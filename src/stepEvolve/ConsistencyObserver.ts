@@ -12,9 +12,13 @@ export class ConsistencyObserver<S> implements FitnessObserver<S> {
   currentConsistencyCheckString: string | undefined;
 
   onInitialSolution?: (solutionWithMeta: SolutionWithMeta<S>, iteration: number) => Promise<void>;
-  onAccept?: (oldSolutionsWithMeta: SolutionWithMeta<S>[], acceptedSolutionWithMeta: SolutionWithMeta<S>, iteration: number) => Promise<void>;
-  onReject?: (currentSolutionsWithMeta: SolutionWithMeta<S>[], rejectedSolutionWithMeta: SolutionWithMeta<S>, iteration: number) => Promise<void>;
-  onProgressMade?: (solutionsWithMeta: SolutionWithMeta<S>[], iteration: number) => Promise<void>;
+  onProgressMade?: (
+    oldSolutionsWithMeta: SolutionWithMeta<S>[],
+    accepted: SolutionWithMeta<S>[],
+    rejected: SolutionWithMeta<S>[],
+    newSolutions: SolutionWithMeta<S>[],
+    iteration: number,
+  ) => Promise<void>;
   onFinalSolution?: (solutionWithMeta: SolutionWithMeta<S>, iteration: number) => Promise<void>;
 }
 
