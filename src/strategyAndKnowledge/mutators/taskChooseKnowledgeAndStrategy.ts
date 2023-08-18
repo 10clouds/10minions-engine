@@ -7,8 +7,8 @@ import { shuffleArray } from '../../utils/random/shuffleArray';
 import { formatPrompt } from '../../utils/string/formatPrompt';
 import { Strategy } from '../Strategy';
 import { TaskContext } from '../../tasks/TaskContext';
-import { mutateAppendSectionToLog } from '../../tasks/mutators/mutateAppendSectionToLog';
-import { mutateAppendToLog } from '../../tasks/mutators/mutateAppendToLog';
+import { mutateAppendSectionToLog } from '../../tasks/logs/mutators/mutateAppendSectionToLog';
+import { mutateAppendToLog } from '../../tasks/logs/mutators/mutateAppendToLog';
 import { taskGPTExecute } from '../../tasks/mutators/taskGPTExecute';
 
 export async function taskChooseKnowledgeAndStrategy<TC extends TaskContext>({
@@ -66,9 +66,12 @@ export async function taskChooseKnowledgeAndStrategy<TC extends TaskContext>({
 
   if (DEBUG_PROMPTS) {
     mutateAppendSectionToLog(task, task.executionStage);
-    mutateAppendToLog(task, '<<<< PROMPT >>>>\n\n');
-    mutateAppendToLog(task, promptWithContext.map((m) => m.content).join(',') + '\n\n');
-    mutateAppendToLog(task, '<<<< EXECUTION >>>>\n\n');
+    mutateAppendToLog(task, '<<<< PROMPT >>>>');
+    mutateAppendToLog(task, '');
+    mutateAppendToLog(task, promptWithContext.map((m) => m.content).join(','));
+    mutateAppendToLog(task, '');
+    mutateAppendToLog(task, '<<<< EXECUTION >>>>');
+    mutateAppendToLog(task, '');
   }
 
   const result = await taskGPTExecute(task, {
@@ -84,7 +87,7 @@ export async function taskChooseKnowledgeAndStrategy<TC extends TaskContext>({
       .describe('Choose needed knowledge and strategy for the task'),
   });
 
-  mutateAppendToLog(task, '\n\n');
+  mutateAppendToLog(task, '\n');
 
   //find classification in text
   const matchingStrategies = availableStrategies.filter((c) => result.strategy === c.id);
@@ -96,7 +99,7 @@ export async function taskChooseKnowledgeAndStrategy<TC extends TaskContext>({
   const pickedStrategy = matchingStrategies[0];
 
   if (DEBUG_PROMPTS) {
-    mutateAppendToLog(task, `Strategy: ${pickedStrategy.id}\n\n`);
+    mutateAppendToLog(task, `Strategy: ${pickedStrategy.id}\n`);
   }
 
   const relevantKnowledge = (result.neededKnowledge || [])

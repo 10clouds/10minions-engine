@@ -1,4 +1,6 @@
-export interface TaskContext {
+import { LogContext } from './logs/LogContext';
+
+export interface TaskContext extends LogContext {
   id: string;
   totalCost: number;
   stopped: boolean;
@@ -7,7 +9,6 @@ export interface TaskContext {
   progress: number;
   stageTargetProgress: number;
   startTime: number;
-  logContent: string;
 
   onChange: (importantChange: boolean) => Promise<void>;
   onErrorOrCancel?: (error: string) => void;

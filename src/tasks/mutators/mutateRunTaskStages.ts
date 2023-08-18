@@ -1,9 +1,8 @@
+import { mutateAppendToLog } from '../logs/mutators/mutateAppendToLog';
 import { getEditorManager } from '../../managers/EditorManager';
 import { calculateAndFormatExecutionTime } from '../../utils/calculateAndFormatExecutionTime';
 import { TaskContext } from '../TaskContext';
-import { CANCELED_STAGE_NAME } from '../stageNames';
 import { TaskCanceled } from '../utils/TaskCanceled';
-import { mutateAppendToLog } from './mutateAppendToLog';
 import { mutateStopExecution } from './mutateStopExecution';
 
 export function mutateRunTaskStages<TC extends TaskContext>(task: TC, execute: (task: TC) => Promise<void>) {
@@ -16,7 +15,7 @@ export function mutateRunTaskStages<TC extends TaskContext>(task: TC, execute: (
     task.onErrorOrCancel = reject;
 
     try {
-      execute(task);
+      await execute(task);
       await mutateStopExecution(task);
     } catch (error) {
       if (!(error instanceof TaskCanceled)) {
@@ -29,8 +28,8 @@ export function mutateRunTaskStages<TC extends TaskContext>(task: TC, execute: (
       const executionTime = Date.now() - task.startTime;
       const formattedExecutionTime = calculateAndFormatExecutionTime(executionTime);
 
-      mutateAppendToLog(task, `Total Cost: ~${task.totalCost.toFixed(2)}$\n`);
-      mutateAppendToLog(task, `${task.executionStage} (Execution Time: ${formattedExecutionTime})\n`);
+      mutateAppendToLog(task, `Total Cost: ~${task.totalCost.toFixed(2)}$`);
+      mutateAppendToLog(task, `${task.executionStage} (Execution Time: ${formattedExecutionTime})`);
 
       task.progress = 1;
     }

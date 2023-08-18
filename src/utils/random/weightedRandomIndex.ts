@@ -3,7 +3,7 @@ import { KeyOfType } from '../typescript/KeyOfType';
 export function weightedRandomIndex<T>(options: T[], attr: KeyOfType<T, number>, random = Math.random): number {
   const weights: number[] = [];
 
-  for (let i = 0; i < options.length; i++) weights[i] = Math.max(0, options[i][attr] as any as number) + (weights[i - 1] || 0);
+  for (let i = 0; i < options.length; i++) weights[i] = Math.max(0, options[i][attr] as number) + (weights[i - 1] || 0);
 
   const r = random() * weights[weights.length - 1];
 

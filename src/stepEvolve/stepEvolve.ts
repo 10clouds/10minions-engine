@@ -6,20 +6,20 @@ export async function stepEvolve<S>({
   initialSolutions,
   threshold,
   startIterationFrom = 0,
-  maxNumIterations,
-  maxStaleIterations,
+  maxNumIterations = 5,
+  maxStaleIterations = 2,
   observers,
 }: {
   initialSolutions: SolutionWithMeta<S>[];
   threshold: number;
   startIterationFrom?: number;
-  maxNumIterations: number;
-  maxStaleIterations: number;
+  maxNumIterations?: number;
+  maxStaleIterations?: number;
   observers: FitnessObserver<S>[];
 }): Promise<SolutionWithMeta<S>> {
   const current = initialSolutions.slice();
 
-  current.sort((a, b) => b.fitness - a.fitness);
+  current.sort((a, b) => b.totalFitness - a.totalFitness);
 
   let currentIteration = startIterationFrom;
   let lastChangeIteration = startIterationFrom;
@@ -27,7 +27,7 @@ export async function stepEvolve<S>({
   await Promise.all(observers.map((o) => o.onInitialSolutions?.(current, currentIteration)));
 
   while (true) {
-    if (current[0].fitness >= threshold) {
+    if (current[0].totalFitness >= threshold) {
       console.log('Threshold reached');
       break;
     }
@@ -54,22 +54,23 @@ export async function stepEvolve<S>({
       throw new Error('No candidates available');
     }
 
+    const oldCurrent = current.slice();
+    const accepted: SolutionWithMeta<S>[] = [];
+    const rejected: SolutionWithMeta<S>[] = [];
+
     for (const candidate of candidateSolutions) {
-      if (candidate.fitness > current[current.length - 1].fitness) {
-        await Promise.all(observers.map((o) => o.onAccept?.(current, candidate, currentIteration)));
+      if (candidate.totalFitness > current[current.length - 1].totalFitness) {
         current[current.length - 1] = candidate;
         lastChangeIteration = currentIteration;
-        current.sort((a, b) => b.fitness - a.fitness);
+        current.sort((a, b) => b.totalFitness - a.totalFitness);
+        accepted.push(candidate);
       } else {
-        await Promise.all(observers.map((o) => o.onReject?.(current, candidate, currentIteration)));
+        rejected.push(candidate);
       }
-
-      await Promise.all(observers.map((o) => o.onProgressMade?.(current, currentIteration)));
-
-      await new Promise((r) => {
-        setTimeout(r, 0);
-      });
     }
+
+    await Promise.all(observers.map((o) => o.onProgressMade?.(oldCurrent, accepted, rejected, current, currentIteration)));
+    await new Promise((r) => setTimeout(r, 0));
   }
 
   await Promise.all(observers.map((o) => o.onFinalSolution?.(current[0], currentIteration)));

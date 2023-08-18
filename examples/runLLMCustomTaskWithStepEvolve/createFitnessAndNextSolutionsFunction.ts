@@ -25,7 +25,10 @@ export function createFitnessAndNextSolutionsFunction({
     });
 
     return {
-      fitness: finalRating,
+      totalFitness: finalRating,
+      fitnessComponents: criteriaWithRatings.map((c) => {
+        return { id: c.name, fitness: c.rating };
+      }),
       nextPossibleSolutions: async (): Promise<SolutionWithMeta<string>[]> => {
         const fixes = await createFixesForSolution(task, solutionWithMeta, criteriaWithRatings);
 

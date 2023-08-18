@@ -1,7 +1,7 @@
 import { MinionTask } from '../MinionTask';
 import { getEditorManager } from '../../managers/EditorManager';
-import { mutateAppendToLog } from '../../tasks/mutators/mutateAppendToLog';
-import { mutateClearLog } from '../../tasks/mutators/mutateClearLog';
+import { mutateAppendToLog } from '../../tasks/logs/mutators/mutateAppendToLog';
+import { mutateClearLog } from '../../tasks/logs/mutators/mutateClearLog';
 import { mutateGenerateShortName } from '../../tasks/mutators/mutateGenerateShortName';
 
 export async function mutateStageStarting(task: MinionTask) {
@@ -10,10 +10,10 @@ export async function mutateStageStarting(task: MinionTask) {
   task.originalContent = document.getText();
 
   mutateClearLog(task);
-  mutateAppendToLog(task, 'Id: ' + task.id + '\n');
-  mutateAppendToLog(task, 'File: ' + task.baseName + '\n');
-  mutateAppendToLog(task, 'Task: ' + task.userQuery + '\n');
-  mutateAppendToLog(task, '\n');
+  mutateAppendToLog(task, 'Id: ' + task.id + '');
+  mutateAppendToLog(task, 'File: ' + task.baseName + '');
+  mutateAppendToLog(task, 'Task: ' + task.userQuery + '');
+  mutateAppendToLog(task, '');
 
   mutateGenerateShortName(task); // Intentionally no await
 }

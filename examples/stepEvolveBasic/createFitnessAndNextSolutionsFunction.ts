@@ -17,19 +17,27 @@ export function createFitnessAndNextSolutionsFunction(task: TaskDefinition): Fit
     }, 0);
 
     return {
-      fitness,
+      totalFitness: fitness,
+      fitnessComponents: [{ id: 'fitness', fitness: fitness }],
       nextPossibleSolutions: async (): Promise<SolutionWithMeta<Solution>[]> => {
         const fixes = [
-          async function randomFix(solution: number) {
-            return Math.random() * (RANGE_SEEK_END - RANGE_SEEK_START) + RANGE_SEEK_START;
+          {
+            name: 'Random fix',
+            call: async () => {
+              return Math.random() * (RANGE_SEEK_END - RANGE_SEEK_START) + RANGE_SEEK_START;
+            },
           },
-
-          async function moveUp(solution: number) {
-            return Math.min(RANGE_SEEK_END, solution + Math.pow(100, 1 - Math.random() * 5));
+          {
+            name: 'Move up',
+            call: async () => {
+              return Math.min(RANGE_SEEK_END, solutionWithMeta.solution + Math.pow(100, 1 - Math.random() * 5));
+            },
           },
-
-          async function moveDown(solution: number) {
-            return Math.max(RANGE_SEEK_START, solution - Math.pow(100, 1 - Math.random() * 5));
+          {
+            name: 'Move down',
+            call: async () => {
+              return Math.max(RANGE_SEEK_START, solutionWithMeta.solution - Math.pow(100, 1 - Math.random() * 5));
+            },
           },
         ];
 

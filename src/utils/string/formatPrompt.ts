@@ -34,7 +34,9 @@ export function formatPrompt(prompt: string) {
   let minIndentation = Infinity;
   nonEmptyLines.forEach((line) => {
     const leadingSpaces = line.match(/^\s*/)?.[0].length ?? 0;
-    if (leadingSpaces < minIndentation) {
+
+    // Ignore lines that are not indented
+    if (leadingSpaces < minIndentation && leadingSpaces > 0) {
       minIndentation = leadingSpaces;
     }
   });

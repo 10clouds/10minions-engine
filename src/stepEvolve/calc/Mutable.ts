@@ -1,6 +1,6 @@
 export const computed = 'computed';
 
-function getOwnPropertyDescriptorThroughInheritance(prototype: any, name: string): PropertyDescriptor {
+function getOwnPropertyDescriptorThroughInheritance(prototype: unknown, name: string): PropertyDescriptor {
   const descriptor = Object.getOwnPropertyDescriptor(prototype, name);
 
   if (descriptor) {
@@ -25,7 +25,7 @@ export interface Mutable {
 }
 
 export abstract class BaseMutable implements Mutable {
-  private __calc: { [key: string]: any } = {};
+  private __calc: { [key: string]: unknown } = {};
   private __varCache: { [key: string]: any } = {};
 
   id: string;

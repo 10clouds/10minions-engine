@@ -2,8 +2,8 @@ import { z } from 'zod';
 import { createFullPromptFromSections } from '../../gpt/createFullPromptFromSections';
 import { GPTMode } from '../../gpt/types';
 import { TaskContext } from '../../tasks/TaskContext';
-import { mutateAppendSectionToLog } from '../../tasks/mutators/mutateAppendSectionToLog';
-import { mutateAppendToLog } from '../../tasks/mutators/mutateAppendToLog';
+import { mutateAppendSectionToLog } from '../../tasks/logs/mutators/mutateAppendSectionToLog';
+import { mutateAppendToLogNoNewline } from '../../tasks/logs/mutators/mutateAppendToLogNoNewline';
 import { taskGPTExecute } from '../../tasks/mutators/taskGPTExecute';
 import { Knowledge } from '../Knowledge';
 
@@ -33,7 +33,7 @@ export async function mutateCreateSimpleAnswer<TC extends TaskContext>({
   });
 
   mutateAppendSectionToLog(task, 'Answer');
-  mutateAppendToLog(task, answer);
+  mutateAppendToLogNoNewline(task, answer);
 
   return answer;
 }

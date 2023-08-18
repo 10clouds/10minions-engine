@@ -9,15 +9,11 @@ export function uniqueWeightedRandomElements<T extends { weight: number }>(
 ): T[] {
   const ret: T[] = [];
   const count = Math.max(0, _count);
+  let remainingOptions = options.slice();
 
-  while (ret.length < count) {
-    const e = weightedRandomElement(
-      options.filter((o) => !ret.includes(o)),
-      attr,
-      random,
-    );
-    if (e == null) break;
-    ret.push(e);
+  while (ret.length < count && remainingOptions.length > 0) {
+    ret.push(weightedRandomElement(remainingOptions, attr, random));
+    remainingOptions = options.filter((o) => !ret.includes(o));
   }
 
   if (ret.length !== count) {
