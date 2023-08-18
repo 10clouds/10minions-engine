@@ -8,7 +8,7 @@ import { mutateCreateAnswer } from './mutators/mutateCreateAnswer';
 import { mutateCreateModification } from './mutators/mutateCreateModification';
 import { mutateCreateModificationProcedure } from './mutators/mutateCreateModificationProcedure';
 import { mutateStageStarting } from './mutators/mutateStageStarting';
-import { MINION_TASK_STRATEGIES } from './strategies';
+import { MINION_TASK_STRATEGIES, MINION_TASK_STRATEGY_ID } from './strategies';
 
 export async function mutateExecuteMinionTaskStages(task: MinionTask) {
   mutateStartStage({ task, name: 'Starting ...', progressIncrement: 0.05 });
@@ -16,7 +16,7 @@ export async function mutateExecuteMinionTaskStages(task: MinionTask) {
   mutateEndStage(task);
 
   mutateStartStage({ task, name: 'Understanding ...', progressIncrement: 0.3 });
-  await taskChooseStrategy(task, MINION_TASK_STRATEGIES, createChooseStrategyPrompt);
+  task.strategyId = (await taskChooseStrategy(task, MINION_TASK_STRATEGIES, createChooseStrategyPrompt)).strategy.id as '' | MINION_TASK_STRATEGY_ID;
   mutateEndStage(task);
 
   switch (task.strategyId) {
