@@ -61,30 +61,31 @@ function normalizeIndent(slice: string[]) {
 
   return sliceNoIndent;
 }
-
 /**
  * Try to guess identation from the current slice and replaceTextLines
  */
-function findIndentationDifference(currentSlice: string[], replaceTextLines: string[], similarityFunction: (a: string, b: string) => number) {
-  const indentations: string[] = [];
+function findIndentationDifference(currentSlice: string[], replaceTextLines: string[]) {
+  const indentationDifferences: number[] = [];
 
-  const processedSlice = removeEmptyLines(currentSlice);
-  const processedReplaceTextLines = removeEmptyLines(replaceTextLines);
+  for (let i = 0; i < Math.min(currentSlice.length, replaceTextLines.length); i++) {
+    const currentLine = currentSlice[i];
+    const replaceLine = replaceTextLines[i];
 
-  for (let j = 0; j < Math.min(processedSlice.length, processedReplaceTextLines.length); j++) {
-    const lineIndent = fuzzyGetIndentationDifference(currentSlice[j], replaceTextLines[j], similarityFunction);
+    const currentIndentation = currentLine.match(/^\s*/)?.[0].length || 0;
+    const replaceIndentation = replaceLine.match(/^\s*/)?.[0].length || 0;
 
-    if (lineIndent.confidence > 0.7) {
-      indentations.push(lineIndent.indent);
-    }
+    const indentationDifference = replaceIndentation - currentIndentation;
+    indentationDifferences.push(indentationDifference);
   }
 
-  const sorted = indentations.sort((a: string, b: string) => {
-    return a.length - b.length;
-  });
+  const resultLines: string[] = [];
 
-  //return median
-  return sorted[0];
+  for (let i = 0; i < replaceTextLines.length; i++) {
+    const indentation = ' '.repeat(Math.abs(indentationDifferences[i]));
+    resultLines.push(indentation);
+  }
+
+  return resultLines[0];
 }
 
 export function exactLinesSimilarityAndMap(
@@ -391,7 +392,7 @@ export async function fuzzyReplaceTextInner({
       mapFindWithIndent,
     ).mappedFind;
 
-    const overalIndentDifference = findIndentationDifference(indentAdjustedFindLinesRest, withTextRest, equalsStringSimilarity) || '';
+    const overalIndentDifference = findIndentationDifference(indentAdjustedFindLinesRest, withTextRest) || '';
     const indentAdjustedWithTextRest = applyIndent(withTextRest, overalIndentDifference);
     const indentAdjustedWithLines = [...indentAdjustedWithTextupToFirstNonEmptyLine, ...indentAdjustedWithTextRest];
 
