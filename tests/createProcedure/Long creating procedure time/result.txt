@@ -1,0 +1,265 @@
+/*
+Task: Create a dictionary of voices with names, then choose a random voice for
+the text to speech, print the name of the voice.
+
+First, we need to define a voice dictionary. In the provided context, voice
+details are hard-coded as separate objects. We should refactor this to make it
+more maintainable.
+
+Step 1: Remove the hard-coded voice details and objects and replace them with a
+dictionary. I would do this by creating an object where the name of each voice
+is the key and the properties of each voice are properties of an inner object.
+
+Step 2: Once the dictionary has been created, I will choose a random voice. I
+can do this using the Math.random() method which provides a random float between
+0 and 1. I will multiply this by the number of entries in the dictionary and
+take the floor to get an integer. I will then fetch the voice with this index.
+
+Step 3: Finally, I will print the name and the voice_id of the chosen voice.
+
+Here is the code:
+*/
+
+// Step 1: Define voice dictionary
+const voices = {
+    "Rachel": { "voice_id": "21m00Tcm4TlvDq8ikWAM" },
+    "Domi": { "voice_id": "AZnzlk1XvdvUeBnXmlld" },
+    "Bella": { "voice_id": "EXAVITQu4vr4xnSDxMaL" },
+    "Antoni": { "voice_id": "ErXwobaYiN019PkySvjV" },
+    // ...add the rest of the voice
+    "Young American Woman With a Clear Voice": { "voice_id": "vutxYyExFrSlPzi5bvvT" },
+    "Expressive Romance Language Female Narrator": { "voice_id": "zFqGEeoWCQASMvmV6c49" },
+}
+
+// Step 2: Get a random voice
+const voiceNames = Object.keys(voices);
+const randomVoiceName = voiceNames[Math.floor(Math.random() * voiceNames.length)];
+
+// Step 3: Print the name and id of the chosen voice
+console.log("Selected voice: ", randomVoiceName); 
+console.log("Voice Id: ", voices[randomVoiceName].voice_id);
+
+/*
+Remember to replace the comment `// ...add the rest of the voice` with the rest
+of the voice data.
+
+This not only accomplishes the task but also makes it easier to update,
+maintain, and use the voices in other parts of the code, since we now have a
+dictionary of voices instead of a hard-coded list.
+*/
+
+import * as fs from "fs";
+import { URL } from "url";
+import "@/src/initEnv.js";
+import { env } from "@/src/env";
+import { YoutubeTranscript } from "@/src/youtubeTranscript";
+import axios from "axios";
+import { OpenAI } from "langchain/llms/openai";
+import { PromptTemplate } from "langchain/prompts";
+import { LLMChain } from "langchain/chains";
+import { textToSpeechStream } from "@/src/textToSpeechStream";
+import { playSound } from "@/src/playSound";
+
+const getVideoDescription = async (videoId: string, apiKey: string) => {
+  const response = await axios.get(
+    `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&key=${apiKey}&part=snippet`
+  );
+  return response.data.items[0].snippet;
+};
+
+const BUCKET_NAME = env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+
+async function extractInfoFromVideo(videoURL: string) {
+  console.log("Processing video: " + videoURL);
+
+  let videoID = YoutubeTranscript.retrieveVideoId(videoURL);
+  let transcript = await YoutubeTranscript.fetchTranscript(videoURL);
+
+  let transcriptString = transcript.map((t) => t.text).join("\n");
+
+  let data = await getVideoDescription(
+    videoID,
+    env.NEXT_PUBLIC_FIREBASE_API_KEY
+  );
+
+  const model = new OpenAI({
+    openAIApiKey: env.OPENAI_API_KEY,
+    modelName: "gpt-3.5-turbo-16k",
+  });
+
+  const template = `
+Teach me top things from this video, then prepare a summary of those key takeways that I can send without mentioning the source. Make it to the point and consise. Format it for slack. Write it as if a person with aspergers would wrote it. Provide links and googlable names if mentioned.
+
+=== TRANSCRIPT ===
+{transcript}
+
+=== VIDEO data ===
+{data}
+`;
+  const prompt = new PromptTemplate({
+    template: template,
+    inputVariables: ["transcript", "data"],
+  });
+
+  const chain = new LLMChain({ llm: model, prompt: prompt });
+  const res = await chain.call({
+    transcript: transcriptString,
+    data: JSON.stringify(data),
+  });
+  return res.text;
+}
+
+(async function main() {
+  let longFormVideURLs = ["https://www.youtube.com/watch?v=bZQun8Y4L2A"];
+
+  let bankingURLs = ["https://www.youtube.com/watch?v=Fi9-DWey0Uk"];
+
+  //https://www.youtube.com/watch?v=qRPqmrIsmHY
+  //https://www.youtube.com/watch?v=QArnd6uyiNg
+  //https://www.youtube.com/watch?v=QpmrA3xew9I
+
+  let smogolURLs = [
+    "https://www.youtube.com/watch?v=BMRywudsqtY",
+  ]
+
+  let huggingFacePlusLangChain = [
+    "https://www.youtube.com/watch?v=_j7JEDWuqLE"
+  ]
+
+  let gptFuncs = [
+    "https://www.youtube.com/watch?v=7oZKIwz2wk8"
+  ]
+
+  let videoURLs = [
+    "https://www.youtube.com/watch?v=_ex1ynFRhfc",
+    "https://www.youtube.com/watch?v=rcapt7ButFc",
+    "https://www.youtube.com/watch?v=8nZZ2oQhx4E",
+    "https://www.youtube.com/watch?v=Ya8hwRw1y-o",
+    "https://www.youtube.com/watch?v=4KXK6c6TVXQ",
+  ];
+
+  let summaries = await Promise.all(
+    bankingURLs.map((videoURL) => extractInfoFromVideo(videoURL))
+  );
+
+  let summary = createNewsletter(summaries);
+
+  console.log(summary);
+})();
+
+async function createNewsletter(summaries: string[]) {
+  // instance of LLMChain to process the summaries.
+  const chain = new LLMChain({
+    llm: new OpenAI({
+      openAIApiKey: env.OPENAI_API_KEY,
+      modelName: "gpt-3.5-turbo-16k",
+    }),
+    prompt: new PromptTemplate({
+      template:
+        "Generate a newletter from the following summaries:\n\n{summaries}",
+      inputVariables: ["summaries"],
+    }),
+  });
+
+  // Resolve all the summaries
+  const formattedSummaries = summaries.map(
+    (summary, index) => `## Summary ${index + 1}\n\n${summary}\n\n---\n\n`
+  );
+  // Process the formatted summaries using the chain to generate the final newsletter.
+  let newsletter = await chain.call({ summaries: formattedSummaries.join("") });
+
+
+        "voice_id": "21m00Tcm4TlvDq8ikWAM",
+        "name": "Rachel",
+       
+        "voice_id": "AZnzlk1XvdvUeBnXmlld",
+        "name": "Domi",
+      
+        "voice_id": "EXAVITQu4vr4xnSDxMaL",
+        "name": "Bella",
+     
+        "voice_id": "ErXwobaYiN019PkySvjV",
+        "name": "Antoni",
+       
+        "voice_id": "MF3mGyEYCl7XYWbV9V6O",
+        "name": "Elli",
+       
+        "voice_id": "TxGEqnHWrfWFTfGW9XjX",
+        "name": "Josh",
+       
+        "voice_id": "VR6AewLTigWG4xSOukaG",
+        "name": "Arnold",
+
+        "voice_id": "pNInz6obpgDQGcFmaJgB",
+        "name": "Adam",
+        
+        "voice_id": "yoZ06aMxZJJ28mfd3POQ",
+        "name": "Sam",
+        
+        "voice_id": "1ndOddbkq7S5QOtfO1YQ",
+        "name": "Bruce - Deep American Narrator Voice",
+        
+        "voice_id": "3EJcgobkH1DYQ1E6ibGQ",
+        "name": "Marcus - Deep Voice Middle Aged US Male 1",
+        
+        "voice_id": "FQkYfdEDIzOeYW9zruV4",
+        "name": "Lukas",
+        
+        "voice_id": "HuS3RTpNw0nG7RJXL9EC",
+        "name": "Andrew Tate",
+        
+        "voice_id": "QPljFv650n2XA45noQ5V",
+        "name": "[ElevenVoices] American Male Young Adult",
+        
+        "voice_id": "V0Ql3YyESsdod36Gc51a",
+        "name": "Paki - Expressive African Old Man Speaking Loudly",
+        
+        "voice_id": "aff8rmrKZOmkOiJtOh7J",
+        "name": "Captain Ack - strong, powerful",
+        
+        "voice_id": "jPCrewudbLBuHTGO4J5s",
+        "name": "Aaron:  Trending and HOT!",
+        
+        "voice_id": "jqiYkNs39970rD5Tz62I",
+        "name": "Papa Chad:  WOW! Grandfatherly, smooth, emotional",
+        
+        "voice_id": "l6OH0pqvxXuLQioRzVgq",
+        "name": "Agata",
+        
+        "voice_id": "rDKi9WJJY3Z1FNHnoBY0",
+        "name": "[ElevenVoices] African Male Raspy",
+        
+        "voice_id": "tgpK6eYX4ye6BXeAr2lA",
+        "name": "Maciej (CEO)",
+        
+        "voice_id": "vutxYyExFrSlPzi5bvvT",
+        "name": "Young American Woman With a Clear Voice",
+        
+        "voice_id": "zFqGEeoWCQASMvmV6c49",
+        "name": "Expressive Romance Language Female Narrator",
+        
+  const youngAmericanWomanId = "vutxYyExFrSlPzi5bvvT";
+  const romanceNarratorId = "zFqGEeoWCQASMvmV6c49"; 
+
+  console.log(newsletter.text);
+  let audioBlob: Blob = await textToSpeechStream({
+    textInput: newsletter.text,
+    voiceID: youngAmericanWomanId,
+    apiKey: env.NEXT_PUBLIC_ELEVENLABS_KEY,
+    modelId: "eleven_multilingual_v1",
+    stability: 0.5,
+    similarityBoost: 0.5,
+  });
+
+  const audioBuffer: ArrayBuffer = await audioBlob.arrayBuffer();
+  const path = "./audio.mp3";
+  const wstream = fs.createWriteStream(path);
+
+  wstream.write(Buffer.from(audioBuffer));
+  wstream.end();
+
+  wstream.on("finish", () => {
+    playSound(path);
+    console.log("finished playing");
+  });
+}

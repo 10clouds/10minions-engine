@@ -1,0 +1,12 @@
+I will modify the code in the `scanTODOComments` method of the `MinionTaskAutoRunner` class. Specifically, I will add explicit type annotations for the `line` and `lineNumber` parameters in the `forEach` callback function. This will ensure that TypeScript correctly infers the types of these variables and helps prevent any potential bugs or errors.
+
+## Modifications:
+REPLACE
+const lines = fs.readFileSync(path.join(rootDir, file)).toString().split("\n");
+
+lines.forEach((line, lineNumber) => {
+WITH
+const lines = fs.readFileSync(path.join(rootDir, file)).toString().split("\n");
+
+lines.forEach((line: string, lineNumber: number) => {
+END_REPLACE

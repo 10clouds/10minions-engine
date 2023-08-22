@@ -26,16 +26,16 @@ export class ConsumingOpenAICacheManager {
     }
 
     const requestDataHash = getAnalyticsManager().getRequestHash(requestData);
-    
+
     if (this.cache[requestDataHash] && this.cache[requestDataHash].length > 0) {
-      const result = this.cache[requestDataHash].shift();
+  const result = this.cache[requestDataHash].shift();
     
-      if (this.cache[requestDataHash].length === 0) {
-        return undefined;
-      }
+  if (this.cache[requestDataHash].length === 0) {
+    return undefined;
+  }
   
-      return result;
-    }
+  return result;
+}
 
     const snapshot = await this.firestore.collection('openAICalls').where('requestDataHash', '==', requestDataHash).get();
 
@@ -55,10 +55,10 @@ export class ConsumingOpenAICacheManager {
 
     const result = this.cache[requestDataHash].shift();
     
-    if (this.cache[requestDataHash].length === 0) {
-      return undefined;
-    }
+if (this.cache[requestDataHash].length === 0) {
+  return undefined;
+}
 
-    return result;
+return result;
   }
 }
