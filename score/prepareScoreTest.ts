@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { ScoreTest } from './types';
 import { TestRequiredData } from './prepareTestFiles';
 
-const ITERATIONS = 3;
+const ITERATIONS = 6;
 
 export const prepareScoreTest = async (userQuery: string, fileName: string, minionTask: TestRequiredData) => {
   initCLISystems();

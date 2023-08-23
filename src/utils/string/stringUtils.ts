@@ -55,8 +55,14 @@ export function removeIndent(slice: string[], indent?: string) {
   return slice.map((line) => line.slice(indent?.length));
 }
 
-export function applyIndent(slice: string[], indent: string) {
-  return slice.map((line) => (line.trim().length > 0 ? indent + line : line));
+export function applyIndent(slice: string[], indent: string[] | string) {
+  return slice.map((line, i) => {
+    if (Array.isArray(indent)) {
+      return line.trim().length > 0 ? indent[i] + line : line;
+    }
+
+    return line.trim().length > 0 ? indent + line : line;
+  });
 }
 
 export function jaccardSimilarityIndex(a: string, b: string): number {

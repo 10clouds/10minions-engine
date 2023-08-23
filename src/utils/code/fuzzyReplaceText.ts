@@ -1,11 +1,4 @@
-import {
-  applyIndent,
-  codeStringSimilarity,
-  equalsStringSimilarity,
-  levenshteinDistanceSimilarity,
-  removeEmptyLines,
-  removeIndent,
-} from '../string/stringUtils';
+import { applyIndent, codeStringSimilarity, equalsStringSimilarity, levenshteinDistanceSimilarity, removeIndent } from '../string/stringUtils';
 import { stripAllComments } from './stripAllComments';
 
 export type SingleLineSimilarityFunction = (original: string, replacement: string) => number;
@@ -64,28 +57,27 @@ function normalizeIndent(slice: string[]) {
 /**
  * Try to guess identation from the current slice and replaceTextLines
  */
-function findIndentationDifference(currentSlice: string[], replaceTextLines: string[]) {
+function findIndentationDifference(currentSlice: string[], replaceTextLines: string[], similarityFunction: (a: string, b: string) => number) {
   const indentationDifferences: number[] = [];
 
   for (let i = 0; i < Math.min(currentSlice.length, replaceTextLines.length); i++) {
-    const currentLine = currentSlice[i];
     const replaceLine = replaceTextLines[i];
+    const replaceIndentation = replaceLine.match(/^\s*/)?.[0].length || 0;
+    const currentLine = currentSlice[i];
 
     const currentIndentation = currentLine.match(/^\s*/)?.[0].length || 0;
-    const replaceIndentation = replaceLine.match(/^\s*/)?.[0].length || 0;
-
-    const indentationDifference = replaceIndentation - currentIndentation;
-    indentationDifferences.push(indentationDifference);
+    fuzzyGetIndentationDifference(currentLine, replaceLine, similarityFunction);
+    indentationDifferences.push(currentIndentation - replaceIndentation);
   }
 
   const resultLines: string[] = [];
 
   for (let i = 0; i < replaceTextLines.length; i++) {
-    const indentation = ' '.repeat(Math.abs(indentationDifferences[i]));
+    const indentation = ' '.repeat(Math.abs(indentationDifferences[0]));
     resultLines.push(indentation);
   }
-
-  return resultLines[0];
+  resultLines.sort((a, b) => b.length - a.length);
+  return resultLines;
 }
 
 export function exactLinesSimilarityAndMap(
@@ -392,7 +384,7 @@ export async function fuzzyReplaceTextInner({
       mapFindWithIndent,
     ).mappedFind;
 
-    const overalIndentDifference = findIndentationDifference(indentAdjustedFindLinesRest, withTextRest) || '';
+    const overalIndentDifference = findIndentationDifference(currentSlice, withTextLines, equalsStringSimilarity) || '';
     const indentAdjustedWithTextRest = applyIndent(withTextRest, overalIndentDifference);
     const indentAdjustedWithLines = [...indentAdjustedWithTextupToFirstNonEmptyLine, ...indentAdjustedWithTextRest];
 

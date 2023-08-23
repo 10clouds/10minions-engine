@@ -1,0 +1,22 @@
+The first step is to replace the less than ("<") and greater than (">") characters with button components. We can do this by replacing the text characters in the JSX with actual button elements. These button elements will need to include onClick handlers that will increment and decrement the suggestion index accordingly.
+
+Here is how we can do it:
+```typescript
+{/* Before */}
+ <span style={{ opacity: 0.5 }}>Press Tab to accept suggestion  {"<"}  {(suggestionIndex + 1) + " / " + suggestions.length}  {">"}</span>
+
+{/* After */}
+<button onClick={() => setSuggestionIndex((suggestionIndex + suggestions.length - 1) % suggestions.length)}>{"<"}</button>
+{(suggestionIndex + 1) + " / " + suggestions.length}  
+<button onClick={() => setSuggestionIndex((suggestionIndex + 1) % suggestions.length)}>{">"}</button>
+
+
+```
+
+I've added onClick handlers to the buttons. Here's the reasoning behind the functions:
+
+- The `setSuggestionIndex((suggestionIndex + suggestions.length - 1) % suggestions.length)` statement for "<" decrement button: This code will decrement the suggestion index. If the current index is 0, it will set the index to the end (suggestions.length - 1). The addition of suggestions.length is done to handle negative indices as JavaScript's modulus operation doesn't properly handle negative numbers. 
+
+- The `setSuggestionIndex((suggestionIndex + 1) % suggestions.length)` statement for ">" increment button: This code will increment the suggestion index, wrapping around to 0 if it's currently at the end (`suggestions.length - 1`). This is done using the modulus operator.
+
+In this context, these onClick handlers ensure that the `suggestionIndex` always points to a valid index and that it loops back around when the end or start of the `suggestions` array is reached. It's important to note that the above solution presumes that the suggestions array always has at least one element. If it can be empty, further checks should be put in place to avoid a division by zero error.

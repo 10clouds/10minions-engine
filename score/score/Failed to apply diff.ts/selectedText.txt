@@ -1,0 +1,8 @@
+<button
+                          className="cursor-pointer pointer-events-auto"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setSuggestionIndex((suggestionIndex + suggestions.length - 1) % suggestions.length);
+                            textAreaRef.current!.focus();
+                          }}
+                        >

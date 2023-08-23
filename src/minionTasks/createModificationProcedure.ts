@@ -110,8 +110,9 @@ export async function createModificationProcedure(
       return `#${p2}`;
     },
   );
+  const mode: GPTMode = GPTMode.FAST;
   const promptWithContext = createPrompt(refCode, modification, fileName);
-  const tokensModification = countTokens(promptWithContext, GPTMode.QUALITY) + 50;
+  const tokensModification = countTokens(promptWithContext, mode) + 50;
   const luxiouriosTokens = tokensModification * 1.5;
   const absoluteMinimumTokens = tokensModification;
 
@@ -121,7 +122,6 @@ export async function createModificationProcedure(
     onChunk('<<<< EXECUTION >>>>\n\n');
   }
 
-  const mode: GPTMode = GPTMode.QUALITY;
   const maxTokens = ensureIRunThisInRange({
     prompt: promptWithContext,
     mode,
@@ -141,7 +141,6 @@ export async function createModificationProcedure(
     outputSchema: z.string(),
   });
 }
-
 function createPrompt(refCode: string, modification: string, fileName: string) {
   return `
 You are a higly intelligent AI file composer tool, you can take a piece of text and a modification described in natural langue, and return a consolidated answer.
@@ -154,7 +153,7 @@ ${OUTPUT_FORMAT}
 * ALWAYS use FILENAME as a hint when you answering the question.
 * You have been provided an exact modification (REQUESTED MODIFICATION section) that needs to be applied to the code (ORIGINAL CODE section).
 * Make sure to exactly match the structure of the original and exactly the intention of the modification.
-* You MUST ALWAYS expand all comments like "// ...", "/* remainig code */" or "// ...rest of the code remains the same..." to the exact code that they refer to. You are producting final production ready code, so you need complete code.
+* You MUST ALWAYS expand all comments like "// ...", "/* remainig code */" or "// ...rest of the code remains the same..." to the exact code that they refer to. You are producting final production ready code, so you need complete code based on ORIGINAL CODE.
 * If in the REQUESTED MODIFICATION section there are only comments, and user asked something that does not requrie modification of the code. Write the answer as a code comment in appropriate spot.
 * You must always leave a mark on the final file, if there is nothing to modify in the file, you must leave a comment in the file describing why there is nothing to modify.
 * Always check if brackets are closed and if code will compile correctly "{" have to end with "}",  "[" have to end with "]" etc.

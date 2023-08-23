@@ -1,0 +1,34 @@
+export function stripAllComments(code: string[]): string[] {
+  const lineCommentsRegex = /\/\/.*|#[^\n]*/g;
+  const blockCommentsRegex = /\/\*[^*]*\*+(?:[^/*][^*]*\*+)*\//g;
+  const pythonBlockCommentsRegex = /'{3}[\s\S]*?'{3}|"{3}[\s\S]*?"{3}/g;
+
+  // Join all lines to continuously process multiline comments
+  const continuousCode = code.join('\n');
+
+  // Remove all types of comments
+  const uncommentedCode = continuousCode
+    .replace(lineCommentsRegex, '')
+    .replace(blockCommentsRegex, '')
+    .replace(pythonBlockCommentsRegex, '');
+
+    if (continuousCode !== uncommentedCode) {
+      //console.log('COMMENT STRIPPED CODE');
+      //console.log(continuousCode);
+      //console.log(uncommentedCode);
+    }
+  // Split back into lines
+  const uncommentedLines = uncommentedCode.split('\n');
+
+  /* New section: Check if lines contain only whitespace or are empty,
+  if true, don't push to array */
+  const linesStrippedOfWhiteSpace = [];
+
+  for (let line of uncommentedLines) {
+    if (line.trim().length > 0) { // if line is not empty or contains other than whitespace
+      linesStrippedOfWhiteSpace.push(line);
+    }
+  }
+
+  return linesStrippedOfWhiteSpace; // return lines stripped of comments and whitespace
+}

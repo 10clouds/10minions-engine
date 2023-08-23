@@ -1,0 +1,1 @@
+While textarea is focused pressing CTRL+LEFT ARROW should be an equivalent of pressing this button, the same for RIGHT.

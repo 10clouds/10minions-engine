@@ -1,0 +1,61 @@
+Firstly, before making any modifications, let's analyze what is currently happening in the getCachedResult() function.
+
+The function is making a hash of the requestData object, checking if there are any cached results left for that specific request, using the generated hash as a key, and returning a cached result that was stored in an array.
+
+The provided task asks to modify the function behavior, so when the cache[requestDataHash] is already empty, which means all previously retrieved cached results for that specific requestData was already returned to the consumer, the function should return undefined.
+
+Here is the step-by-step plan to solve the task:
+
+1. Check if cache[requestDataHash] is defined and if its length is 0 after we try to retrieve a result from the cache with the shift() function.
+2. If the length is 0, which means there is no more data left in the array, we will just return undefined.
+
+Following is the updated and commented code where modifications were needed.
+
+```tsx
+public async getCachedResult(requestData: object): Promise<string | undefined> {
+  if (!this.firestore) {
+    return undefined;
+  }
+
+  const requestDataHash = getAnalyticsManager().getRequestHash(requestData);
+
+  if (this.cache[requestDataHash] && this.cache[requestDataHash].length > 0) {
+    // Store the result to a variable, so we can check if the array is empty after removal of the cached result
+    const result = this.cache[requestDataHash].shift();
+    
+    // Check is array is empty after removal of the result, if it's empty, we return undefined as per the task directions.
+    if (this.cache[requestDataHash].length === 0) {
+      return undefined;
+    }
+    
+    return result;
+  }
+
+  const snapshot = await this.firestore.collection('openAICalls').where('requestDataHash', '==', requestDataHash).get();
+
+  if (snapshot.empty) {
+    return undefined;
+  }
+
+  snapshot.forEach((doc) => {
+    if (typeof doc.data().responseData === "string") {
+      if(this.cache[requestDataHash]) {
+        this.cache[requestDataHash].push(doc.data().responseData as string);
+      } else {
+        this.cache[requestDataHash] = [doc.data().responseData as string];
+      }
+    }
+  });
+
+  // Duplicate of the code above, this also has to be modified
+  const result = this.cache[requestDataHash].shift();
+    
+  if (this.cache[requestDataHash].length === 0) {
+    return undefined;
+  }
+  
+  return result;
+}
+```
+
+The parts of the code that were modified were the two places where we returned a result retrieved from the cache. By storing the result to a variable before returning it, we could add a check after the result was removed to determine whether the cached results for the provided requestData are empty now, and if so, then return undefined as per the task's requirement.
