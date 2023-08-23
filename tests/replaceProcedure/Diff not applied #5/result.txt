@@ -51,29 +51,29 @@ import { CommandHistoryManager, setCommandHistoryManager } from "../managers/Com
 import { getViewProvider } from "../managers/ViewProvider";
 
 /**
-  * The array BASE_COMMANDS contains base commands that do not change over time. Each command is an object 
-  * with the 'command' property. The 'timeStamp' property was set to the current 
-  * date and time whenever the script was loaded. Since these are base commands, and the timeStamp wasn't 
-  * relevant to the context, the 'timeStamp' property were removed, and only the 'command' property were kept. 
-  * This change simplifies the structure and usage of the BASE_COMMANDS array objects.
-  */
- const BASE_COMMANDS = [
-   { command: "Refactor this" },
-   { command: "Clean this up" },
-   { command: "How does this work?" },
-   { command: "Document this" },
-   { command: "Write tests for this" },
-   { command: "Make this UI look pretty" },
-   { command: "Rename this to something sensible" },
-   { command: "Are there any bugs? Fix them" },
-   { command: "Rework this so now it also does X" },
-   { command: "Optimize this for performance" },
-   { command: "Add error handling to this" },
-   { command: "Implement this functionality" },
-   { command: "Migrate this to a different library" },
-   { command: "Refactor this to use design pattern X" },
-   { command: "Integrate this with external service X" },
- ];
+ * The array BASE_COMMANDS contains base commands that do not change over time. Each command is an object 
+ * with the 'command' property. The 'timeStamp' property was set to the current 
+ * date and time whenever the script was loaded. Since these are base commands, and the timeStamp wasn't 
+ * relevant to the context, the 'timeStamp' property were removed, and only the 'command' property were kept. 
+ * This change simplifies the structure and usage of the BASE_COMMANDS array objects.
+ */
+const BASE_COMMANDS = [
+  { command: "Refactor this" },
+  { command: "Clean this up" },
+  { command: "How does this work?" },
+  { command: "Document this" },
+  { command: "Write tests for this" },
+  { command: "Make this UI look pretty" },
+  { command: "Rename this to something sensible" },
+  { command: "Are there any bugs? Fix them" },
+  { command: "Rework this so now it also does X" },
+  { command: "Optimize this for performance" },
+  { command: "Add error handling to this" },
+  { command: "Implement this functionality" },
+  { command: "Migrate this to a different library" },
+  { command: "Refactor this to use design pattern X" },
+  { command: "Integrate this with external service X" },
+];
 
 function shuffledBaseCommands(): { command: string; timeStamp: number }[] {
   const randomizedCommands = BASE_COMMANDS.slice(); // Make a copy of the original array to avoid modifying it

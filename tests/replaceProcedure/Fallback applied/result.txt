@@ -53,27 +53,27 @@ export default function Page({
 
   // Firebase Google Auth Provider
   const auth = getAuth();
-const provider = new GoogleAuthProvider();
+  const provider = new GoogleAuthProvider();
 
-const signIn = async () => {
-  try {
-    await signInWithPopup(auth, provider);
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, (user) => {
-    if (user) {
-      setUser(user);
-    } else {
-      setUser(null);
+  const signIn = async () => {
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error(error);
     }
-  });
+  };
 
-  return () => unsubscribe();
-}, []);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser(user);
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
   if (!user) {
     return (
       <div>

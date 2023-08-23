@@ -154,23 +154,23 @@ async function runTest({ fileName, iterations = 5 }: { fileName: string; iterati
     logToFile(resultingCode);
 
     for (let test of tests) {
-  statistics.total++;
+      statistics.total++;
 
-  if (test.type === "gptAssert") {
-    // ...
-  } else if (test.type === "simpleStringFind") {
-    // ...
-  } else if (test.type === "functionReturnTypeCheck") {
-    let returnType = await checkFunctionReturnType({ code: resultingCode, functionName: test.functionName });
-    logToFile(`Return type of function ${test.functionName}: ${returnType}`);
+      if (test.type === "gptAssert") {
+        // ...
+      } else if (test.type === "simpleStringFind") {
+        // ...
+      } else if (test.type === "functionReturnTypeCheck") {
+        let returnType = await checkFunctionReturnType({ code: resultingCode, functionName: test.functionName });
+        logToFile(`Return type of function ${test.functionName}: ${returnType}`);
 
-    if (returnType !== test.expectedType) {
-      logToFile(`Test failed: The return type of function ${test.functionName} is not ${test.expectedType}`);
-    } else {
-      statistics.passed++;
+        if (returnType !== test.expectedType) {
+          logToFile(`Test failed: The return type of function ${test.functionName} is not ${test.expectedType}`);
+        } else {
+          statistics.passed++;
+        }
+      }
     }
-  }
-}
         }
       }
     }
