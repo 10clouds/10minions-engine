@@ -169,7 +169,7 @@ async function runTest({ fileName, iterations = defaultIternationsNumber }: { fi
   logToFile(`Running test for '${fileName} (${iterations} iterations)'`);
   console.log(`Running test for '${fileName} (${iterations} iterations)'`);
   const directoryPath = path.resolve(__dirname, `score/${fileName}/temp.txt`);
-  const testInfoPath = path.resolve(__dirname, `score/${fileName}/temp.txt`);
+  const testInfoPath = path.resolve(__dirname, `score/${fileName}/testInfo.json`);
   const originalFileContent = fs.readFileSync(path.join(__dirname, 'score', `${fileName}/original.txt`), 'utf8');
   const testInfo = JSON.parse(fs.readFileSync(path.join(__dirname, 'score', `${fileName}/testInfo.json`), 'utf8'));
 
@@ -250,7 +250,7 @@ async function runTest({ fileName, iterations = defaultIternationsNumber }: { fi
   }
 
   const score = ((100 * statistics.passed) / statistics.total).toFixed();
-  testInfo.score = score;
+  testInfo.score = `${score}%`;
   fs.writeFileSync(testInfoPath, JSON.stringify(testInfo));
 
   console.log(`'${chalk.green(fileName)}' score: ${score}%`);

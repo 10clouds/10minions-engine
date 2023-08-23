@@ -67,7 +67,7 @@ function normalizeIndent(slice: string[]) {
 function findIndentationDifference(currentSlice: string[], replaceTextLines: string[]) {
   const indentationDifferences: number[] = [];
 
-  for (let i = 0; i < currentSlice.length; i++) {
+  for (let i = 0; i < Math.min(currentSlice.length, replaceTextLines.length); i++) {
     const replaceLine = replaceTextLines[i];
     const replaceIndentation = replaceLine.match(/^\s*/)?.[0].length || 0;
 
@@ -84,9 +84,8 @@ function findIndentationDifference(currentSlice: string[], replaceTextLines: str
 
   const resultLines: string[] = [];
 
-  indentationDifferences.sort((a, b) => b - a);
   for (let i = 0; i < replaceTextLines.length; i++) {
-    const indentation = ' '.repeat(Math.abs(indentationDifferences[0]));
+    const indentation = ' '.repeat(Math.abs(indentationDifferences[i]));
     resultLines.push(indentation);
   }
 

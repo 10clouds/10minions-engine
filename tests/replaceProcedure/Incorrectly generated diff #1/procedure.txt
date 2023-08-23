@@ -1,0 +1,31 @@
+I will perform two REPLACE operations. The first REPLACE operation will be to import the `glob` library at the top of the file. The second REPLACE operation will be to replace the `testDirs` array with a call to `glob.sync()`. This will dynamically load the directories instead of using the hard-coded array.
+
+REPLACE
+```typescript
+import * as assert from "assert";
+import { fuzzyReplaceText } from "../../utils/fuzzyReplaceText";
+import { readFileSync } from "fs";
+import * as path from 'path';
+```
+WITH
+```typescript
+import * as assert from "assert";
+import { fuzzyReplaceText } from "../../utils/fuzzyReplaceText";
+import { readFileSync } from "fs";
+import * as path from 'path';
+import * as glob from 'glob';
+```
+END_REPLACE
+
+REPLACE
+```typescript
+let testDirs = [
+  "replaceReal1",
+  "replaceReal2",
+];
+```
+WITH
+```typescript
+let testDirs = glob.sync(path.resolve(baseDir, 'replaceReal*'));
+```
+END_REPLACE
