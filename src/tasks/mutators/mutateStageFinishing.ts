@@ -1,7 +1,7 @@
 import { getEditorManager } from '../../managers/EditorManager';
 import { playNotificationSound } from '../../utils/playSound';
 import { TaskContext } from '../TaskContext';
-import { mutateAppendSectionToLog } from './mutateAppendSectionToLog';
+import { mutateAppendSectionToLog } from '../logs/mutators/mutateAppendSectionToLog';
 import { ShortNameContext } from './mutateGenerateShortName';
 
 export async function mutateStageFinishing<TC extends TaskContext & ShortNameContext>(task: TC) {

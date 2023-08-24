@@ -5,10 +5,8 @@ export function weightedRandomElements<T extends { weight: number }>(options: T[
   const ret: T[] = [];
   const count = Math.max(0, _count);
 
-  while (ret.length < count) {
-    const e = weightedRandomElement(options, attr, random);
-    if (e == null) break;
-    ret.push(e);
+  while (ret.length < count && options.length > 0) {
+    ret.push(weightedRandomElement(options, attr, random));
   }
 
   if (ret.length !== count) {

@@ -17,9 +17,10 @@ const THRESHOLD = -0.000932;
 
   const initialSolutions = [];
   for (let i = 0; i < 10; i++) {
+    const solution = Math.random() * (RANGE_SEEK_END - RANGE_SEEK_START) + RANGE_SEEK_START;
     initialSolutions.push(
       await createSolutionWithMetaWithFitness({
-        solution: Math.random() * (RANGE_SEEK_END - RANGE_SEEK_START) + RANGE_SEEK_START,
+        solution,
         createdWith: 'initial',
         parent: undefined,
         fitnessAndNextSolutionsFunction: createFitnessAndNextSolutionsFunction({ avoidThoseNumbers: [0, 5000, 10000] }),
@@ -39,11 +40,13 @@ const THRESHOLD = -0.000932;
             console.log('Initial solution is: ' + solutionWithMeta.solution + '.');
           }
         },
-        onAccept: async (oldSolutionsWithMeta, acceptedSolutionWithMeta, iteration) => {
-          console.log(oldSolutionsWithMeta.map((s) => s.solution).join(', '));
+        async onProgressMade(oldSolutionsWithMeta, accepted, rejected, newSolutions, iteration) {
+          for (const accepted1 of accepted) {
+            console.log(oldSolutionsWithMeta.map((s) => s.solution).join(', '));
 
-          const { solution, fitness, createdWith } = acceptedSolutionWithMeta;
-          console.log('New best ' + iteration + ': ' + solution + ' ' + fitness + ' (' + createdWith + ')' + '.');
+            const { solution, totalFitness, createdWith } = accepted1;
+            console.log('New best ' + iteration + ': ' + solution + ' ' + totalFitness + ' (' + createdWith + ')' + '.');
+          }
         },
         onFinalSolution: async (solutionWithMeta, iteration) => {
           console.log('The final solution is: ' + solutionWithMeta.solution + '.');

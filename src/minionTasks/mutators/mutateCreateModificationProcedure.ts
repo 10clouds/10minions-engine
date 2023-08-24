@@ -1,6 +1,7 @@
 import { MinionTask } from '../MinionTask';
 import { DEBUG_RESPONSES } from '../../const';
-import { mutateAppendToLog } from '../../tasks/mutators/mutateAppendToLog';
+import { mutateAppendToLog } from '../../tasks/logs/mutators/mutateAppendToLog';
+import { mutateAppendToLogNoNewline } from '../../tasks/logs/mutators/mutateAppendToLogNoNewline';
 import { createModificationProcedure } from '../createModificationProcedure';
 import { mutateStopExecution } from '../../tasks/mutators/mutateStopExecution';
 import { mutateReportSmallProgress } from '../../tasks/mutators/mutateReportSmallProgress';
@@ -23,9 +24,9 @@ export async function mutateCreateModificationProcedure(task: MinionTask) {
       async (chunk: string) => {
         mutateReportSmallProgress(task);
         if (DEBUG_RESPONSES) {
-          mutateAppendToLog(task, chunk);
+          mutateAppendToLogNoNewline(task, chunk);
         } else {
-          mutateAppendToLog(task, '.');
+          mutateAppendToLogNoNewline(task, '.');
         }
       },
       () => {
@@ -36,9 +37,10 @@ export async function mutateCreateModificationProcedure(task: MinionTask) {
     task.modificationProcedure = result;
     task.totalCost += cost;
   } catch (error) {
-    mutateAppendToLog(task, `Error while creating modification procedure:\n\n ${error}\n\n`);
+    mutateAppendToLogNoNewline(task, `Error while creating modification procedure:\n\n ${error}\n\n`);
     mutateStopExecution(task, (error as Error).message as string);
   }
 
-  mutateAppendToLog(task, '\n\n');
+  mutateAppendToLog(task, '');
+  mutateAppendToLog(task, '');
 }

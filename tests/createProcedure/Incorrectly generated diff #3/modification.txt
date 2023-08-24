@@ -1,0 +1,42 @@
+1. Description of the plan:
+   The current implementation of the function cleans the code by removing all types of comments (single line, multi-line, Python-style multi-line), but it also removes the lines which contain only whitespaces, regardless of whether those lines previously contained a comment or not. To fulfill the requirements of the task, we need to ensure that the function only removes lines that are empty after comment removal. To achieve this, we need to create an algorithm that will follow these steps:
+   - Make before and after snapshots for each line in the text, 
+   - Compare the before and after versions. If a line with a comment becomes blank, don't return it, but if a line was previously blank, preserve it in the result.
+
+2. Elaboration and modifications:
+
+```typescript
+export function stripAllComments(code: string[]): string[] {
+  const lineCommentsRegex = /\/\/.*|#[^\n]*/g;
+  const blockCommentsRegex = /\/\*[^*]*\*+(?:[^/*][^*]*\*+)*\//g;
+  const pythonBlockCommentsRegex = /'{3}[\s\S]*?'{3}|"{3}[\s\S]*?"{3}/g;
+
+  // Define the array, where we will store our cleaned code lines
+  const cleanedCode: string[] = [];
+
+  // Process each line one by one
+  code.forEach((codeLine) => {
+    // Store the original line
+    const originalLine = codeLine;
+
+    // Remove all types of comments
+    const uncommentedLine = codeLine
+      .replace(lineCommentsRegex, '')
+      .replace(blockCommentsRegex, '')
+      .replace(pythonBlockCommentsRegex, '');
+
+    // Check if the line contained any comment and after removing comments line is empty or contains only whitespaces
+    // If the line was already empty we add it to the result, if the line was nonempty and became empty after removing comments, we skip it
+    if((originalLine.trim() === "" && originalLine === uncommentedLine) || 
+       (uncommentedLine.trim() !== "")){
+      cleanedCode.push(uncommentedLine);
+    }
+  });
+
+  return cleanedCode;
+}
+```
+In the provided code:
+- The function now processes the input array line by line instead of merging all the lines into a single string. This approach helps us to track changes happening in each line individually, improving our control over the final output.
+- The function checks whether a line has had a comment stripped and has become empty. If that's the case, it is excluded from the resulting cleaned code. If a line was already blank, it's not modified.
+- The function now directly operates on the 'cleanedCode' array. There's no need to create an additional 'linesStrippedOfWhitespace' list, reducing redundancy and making it more readable and performance efficient.

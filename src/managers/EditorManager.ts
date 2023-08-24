@@ -24,8 +24,8 @@ export type EditorDocument = {
   };
 };
 
-// TODO: replace this any type
-export type EditorTextEdit = any;
+// TODO: replace this object type
+export type EditorTextEdit = object;
 
 export interface WorkspaceEdit {
   replace(uri: EditorUri, range: EditorRange, newText: string): void;

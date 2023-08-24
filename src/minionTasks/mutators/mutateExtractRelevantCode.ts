@@ -6,8 +6,9 @@ import { ensureICanRunThis } from '../../gpt/ensureIcanRunThis';
 import { gptExecute } from '../../gpt/gptExecute';
 import { GPTMode } from '../../gpt/types';
 import { EditorDocument, EditorPosition } from '../../managers/EditorManager';
-import { mutateAppendToLog } from '../../tasks/mutators/mutateAppendToLog';
-import { mutateAppendSectionToLog } from '../../tasks/mutators/mutateAppendSectionToLog';
+import { mutateAppendToLog } from '../../tasks/logs/mutators/mutateAppendToLog';
+import { mutateAppendToLogNoNewline } from '../../tasks/logs/mutators/mutateAppendToLogNoNewline';
+import { mutateAppendSectionToLog } from '../../tasks/logs/mutators/mutateAppendSectionToLog';
 import { mutateReportSmallProgress } from '../../tasks/mutators/mutateReportSmallProgress';
 
 export function extractRelevantCodePrompt({
@@ -65,9 +66,12 @@ export async function stageExtractRelevantCode(task: MinionTask) {
   if (DEBUG_PROMPTS) {
     mutateReportSmallProgress(task);
     mutateAppendSectionToLog(task, task.executionStage);
-    mutateAppendToLog(task, '<<<< PROMPT >>>>\n\n');
-    mutateAppendToLog(task, promptWithContext + '\n\n');
-    mutateAppendToLog(task, '<<<< EXECUTION >>>>\n\n');
+    mutateAppendToLog(task, '<<<< PROMPT >>>>');
+    mutateAppendToLog(task, '');
+    mutateAppendToLog(task, promptWithContext);
+    mutateAppendToLog(task, '');
+    mutateAppendToLog(task, '<<<< EXECUTION >>>>');
+    mutateAppendToLog(task, '');
   }
 
   const tokensNeeded = countTokens(fullFileContents, GPTMode.QUALITY);
@@ -83,9 +87,9 @@ export async function stageExtractRelevantCode(task: MinionTask) {
     onChunk: async (chunk: string) => {
       mutateReportSmallProgress(task);
       if (DEBUG_RESPONSES) {
-        mutateAppendToLog(task, chunk);
+        mutateAppendToLogNoNewline(task, chunk);
       } else {
-        mutateAppendToLog(task, '.');
+        mutateAppendToLogNoNewline(task, '.');
       }
     },
     isCancelled: () => {
@@ -114,5 +118,6 @@ export async function stageExtractRelevantCode(task: MinionTask) {
 
   task.totalCost += cost;
 
-  mutateAppendToLog(task, '\n\n');
+  mutateAppendToLog(task, '');
+  mutateAppendToLog(task, '');
 }

@@ -1,0 +1,60 @@
+There are two calls to `postMessageToWebView()` that post messages of different types to the Webview. One updates whether an API key is set, and the other updates the missing models. 
+
+This could be extracted into a separate function which contains these calls.
+
+Let's create function called `updateApiKeyAndModels()` inside the `TenMinionsViewProvider` class. This function receives `view` and `missingModels` as parameters and makes the two postMessageToWebView calls.
+
+After creating this function, we can replace the current two `postMessageToWebView()` calls with a call to our new method `updateApiKeyAndModels(view, missingModels)`. 
+
+Here is the refactored code:
+
+```typescript
+export class TenMinionsViewProvider implements vscode.WebviewViewProvider {
+  /* ... all the previous code ... */
+
+  /**
+   * Updates the API key and models in the Webview.
+   * @param {vscode.WebviewView | undefined} view - The VS Code Webview.
+   * @param {Array<any>} missingModels - The list of missing OpenAI models.
+   */
+  private updateApiKeyAndModels(view: vscode.WebviewView | undefined, missingModels: Array<any>) {
+    postMessageToWebView(view, {
+      type: MessageToWebViewType.ApiKeySet,
+      value: !!vscode.workspace.getConfiguration("10minions").get("apiKey"),
+    });
+
+    postMessageToWebView(view, {
+      type: MessageToWebViewType.ApiKeyMissingModels,
+      models: missingModels,
+    });
+  }
+
+  public resolveWebviewView(webviewView: vscode.WebviewView, context: vscode.WebviewViewResolveContext, _token: vscode.CancellationToken) {
+    /* ... all the previous code ... */
+
+    vscode.workspace.onDidChangeConfiguration(async (e) => {
+      if (e.affectsConfiguration("10minions.apiKey")) {
+
+        setOpenAIApiKey(vscode.workspace.getConfiguration("10minions").get("apiKey") || "");
+
+        let missingModels = await getMissingOpenAIModels();
+        
+        // Replaced the two calls with the function call
+        this.updateApiKeyAndModels(this._view, missingModels);
+
+        if (vscode.workspace.getConfiguration("10minions").get("apiKey")) {
+          AnalyticsManager.instance.reportEvent("setOpenAIApiKey");
+        } else {
+          AnalyticsManager.instance.reportEvent("unsetOpenAIApiKey");
+        }
+        
+      }
+    /* ... all the previous code ... */
+  }
+  
+  /* ... all the previous code ... */
+}
+```
+                       
+
+In this code, I've created a new function named `updateApiKeyAndModels()` that calls `postMessageToWebView()` twice to update Webview with API key and missing OpenAI models. I then replaced the two calls to `postMessageToWebView()` in the configuration change listener with the function call. This change improves the code's organization and readability

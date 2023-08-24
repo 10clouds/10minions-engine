@@ -4,10 +4,11 @@ import { ensureICanRunThis } from '../../gpt/ensureIcanRunThis';
 import { gptExecute } from '../../gpt/gptExecute';
 import { GPTExecuteRequestPrompt, GPTMode } from '../../gpt/types';
 import { TaskContext } from '../TaskContext';
-import { mutateAppendToLog } from './mutateAppendToLog';
+import { mutateAppendToLog } from '../logs/mutators/mutateAppendToLog';
 import { mutateReportSmallProgress } from './mutateReportSmallProgress';
+import { mutateAppendToLogNoNewline } from '../logs/mutators/mutateAppendToLogNoNewline';
 
-export async function taskGPTExecute<OutputTypeSchema extends z.ZodType<any, any>>(
+export async function taskGPTExecute<OutputTypeSchema extends z.ZodType>(
   task: TaskContext,
   {
     fullPrompt,
@@ -34,9 +35,9 @@ export async function taskGPTExecute<OutputTypeSchema extends z.ZodType<any, any
     onChunk: async (chunk: string) => {
       mutateReportSmallProgress(task);
       if (DEBUG_RESPONSES) {
-        mutateAppendToLog(task, chunk);
+        mutateAppendToLogNoNewline(task, chunk);
       } else {
-        mutateAppendToLog(task, '.');
+        mutateAppendToLogNoNewline(task, '.');
       }
     },
     isCancelled: () => {
@@ -50,7 +51,8 @@ export async function taskGPTExecute<OutputTypeSchema extends z.ZodType<any, any
     temperature,
   });
 
-  mutateAppendToLog(task, '\n\n');
+  mutateAppendToLog(task, '');
+  mutateAppendToLog(task, '');
 
   task.totalCost += cost;
 

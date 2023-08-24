@@ -4,7 +4,8 @@
  * next possible solutions.
  */
 export type FitnessAndNextSolutionsResult<S> = {
-  fitness: number;
+  totalFitness: number;
+  fitnessComponents: { id: string; fitness: number }[];
   nextPossibleSolutions: () => Promise<SolutionWithMeta<S>[]>;
 };
 
@@ -32,4 +33,7 @@ export type SolutionWithMeta<S> = FitnessAndNextSolutionsResult<S> & {
  * It returns a promise of a new improved solution.
  * If the fix is not applicable, it returns the same solution.
  */
-export type Fix<T> = (solution: T) => Promise<T>;
+export type Fix<T> = {
+  name: string;
+  call: () => Promise<T>;
+};

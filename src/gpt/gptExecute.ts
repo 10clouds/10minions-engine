@@ -16,7 +16,7 @@ export function setOpenAIApiKey(apiKey: string) {
   openAIApiKey = apiKey;
 }
 
-export async function gptExecute<OutputTypeSchema extends z.ZodType<any, any>>({
+export async function gptExecute<OutputTypeSchema extends z.ZodType>({
   fullPrompt,
   onChunk = async () => {},
   isCancelled = () => false,

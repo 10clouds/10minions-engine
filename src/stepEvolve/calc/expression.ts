@@ -9,7 +9,7 @@ export abstract class Expression<T extends Mutable> {
   public id: string;
 
   constructor({ id }: ExpressionInitializer) {
-    this.id = id != null ? id : `${this.constructor.name}-${randomBytes(6).toString('hex')}`;
+    this.id = id !== undefined ? id : `${this.constructor.name}-${randomBytes(6).toString('hex')}`;
   }
 
   abstract copy(copyParams?: ExpressionInitializer): Expression<T>;
@@ -20,38 +20,38 @@ export abstract class Expression<T extends Mutable> {
 
   mul(...vars: (Expression<T> | number)[]): MulExpression<T> {
     return new MulExpression<T>({
-      vars: [this as any as Expression<T>, ...vars],
+      vars: [this as unknown as Expression<T>, ...vars],
     });
   }
 
   plus(...vars: (Expression<T> | number)[]): PlusExpression<T> {
     return new PlusExpression<T>({
-      vars: [this as any as Expression<T>, ...vars],
+      vars: [this as unknown as Expression<T>, ...vars],
     });
   }
 
   minus(b: Expression<T> | number): MinusExpression<T> {
-    return new MinusExpression<T>({ a: this as any as Expression<T>, b });
+    return new MinusExpression<T>({ a: this as Expression<T>, b });
   }
 
   div(b: Expression<T> | number): DivExpression<T> {
-    return new DivExpression<T>({ a: this as any as Expression<T>, b });
+    return new DivExpression<T>({ a: this as Expression<T>, b });
   }
 
   exp(exponent: Expression<T> | number): ExpExpression<T> {
     return new ExpExpression<T>({
-      base: this as any as Expression<T>,
+      base: this as unknown as Expression<T>,
       exponent,
     });
   }
 
   clamp(params: ClampParams<T>): ClampExpression<T> {
-    return new ClampExpression<T>({ v: this as any as Expression<T>, params });
+    return new ClampExpression<T>({ v: this as Expression<T>, params });
   }
 
   clampCombo(params: ClampComboParams<T>): ClampComboExpression<T> {
     return new ClampComboExpression<T>({
-      v: this as any as Expression<T>,
+      v: this as unknown as Expression<T>,
       params,
     });
   }
@@ -364,7 +364,7 @@ export class ClampComboExpression<T extends Mutable> extends Expression<T> {
 export function makeSureIsExp<T extends Mutable>(v: number | Expression<T>): Expression<T>;
 export function makeSureIsExp<T extends Mutable>(v: number | Expression<T> | undefined | null): Expression<T> | undefined;
 export function makeSureIsExp<T extends Mutable>(v: number | Expression<T> | undefined | null) {
-  if (v == null) return undefined;
+  if (v === null || v === undefined) return undefined;
   return typeof v === 'number' ? new ConstExpression({ c: v }) : v;
 }
 

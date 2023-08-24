@@ -45,10 +45,11 @@ suite('Create procedure test suite', () => {
         const error = e as Error;
         modifiedContent = error.toString();
       }
-      console.log('MODIFIED CONTENT: ', modifiedContent);
-      if (modifiedContent) {
-        const t = fs.writeFileSync(path.resolve(baseDir, testDir, 'test.txt'), modifiedContent);
-      }
+
+      // This is helper to creating and review test for developer - dont remove it
+      // if (modifiedContent) {
+      //  fs.writeFileSync(path.resolve(baseDir, testDir, 'modifiedContent.txt'), modifiedContent);
+      // }
       assert.strictEqual(modifiedContent, expectedOutput);
     });
   }

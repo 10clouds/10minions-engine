@@ -25,11 +25,9 @@ suite('Replace Procedure Test Suite', () => {
           modifiedContent = e.toString();
         }
       }
-
-      // console.log('MODIFIED CONTENT: ');
-      // console.log(modifiedContent);
+      // This is helper to creating and review test for developer - dont remove it
       // if (modifiedContent) {
-      //   const t = fs.writeFileSync(path.resolve(baseDir, testDir, 'test.txt'), modifiedContent);
+      //   fs.writeFileSync(path.resolve(baseDir, testDir, 'modifiedContent.txt'), modifiedContent);
       // }
 
       assert.strictEqual(modifiedContent, expectedOutput);

@@ -8,22 +8,24 @@ export async function createSolutionWithMetaWithFitness<S>({
 }: {
   solution: S;
   createdWith: string;
-  parent: SolutionWithMeta<S> | undefined;
+  parent?: SolutionWithMeta<S>;
   fitnessAndNextSolutionsFunction: FitnessAndNextSolutionsFunction<S>;
 }): Promise<SolutionWithMeta<S>> {
-  let solutionWithMeta: SolutionWithMeta<S> = {
+  const solutionWithMeta: SolutionWithMeta<S> = {
     solution,
     parent,
     createdWith,
     iteration: 0,
-    fitness: 0,
+    totalFitness: 0,
+    fitnessComponents: [],
     nextPossibleSolutions: async () => [],
   };
 
-  solutionWithMeta = {
-    ...solutionWithMeta,
-    ...(await fitnessAndNextSolutionsFunction(solutionWithMeta)),
-  };
+  const result = await fitnessAndNextSolutionsFunction(solutionWithMeta);
+
+  solutionWithMeta.totalFitness = result.totalFitness;
+  solutionWithMeta.fitnessComponents = result.fitnessComponents;
+  solutionWithMeta.nextPossibleSolutions = result.nextPossibleSolutions;
 
   return solutionWithMeta;
 }

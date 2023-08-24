@@ -91,16 +91,16 @@ function createTestFile(content: string, fileName: string) {
 }
 
 const createTestInfoFile = (testData: TestRequiredData, path: string) => {
-  const { id, pluginVersion, vsCodeVersion } = testData;
-  const testInfo = `{
-    "minionTaskId": "${id}",
-    "pluginVersion": "${pluginVersion}",
-    "vsCodeVersion": "${vsCodeVersion}",
-    "date": "${getTodayDate()}", 
-    "score": "null"
-  }
-  `;
-  createTestFile(testInfo, `${path}/testInfo.json`);
+  const { id, pluginVersion, vsCodeVersion, documentURI } = testData;
+  const testInfo = {
+    originalFilePath: documentURI,
+    minionTaskId: id,
+    pluginVersion: pluginVersion,
+    vsCodeVersion: vsCodeVersion,
+    date: getTodayDate(),
+  };
+
+  createTestFile(JSON.stringify(testInfo), `${path}/testInfo.json`);
 };
 
 const createScoreTestFiles = async (testData: TestRequiredData, config: TestConfig): Promise<void> => {
@@ -124,6 +124,7 @@ const createProcedureTestFiles = async (testData: TestRequiredData, config: Test
   const testDirPath = createTestsDirectory(config.testType, config.testName);
   const testFileNamePrefix = `${testDirPath}/`;
   const originalFileName = extractFileNameFromPath(testData.documentURI);
+  createTestInfoFile(testData, testFileNamePrefix);
 
   if (config.testType === TestType.CREATE_PROCEDURE) {
     createTestFile(modificationDescription, `${testFileNamePrefix}modification.txt`);
