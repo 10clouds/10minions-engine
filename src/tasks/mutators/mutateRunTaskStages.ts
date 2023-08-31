@@ -15,6 +15,7 @@ export function mutateRunTaskStages<TC extends TaskContext>(task: TC, execute: (
     task.onErrorOrCancel = reject;
 
     try {
+      task.progress = 0;
       await execute(task);
       await mutateStopExecution(task);
     } catch (error) {

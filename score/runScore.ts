@@ -14,7 +14,7 @@ import { MinionTask } from '../src/minionTasks/MinionTask';
 import { mutatorApplyMinionTask } from '../src/minionTasks/mutators/mutateApplyMinionTask';
 import { mutateRunTaskStages } from '../src/tasks/mutators/mutateRunTaskStages';
 import { mutateExecuteMinionTaskStages } from '../src/minionTasks/mutateExecuteMinionTaskStages';
-
+import { format as dtFormat } from 'date-and-time';
 interface ScoringTestOptions extends OptionValues {
   iterations: number;
   pattern?: string;
@@ -63,12 +63,15 @@ async function runTest({ fileName, iterations = defaultIternationsNumber }: { fi
     logToFile(`Iteration ${i + 1} of ${iterations}`);
     console.log('ITERATION: ', i, ` of ${fileName}`);
     fs.writeFileSync(directoryPath, originalFileContent);
-    const { execution } = await initMinionTask(userQuery, fileName, 'temp.txt');
+    const minionTaskFilePath = path.join(__dirname, 'score', `${fileName}/temp.txt`);
+    const { execution } = await initMinionTask(userQuery, minionTaskFilePath, undefined, fileName);
 
     await mutateRunTaskStages(execution, mutateExecuteMinionTaskStages);
+    console.log('STRATEGY: ', execution.strategyId);
+    logToFile(`Strategy of ${i + 1} of iteration is ${execution.strategyId}`);
+
     await mutatorApplyMinionTask(execution);
     const resultingCode = (await execution.document()).getText();
-    // if (execution && resultingCode && tests && tests.length > 0) {
     const { finalRating, passes, criteriaRatings } = await rateMinionTask(execution, resultingCode, tests);
 
     console.log('RATING: ', finalRating);
@@ -84,7 +87,14 @@ async function runTest({ fileName, iterations = defaultIternationsNumber }: { fi
   }
 
   const score = ((100 * statistics.passed) / statistics.total).toFixed();
-  testInfo.score = `${score}%`;
+  const previousResults = testInfo.testResults || [];
+  testInfo.testResults = [
+    ...previousResults,
+    {
+      score: `${score}%`,
+      date: dtFormat(new Date(), 'YYYY-MM-DD_HH-mm-ss'),
+    },
+  ];
   fs.writeFileSync(testInfoPath, JSON.stringify(testInfo));
 
   console.log(`'${chalk.green(fileName)}' score: ${score}%`);

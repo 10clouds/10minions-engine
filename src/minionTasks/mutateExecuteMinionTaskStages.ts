@@ -3,6 +3,7 @@ import { mutateEndStage } from '../tasks/mutators/mutateEndStage';
 import { mutateStageFinishing } from '../tasks/mutators/mutateStageFinishing';
 import { mutateStartStage } from '../tasks/mutators/mutateStartStage';
 import { MinionTask } from './MinionTask';
+import { advancedCodeChangeStrategy } from './advancedCodeChangeStrategy';
 import { createChooseStrategyPrompt } from './createChooseStrategyPrompt';
 import { mutateCreateAnswer } from './mutators/mutateCreateAnswer';
 import { mutateCreateModification } from './mutators/mutateCreateModification';
@@ -33,6 +34,9 @@ export async function mutateExecuteMinionTaskStages(task: MinionTask) {
       mutateStartStage({ task, name: 'Preparing Changes ...', progressIncrement: 0.3 });
       await mutateCreateModificationProcedure(task);
       mutateEndStage(task);
+      break;
+    case 'AdvancedCodeChange':
+      await advancedCodeChangeStrategy(task);
       break;
     default:
       throw new Error(`Strategy ${task.strategyId} not implemented`);

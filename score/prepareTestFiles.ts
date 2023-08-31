@@ -92,8 +92,9 @@ function createTestFile(content: string, fileName: string) {
 
 const createTestInfoFile = (testData: TestRequiredData, path: string) => {
   const { id, pluginVersion, vsCodeVersion, documentURI } = testData;
+  const fileName = extractFileNameFromPath(documentURI);
   const testInfo = {
-    originalFilePath: documentURI,
+    originalFilePath: fileName,
     minionTaskId: id,
     pluginVersion: pluginVersion,
     vsCodeVersion: vsCodeVersion,

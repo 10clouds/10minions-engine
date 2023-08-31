@@ -11,6 +11,8 @@ export async function createSolutionWithMetaWithFitness<S>({
   parent?: SolutionWithMeta<S>;
   fitnessAndNextSolutionsFunction: FitnessAndNextSolutionsFunction<S>;
 }): Promise<SolutionWithMeta<S>> {
+  console.log('Creating solution with meta with fitness...');
+
   const solutionWithMeta: SolutionWithMeta<S> = {
     solution,
     parent,

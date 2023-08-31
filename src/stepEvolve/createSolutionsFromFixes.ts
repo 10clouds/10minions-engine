@@ -13,6 +13,7 @@ export async function createSolutionsFromFixes<S>({
   fixes: Fix<S>[];
   maxBranching?: number;
 }): Promise<SolutionWithMeta<S>[]> {
+  console.log('Create solutions from fixes...');
   const workingFixes = fixes.slice();
 
   shuffleArray(workingFixes);

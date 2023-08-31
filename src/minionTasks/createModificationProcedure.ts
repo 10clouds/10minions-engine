@@ -158,6 +158,7 @@ ${OUTPUT_FORMAT}
 * You must always leave a mark on the final file, if there is nothing to modify in the file, you must leave a comment in the file describing why there is nothing to modify.
 * Always check if brackets are closed and if code will compile correctly "{" have to end with "}",  "[" have to end with "]" etc.
 * Always check if the final result has all closing commands like END_REPLACE or END_INSERT or END_MODIFY_OTHER
+* Always remember if language is a typed programming language to add proper types to parameters and other variables
 
 ==== ORIGINAL CODE ====
 ${refCode}

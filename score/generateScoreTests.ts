@@ -14,11 +14,13 @@ enum Languages {
 
 const MAXIMUM_NUMBER_OF_RESULTS = 8;
 
-const prompt = async (minionTask: MinionTask) => {
+const prompt = async (minionTask: MinionTask, test?: boolean) => {
   const document = await minionTask.document();
   const splitPath = document.uri.fsPath.split('/');
-  const [testName] = splitPath.slice(-2);
-  const documentExtension = extractExtensionNameFromPath(testName) as keyof typeof Languages;
+  const [testFileName] = splitPath.slice(-2);
+  const [fileName] = splitPath.slice(-1);
+  const finalFileName = test ? testFileName : fileName;
+  const documentExtension = extractExtensionNameFromPath(finalFileName) as keyof typeof Languages;
 
   return `
   You are an expert senior software developer, with 10 years of experience, experience in numerous projects and up to date knowledge and an IQ of 200, you are also an expert in writing TDD (Test-Driven Development) or BDD (Behaviour-Driven Development) tests.
@@ -81,11 +83,11 @@ const prompt = async (minionTask: MinionTask) => {
   `;
 };
 
-export const generateScoreTests = async (minionTask?: MinionTask) => {
+export const generateScoreTests = async (minionTask?: MinionTask, test?: boolean) => {
   if (!minionTask) return;
-  const fullPrompt = await prompt(minionTask);
+  const fullPrompt = await prompt(minionTask, test);
   const inputTokensCount = countTokens(fullPrompt, GPTMode.QUALITY);
-  const outputTokensCount = 350;
+  const outputTokensCount = 500;
   const maxTokens = inputTokensCount + outputTokensCount;
 
   console.log('GENERATING TEST CASES...');

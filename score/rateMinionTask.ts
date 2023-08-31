@@ -17,18 +17,31 @@ import {
 import { checkFunctionReturnType } from './utils/checkFunctionReturnType';
 import { countTokens } from '../src/gpt/countTokens';
 
+interface MinionTaskCriteriaRatingResult {
+  finalRating: number;
+  criteriaRatings: CriteriaRatings[];
+  passes: boolean;
+}
+
+export interface CriteriaRatings {
+  rating: number;
+  criteria: string;
+  reasoning: string;
+}
+
 interface MinionTaskCriteria {
   [GPT_ASSERT]: GPTAssertTestType[];
   [FUNCTION_RETURN_TYPE_CHECK]: FunctionReturnTypeCheckTestType[];
   [SIMPLE_STRING_FIND]: SimpleStringToFindTestType[];
 }
 
-const MAX_POINTS = 20;
+export const MAX_POINTS = 20;
 const PERCENT_TO_PASS = 0.7;
 
-export async function rateMinionTask(task: MinionTask, solution: string, criteriaDefinition: ScoreTestType[]) {
+export async function rateMinionTask(task: MinionTask, solution: string, criteriaDefinition: ScoreTestType[]): Promise<MinionTaskCriteriaRatingResult> {
+  console.log('Rating minion task...');
   const TEST_PASS_RATING = criteriaDefinition.length * MAX_POINTS * PERCENT_TO_PASS;
-  const { originalContent, modificationDescription, userQuery } = task;
+  const { modificationDescription, userQuery } = task;
   const criteria: MinionTaskCriteria = {
     [GPT_ASSERT]: [],
     [FUNCTION_RETURN_TYPE_CHECK]: [],
@@ -41,25 +54,27 @@ export async function rateMinionTask(task: MinionTask, solution: string, criteri
     const { type } = testCase;
     (criteria[type] as ScoreTestType[]).push(testCase);
   });
+  const criteriaArray = shuffleArray(gptAssert.slice())
+    .map(({ assertion }) => `Max of ${MAX_POINTS}pts if the SOLUTION passes this test: '${assertion}'`)
+    .join('\n');
 
   const fullPrompt = createFullPromptFromSections({
-    intro: `Rate (from 0 to ${MAX_POINTS}) how good is the following SOLUTION that resolves USER_QUERY request applied to ORIGINAl_CODE based on MODIFICATION_DESCRIPTION. The SOLUTION should fullfill the CRITERIA`,
+    intro: `Rate (from 0 to ${MAX_POINTS}) how good is the following SOLUTION that fullfill USER_QUERY request based on MODIFICATION_DESCRIPTION. The SOLUTION should fullfill the CRITERIA`,
     sections: {
-      ORIGINAL_CODE: originalContent,
       MODIFICATION_DESCRIPTION: modificationDescription,
       USER_QUERY: userQuery,
       SOLUTION: solution,
-      CRITERIA: shuffleArray(gptAssert.slice())
-        .map(({ assertion }) => `Max of ${MAX_POINTS}pts if the SOLUTION passes this test: '${assertion}'`)
-        .join('\n'),
+      CRITERIA: criteriaArray,
     },
   });
 
-  const maxTokens = countTokens(fullPrompt, GPTMode.FAST);
+  const mode = GPTMode.FAST;
+  const maxTokens = countTokens(fullPrompt, mode) + 700;
+
   const rawResult = await gptExecute({
     fullPrompt,
     maxTokens,
-    mode: GPTMode.FAST,
+    mode,
     outputName: 'rating',
     outputSchema: z
       .object({
