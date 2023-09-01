@@ -34,6 +34,12 @@ export interface MinionTaskSolution {
 type MinionTaskSolutionWithMeta = SolutionWithMeta<MinionTaskSolution>;
 
 export const advancedCodeChangeStrategy = async (task: MinionTask) => {
+  const tempDirectoryPath = path.resolve(__dirname, 'temp');
+
+  if (!fs.existsSync(tempDirectoryPath)) {
+    fs.mkdirSync(tempDirectoryPath);
+  }
+
   mutateStartStage({
     task,
     name: 'Stage 4 (DeepAnalysis)',
