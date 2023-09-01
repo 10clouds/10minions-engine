@@ -3,7 +3,7 @@ import { DEBUG_PROMPTS } from '../const';
 import { countTokens } from '../gpt/countTokens';
 import { ensureIRunThisInRange } from '../gpt/ensureIRunThisInRange';
 import { gptExecute } from '../gpt/gptExecute';
-import { GPTMode } from '../gpt/types';
+import { GPTMode, QUALITY_MODE_TOKENS } from '../gpt/types';
 
 export const AVAILABLE_COMMANDS = [
   `
@@ -110,11 +110,16 @@ export async function createModificationProcedure(
       return `#${p2}`;
     },
   );
-  const mode: GPTMode = GPTMode.FAST;
   const promptWithContext = createPrompt(refCode, modification, fileName);
-  const tokensModification = countTokens(promptWithContext, mode) + 50;
-  const luxiouriosTokens = tokensModification * 1.5;
-  const absoluteMinimumTokens = tokensModification;
+  const fullPromptTokens = countTokens(promptWithContext, GPTMode.QUALITY);
+  const fullPromptTokensFinalTokens = fullPromptTokens > QUALITY_MODE_TOKENS ? countTokens(promptWithContext, GPTMode.FAST) : fullPromptTokens;
+  const onlyModificationTokens = countTokens(modification, GPTMode.QUALITY);
+  const modificationFinalTokens = onlyModificationTokens > QUALITY_MODE_TOKENS ? countTokens(modification, GPTMode.FAST) : onlyModificationTokens;
+
+  // TODO: left as reference
+  const tokens = fullPromptTokens > QUALITY_MODE_TOKENS ? modificationFinalTokens : fullPromptTokensFinalTokens;
+  // const luxiouriosTokens = modificationTokens * 1.5;
+  // const absoluteMinimumTokens = modificationTokens;
 
   if (DEBUG_PROMPTS) {
     onChunk('<<<< PROMPT >>>>\n\n');
@@ -124,12 +129,13 @@ export async function createModificationProcedure(
 
   const maxTokens = ensureIRunThisInRange({
     prompt: promptWithContext,
-    mode,
-    preferedTokens: luxiouriosTokens,
-    minTokens: absoluteMinimumTokens,
+    mode: GPTMode.QUALITY,
+    preferedTokens: fullPromptTokensFinalTokens,
+    minTokens: modificationFinalTokens,
   });
+  const mode: GPTMode = maxTokens > QUALITY_MODE_TOKENS ? GPTMode.FAST : GPTMode.QUALITY;
 
-  console.log('TOKENS: ', maxTokens);
+  console.log('MODIFICATION PROCEDURE TOKENS: ', maxTokens);
 
   return await gptExecute({
     fullPrompt: promptWithContext,

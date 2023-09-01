@@ -16,7 +16,7 @@ import { createNewSolutionFix } from '../stepEvolve/createNewSolutionFix';
 
 const ITERATIONS = 5;
 const MAX_STALE_ITERATIONS = 3;
-const THRESHOLD = 120;
+const THRESHOLD = 90;
 const BRANCHING = 3;
 
 const FULL_PROGRESS = 1;
@@ -79,10 +79,8 @@ export const advancedCodeChangeStrategy = async (task: MinionTask) => {
       }),
     );
 
-    fs.unlinkSync(minionTaskFilePath);
     mutateEndStage(task);
   }
-  fs.unlinkSync(originalTaskFilePath);
 
   const initialSolutions = await Promise.all(initialSolutionsPromises);
 
@@ -136,6 +134,13 @@ export const advancedCodeChangeStrategy = async (task: MinionTask) => {
       },
     ],
   });
+
+  for (let i = 0; i < ITERATIONS; i++) {
+    const tempTaskFileName = `temp-minion-${i}.txt`;
+    const minionTaskFilePath = path.join(__dirname, 'temp', tempTaskFileName);
+    fs.unlinkSync(minionTaskFilePath);
+  }
+  fs.unlinkSync(originalTaskFilePath);
 
   const { modificationDescription, modificationProcedure } = finalSolution.solution;
   task.modificationProcedure = modificationProcedure;
