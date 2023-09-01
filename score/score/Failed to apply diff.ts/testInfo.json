@@ -2,6 +2,7 @@
   "minionTaskId": "512208eb-92ca-46d9-a4ce-135de2c2ff65",
   "pluginVersion": "0.9.10",
   "vsCodeVersion": "1.79.2",
-  "date": "17.08.2023",
-  "score": "98%"
+  "date": "17.08.2023 ",
+  "score": "98%",
+  "testResults": [{ "score": "90%", "date": "2023-08-31_19-03-58" }]
 }

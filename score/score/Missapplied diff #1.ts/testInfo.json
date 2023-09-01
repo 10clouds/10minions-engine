@@ -1,0 +1,8 @@
+{
+  "originalFilePath": "MinionTaskAutoRunner",
+  "minionTaskId": "9621dfb0-685d-4c1f-ae18-ffc4eb05a010",
+  "pluginVersion": "0.9.9",
+  "vsCodeVersion": "1.79.1",
+  "date": "2023-08-31",
+  "testResults": [{ "score": "80%", "date": "2023-08-31_20-24-15" }]
+}

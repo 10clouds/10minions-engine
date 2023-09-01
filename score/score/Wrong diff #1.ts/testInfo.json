@@ -3,5 +3,6 @@
   "pluginVersion": "0.9.11-dev",
   "vsCodeVersion": "1.79.2",
   "date": "2023-08-10",
-  "score": "74%"
+  "score": "74%",
+  "testResults": [{ "score": "90%", "date": "2023-09-01_00-59-43" }]
 }

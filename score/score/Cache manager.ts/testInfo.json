@@ -1,8 +1,8 @@
 {
-  "originalFilePath": "file:///Users/maciel/Documents/Projects/10MinionsRepo/src/managers/ConsumingOpenAICacheManager.ts",
+  "originalFilePath": "ConsumingOpenAICacheManager.ts",
   "minionTaskId": "b6011e3e-29cf-43c4-bcd7-13277918256b",
   "pluginVersion": "0.9.11-dev",
   "vsCodeVersion": "1.79.2",
   "date": "2023-08-23",
-  "score": "81%"
+  "testResults": [{ "score": "100%", "date": "2023-08-31_17-10-34" }]
 }

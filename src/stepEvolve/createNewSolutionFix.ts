@@ -6,7 +6,7 @@ import { MinionTask } from '../minionTasks/MinionTask';
 import { MinionTaskSolution } from '../minionTasks/advancedCodeChangeStrategy';
 
 export const createNewSolutionFix = async (task: MinionTask): Promise<MinionTaskSolution> => {
-  task.strategyId = 'CodeChange';
+  task.strategyId = 'AdvancedCodeChange';
   await mutateCreateModification(task);
   await mutateCreateModificationProcedure(task);
   mutateStopExecution(task);

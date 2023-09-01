@@ -18,6 +18,6 @@ export const MINION_TASK_STRATEGIES: Strategy[] = [
   {
     id: 'AdvancedCodeChange',
     description:
-      "Choose if it's makes sense to modify more complex code that requires more accurate solution for this task. For example: fix a bug, add a feature, add a test, critisize this code, refactor this code, document this code etc.",
+      "Choose if it's task seems to be complicated and more complex to solve, it modifies code that requires more accurate solution. For example: fix a complicated bug, add a feature, refactor this code, document this code etc.",
   },
 ];
