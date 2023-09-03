@@ -35,9 +35,9 @@ export async function mutateExecuteMinionTaskStages(task: MinionTask) {
       await mutateCreateModificationProcedure(task);
       mutateEndStage(task);
       break;
-    case 'AdvancedCodeChange':
-      await advancedCodeChangeStrategy(task);
-      break;
+    // case 'CodeChange':
+    //   await advancedCodeChangeStrategy(task);
+    //   break;
     default:
       throw new Error(`Strategy ${task.strategyId} not implemented`);
   }

@@ -28,7 +28,15 @@ export const TestDefinitionSchema = {
 
 const defaultIternationsNumber = 10;
 
-async function runTest({ fileName, iterations = defaultIternationsNumber }: { fileName: string; iterations?: number }): Promise<void> {
+async function runTest({
+  fileName,
+  iterations = defaultIternationsNumber,
+  testQueueName,
+}: {
+  fileName: string;
+  iterations?: number;
+  testQueueName?: string;
+}): Promise<void> {
   const tests: TestDefinition[] = JSON.parse(fs.readFileSync(path.join(__dirname, 'score', `${fileName}/tests.json`), 'utf8'));
 
   // Create a validator instance
@@ -93,6 +101,8 @@ async function runTest({ fileName, iterations = defaultIternationsNumber }: { fi
     {
       score: `${score}%`,
       date: dtFormat(new Date(), 'YYYY-MM-DD_HH-mm-ss'),
+      testQueueName,
+      iterations,
     },
   ];
   fs.writeFileSync(testInfoPath, JSON.stringify(testInfo));
@@ -117,6 +127,7 @@ async function runScoring(options: ScoringTestOptions): Promise<void> {
     testBaseNames.map((fileName) => ({
       fileName,
       iterations: options.iterations,
+      testQueueName: options.testQueueName,
     })),
     options.concurrency,
     runTest,
@@ -136,9 +147,10 @@ program
     '-i, --iterations <iterations>',
     'Number of iterations',
     (value) => parseInt(value),
-    10, //  based on the previous definition
+    defaultIternationsNumber, //  based on the previous definition
   )
   .option('-p, --pattern <pattern>', 'File patterns to run tests on', '*')
+  .option('-n, --testQueueName <testQueueName>', 'File name for tests queue', 'routine tests')
   .option('-c, --concurrency <concurency>', 'Number of concurrent tests', (value) => parseInt(value), 1)
   .addHelpText(
     'after',

@@ -5,5 +5,19 @@
   "vsCodeVersion": "",
   "date": "",
   "score": "",
-  "testResults": [{ "score": "90%", "date": "2023-08-31_17-54-53" }]
+  "testResults": [
+    { "score": "90%", "date": "2023-08-31_17-54-53" },
+    {
+      "score": "100%",
+      "date": "2023-09-01_11-08-37",
+      "testQueueName": "Old CodeChange strategy test",
+      "iterations": 10
+    },
+    {
+      "score": "100%",
+      "date": "2023-09-01_21-34-49",
+      "testQueueName": "NEW CodeChange (with step evolve) strategy test",
+      "iterations": 10
+    }
+  ]
 }

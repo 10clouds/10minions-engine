@@ -14,9 +14,10 @@ import { ScoreTestType } from '../../score/types';
 import { format as dtFormat } from 'date-and-time';
 import { createNewSolutionFix } from '../stepEvolve/createNewSolutionFix';
 
-const ITERATIONS = 5;
+const ITERATIONS = 6;
 const MAX_STALE_ITERATIONS = 3;
-const THRESHOLD = 90;
+// TODO: fix threeshold bug - when there is no solution with fitness above threeshold, cant replace error is shown
+const THRESHOLD = 10;
 const BRANCHING = 3;
 
 const FULL_PROGRESS = 1;
@@ -31,6 +32,7 @@ export interface MinionTaskSolution {
   modificationProcedure: string;
   modificationDescription: string;
 }
+
 type MinionTaskSolutionWithMeta = SolutionWithMeta<MinionTaskSolution>;
 
 export const advancedCodeChangeStrategy = async (task: MinionTask) => {

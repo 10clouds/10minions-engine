@@ -1,8 +1,8 @@
 import { Strategy } from '../strategyAndKnowledge/Strategy';
 
-export type MINION_TASK_STRATEGY_ID = 'AnswerQuestion' | 'CodeChange' | 'AdvancedCodeChange';
+export type MINION_TASK_STRATEGY_ID = 'AnswerQuestion' | 'CodeChange';
 
-export const MINION_TASK_STRATEGY_IDS = ['AnswerQuestion', 'CodeChange', 'AdvancedCodeChange'] as const;
+export const MINION_TASK_STRATEGY_IDS = ['AnswerQuestion', 'CodeChange'] as const;
 
 export const MINION_TASK_STRATEGIES: Strategy[] = [
   {
@@ -13,11 +13,6 @@ export const MINION_TASK_STRATEGIES: Strategy[] = [
   {
     id: 'CodeChange',
     description:
-      "Choose if it's makes sense to modify less complex code for this task. For example: fix a bug, add a feature, add a test, are there any bugs?, critisize this code, refactor this code, document this code etc.",
-  },
-  {
-    id: 'AdvancedCodeChange',
-    description:
-      "Choose if it's task seems to be complicated and more complex to solve, it modifies code that requires more accurate solution. For example: fix a complicated bug, add a feature, refactor this code, document this code etc.",
+      "Choose if it's makes sense to modify code for this task. For example: fix a bug, add a feature, add a test, are there any bugs?, critisize this code, refactor this code, document this code etc.",
   },
 ];
