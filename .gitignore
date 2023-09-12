@@ -12,3 +12,5 @@ node_modules
 openAIKey.json
 serviceAccount.json
 .env.local
+src/minionTasks/logs
+src/minionTasks/temp

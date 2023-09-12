@@ -1,4 +1,4 @@
-import z from 'zod';
+import z, { string } from 'zod';
 import { GPTMode } from '../src/gpt/types';
 
 export const GPT_ASSERT = 'gptAssert';
@@ -9,7 +9,7 @@ export type GPT_ASSERT_TYPE = typeof GPT_ASSERT;
 export type SIMPLE_STRING_FIND_TYPE = typeof SIMPLE_STRING_FIND;
 export type FUNCTION_RETURN_TYPE_CHECK_TYPE = typeof FUNCTION_RETURN_TYPE_CHECK;
 
-type TestDefinitionType = typeof GPT_ASSERT | typeof SIMPLE_STRING_FIND | typeof FUNCTION_RETURN_TYPE_CHECK;
+type TestDefinitionType = GPT_ASSERT_TYPE | SIMPLE_STRING_FIND_TYPE | FUNCTION_RETURN_TYPE_CHECK_TYPE;
 
 export const listOfTypes = [GPT_ASSERT, SIMPLE_STRING_FIND, FUNCTION_RETURN_TYPE_CHECK];
 
@@ -79,11 +79,35 @@ export const FunctionReturnTypeCheckSchema = z.object({
 
 export const TestSchemas = z.union([GptAssertSchema, SimpleStringFindSchema, FunctionReturnTypeCheckSchema]);
 
+export interface GPTAssertTestType {
+  type: GPT_ASSERT_TYPE;
+  mode: GPTMode;
+  assertion: string;
+}
+export interface SimpleStringToFindTestType {
+  type: SIMPLE_STRING_FIND_TYPE;
+  stringToFind: string;
+}
+
+export interface FunctionReturnTypeCheckTestType {
+  type: FUNCTION_RETURN_TYPE_CHECK_TYPE;
+  functionName: string;
+  expectedType: string;
+}
+
 export interface ScoreTest {
-  type: 'functionReturnTypeCheck' | 'simpleStringFind' | 'gptAssert';
+  type: TestDefinitionType;
   mode?: string;
   functionName?: string;
   expectedType?: string;
   stringToFind?: string;
   assertion?: string;
+}
+
+export type ScoreTestType = GPTAssertTestType | SimpleStringToFindTestType | FunctionReturnTypeCheckTestType;
+
+export interface ScoreTestTypeMap {
+  [GPT_ASSERT]: GPTAssertTestType;
+  [FUNCTION_RETURN_TYPE_CHECK]: FunctionReturnTypeCheckTestType;
+  [SIMPLE_STRING_FIND]: SimpleStringToFindTestType;
 }

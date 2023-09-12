@@ -1,0 +1,37 @@
+[
+  {
+    "type": "gptAssert",
+    "mode": "QUALITY",
+    "assertion": "The code is valid typescript code"
+  },
+  {
+    "type": "gptAssert",
+    "mode": "FAST",
+    "assertion": "Glob package should be imported in the script"
+  },
+  {
+    "type": "gptAssert",
+    "mode": "FAST",
+    "assertion": "The variable 'testDirs' shall be replaced with a function that uses glob to list relevant directories"
+  },
+  {
+    "type": "gptAssert",
+    "mode": "QUALITY",
+    "assertion": "Test Suite name should remain 'Replace With Sliding Indent Test Suite'"
+  },
+  {
+    "type": "gptAssert",
+    "mode": "FAST",
+    "assertion": "Tests for 'replaceReal1' and 'replaceReal2' should still be present and execute without errors"
+  },
+  {
+    "type": "gptAssert",
+    "mode": "QUALITY",
+    "assertion": "There should be no hard-coded directory names; instead glob pattern matching should be used"
+  },
+  {
+    "type": "gptAssert",
+    "mode": "QUALITY",
+    "assertion": "The fuzzyReplaceText function is correctly used and not affected by the changes"
+  }
+]

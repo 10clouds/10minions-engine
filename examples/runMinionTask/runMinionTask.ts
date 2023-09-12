@@ -1,3 +1,7 @@
+/*
+Task: Add comments to this code
+*/
+
 import path from 'path';
 import { initCLISystems } from '../../src/CLI/setupCLISystems';
 import { getEditorManager } from '../../src/managers/EditorManager';

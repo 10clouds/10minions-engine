@@ -64,6 +64,7 @@ export async function mutatorApplyMinionTask(minionTask: MinionTask) {
       );
     });
   } catch (error) {
+    console.log(error);
     await mutatorApplyFallback(minionTask);
 
     minionTask.executionStage = APPLIED_STAGE_NAME;

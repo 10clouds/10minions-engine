@@ -18,14 +18,13 @@ export async function stepEvolve<S>({
   observers: FitnessObserver<S>[];
 }): Promise<SolutionWithMeta<S>> {
   const current = initialSolutions.slice();
-
+  console.log('START STEP EVOLVE');
   current.sort((a, b) => b.totalFitness - a.totalFitness);
 
   let currentIteration = startIterationFrom;
   let lastChangeIteration = startIterationFrom;
 
   await Promise.all(observers.map((o) => o.onInitialSolutions?.(current, currentIteration)));
-
   while (true) {
     if (current[0].totalFitness >= threshold) {
       console.log('Threshold reached');
@@ -46,12 +45,11 @@ export async function stepEvolve<S>({
 
     const candidateSolutions = await getRandomElement(current).nextPossibleSolutions();
 
-    for (const candidateSolution of candidateSolutions) {
-      candidateSolution.iteration = currentIteration;
-    }
-
     if (candidateSolutions.length === 0) {
       throw new Error('No candidates available');
+    }
+    for (const candidateSolution of candidateSolutions) {
+      candidateSolution.iteration = currentIteration;
     }
 
     const oldCurrent = current.slice();

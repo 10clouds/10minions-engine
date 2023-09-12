@@ -8,6 +8,10 @@ export enum GPTMode {
   QUALITY = 'QUALITY',
 }
 
+export const QUALITY_MODE_TOKENS = 8192;
+export const FAST_MODE_TOKENS = 4096;
+export const FAST_MODE_TURBO_TOKENS = 16384;
+
 export type GPTModel = 'gpt-4-0613' | 'gpt-3.5-turbo-0613' | 'gpt-3.5-turbo-16k-0613'; // | "gpt-4-32k-0613"
 
 export type FunctionDef = {
@@ -78,20 +82,20 @@ export interface ParsedLine {
 
 export const MODEL_DATA: ModelData = {
   'gpt-4-0613': {
-    maxTokens: 8192,
+    maxTokens: QUALITY_MODE_TOKENS,
     encode: encodeGPT4,
     inputCostPer1K: 0.03,
     outputCostPer1K: 0.06,
   },
   //"gpt-4-32k-0613": { maxTokens: 32768, encode: encodeGPT4, inputCostPer1K: 0.06, outputCostPer1K: 0.12 },
   'gpt-3.5-turbo-0613': {
-    maxTokens: 4096,
+    maxTokens: FAST_MODE_TOKENS,
     encode: encodeGPT35,
     inputCostPer1K: 0.0015,
     outputCostPer1K: 0.002,
   },
   'gpt-3.5-turbo-16k-0613': {
-    maxTokens: 16384,
+    maxTokens: FAST_MODE_TURBO_TOKENS,
     encode: encodeGPT35,
     inputCostPer1K: 0.003,
     outputCostPer1K: 0.004,

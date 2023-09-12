@@ -1,0 +1,10 @@
+export type EditorDocument = {
+  readonly languageId: string;
+  getText(range?: EditorRange): string;
+  readonly lineCount: number;
+  readonly uri: EditorUri;
+  lineAt(line: number): {
+    readonly text: string;
+    readonly lineNumber: number;
+  };
+};

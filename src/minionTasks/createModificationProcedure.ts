@@ -3,7 +3,7 @@ import { DEBUG_PROMPTS } from '../const';
 import { countTokens } from '../gpt/countTokens';
 import { ensureIRunThisInRange } from '../gpt/ensureIRunThisInRange';
 import { gptExecute } from '../gpt/gptExecute';
-import { GPTMode } from '../gpt/types';
+import { GPTMode, QUALITY_MODE_TOKENS } from '../gpt/types';
 
 export const AVAILABLE_COMMANDS = [
   `
@@ -110,11 +110,16 @@ export async function createModificationProcedure(
       return `#${p2}`;
     },
   );
-  const mode: GPTMode = GPTMode.FAST;
   const promptWithContext = createPrompt(refCode, modification, fileName);
-  const tokensModification = countTokens(promptWithContext, mode) + 50;
-  const luxiouriosTokens = tokensModification * 1.5;
-  const absoluteMinimumTokens = tokensModification;
+  const fullPromptTokens = countTokens(promptWithContext, GPTMode.QUALITY);
+  const fullPromptTokensFinalTokens = fullPromptTokens > QUALITY_MODE_TOKENS ? countTokens(promptWithContext, GPTMode.FAST) : fullPromptTokens;
+  const onlyModificationTokens = countTokens(modification, GPTMode.QUALITY);
+  const modificationFinalTokens = onlyModificationTokens > QUALITY_MODE_TOKENS ? countTokens(modification, GPTMode.FAST) : onlyModificationTokens;
+
+  // TODO: left as reference
+  const tokens = fullPromptTokens > QUALITY_MODE_TOKENS ? modificationFinalTokens : fullPromptTokensFinalTokens;
+  // const luxiouriosTokens = modificationTokens * 1.5;
+  // const absoluteMinimumTokens = modificationTokens;
 
   if (DEBUG_PROMPTS) {
     onChunk('<<<< PROMPT >>>>\n\n');
@@ -124,12 +129,13 @@ export async function createModificationProcedure(
 
   const maxTokens = ensureIRunThisInRange({
     prompt: promptWithContext,
-    mode,
-    preferedTokens: luxiouriosTokens,
-    minTokens: absoluteMinimumTokens,
+    mode: GPTMode.QUALITY,
+    preferedTokens: fullPromptTokensFinalTokens,
+    minTokens: modificationFinalTokens,
   });
+  const mode: GPTMode = maxTokens > QUALITY_MODE_TOKENS ? GPTMode.FAST : GPTMode.QUALITY;
 
-  console.log('TOKENS: ', maxTokens);
+  console.log('MODIFICATION PROCEDURE TOKENS: ', maxTokens);
 
   return await gptExecute({
     fullPrompt: promptWithContext,
@@ -158,6 +164,7 @@ ${OUTPUT_FORMAT}
 * You must always leave a mark on the final file, if there is nothing to modify in the file, you must leave a comment in the file describing why there is nothing to modify.
 * Always check if brackets are closed and if code will compile correctly "{" have to end with "}",  "[" have to end with "]" etc.
 * Always check if the final result has all closing commands like END_REPLACE or END_INSERT or END_MODIFY_OTHER
+* Always remember if language is a typed programming language to add proper types to parameters and other variables
 
 ==== ORIGINAL CODE ====
 ${refCode}

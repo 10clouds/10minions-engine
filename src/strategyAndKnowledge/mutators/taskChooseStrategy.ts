@@ -7,6 +7,7 @@ import { mutateAppendToLog } from '../../tasks/logs/mutators/mutateAppendToLog';
 import { taskGPTExecute } from '../../tasks/mutators/taskGPTExecute';
 import { shuffleArray } from '../../utils/random/shuffleArray';
 import { Strategy } from '../Strategy';
+import { countTokens } from '../../gpt/countTokens';
 
 export async function taskChooseStrategy<TC extends TaskContext>(task: TC, strategies: Strategy[], taskToPrompt: (task: TC) => Promise<string>) {
   const promptWithContext = `
@@ -27,11 +28,12 @@ Now choose strategy for the task.
     mutateAppendToLog(task, '<<<< EXECUTION >>>>');
     mutateAppendToLog(task, '');
   }
-
+  const mode = GPTMode.FAST;
+  const maxTokens = countTokens(promptWithContext, mode) + 100;
   const result = await taskGPTExecute(task, {
     fullPrompt: promptWithContext,
-    mode: GPTMode.FAST,
-    maxTokens: 50,
+    mode,
+    maxTokens,
     outputName: 'chooseStrategy',
     outputSchema: z
       .object({

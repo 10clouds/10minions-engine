@@ -7,6 +7,7 @@ import { GPTMode } from '../src/gpt/types';
 import { z } from 'zod';
 import { ScoreTest } from './types';
 import { TestRequiredData } from './prepareTestFiles';
+import path from 'path';
 
 const ITERATIONS = 6;
 
@@ -16,8 +17,9 @@ export const prepareScoreTest = async (userQuery: string, fileName: string, mini
   try {
     let allTestCases: ScoreTest[] = [];
     for (let i = 0; i < ITERATIONS; i++) {
-      const { execution } = await initMinionTask(userQuery, fileName, 'original.txt');
-      const results = await generateScoreTests(execution);
+      const minionTaskFilePath = path.join(__dirname, 'score', `${fileName}/original.txt`);
+      const { execution } = await initMinionTask(userQuery, minionTaskFilePath, undefined, fileName);
+      const results = await generateScoreTests(execution, true);
       if (results) {
         allTestCases = [...allTestCases, ...JSON.parse(results).items];
       }
