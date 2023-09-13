@@ -74,7 +74,7 @@ async function runTest({
     const minionTaskFilePath = path.join(__dirname, 'score', `${fileName}/temp.txt`);
     const { execution } = await initMinionTask(userQuery, minionTaskFilePath, undefined, fileName);
 
-    await mutateRunTaskStages(execution, mutateExecuteMinionTaskStages);
+    await mutateRunTaskStages(execution, mutateExecuteMinionTaskStages, true);
     console.log('STRATEGY: ', execution.strategyId);
     logToFile(`Strategy of ${i + 1} of iteration is ${execution.strategyId}`);
 

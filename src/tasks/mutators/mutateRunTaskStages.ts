@@ -5,7 +5,7 @@ import { TaskContext } from '../TaskContext';
 import { TaskCanceled } from '../utils/TaskCanceled';
 import { mutateStopExecution } from './mutateStopExecution';
 
-export function mutateRunTaskStages<TC extends TaskContext>(task: TC, execute: (task: TC) => Promise<void>) {
+export function mutateRunTaskStages<TC extends TaskContext>(task: TC, execute: (task: TC, test?: boolean) => Promise<void>, test?: boolean) {
   return new Promise<void>(async (resolve, reject) => {
     if (task.stopped) {
       return;
@@ -16,7 +16,7 @@ export function mutateRunTaskStages<TC extends TaskContext>(task: TC, execute: (
 
     try {
       task.progress = 0;
-      await execute(task);
+      await execute(task, test);
       await mutateStopExecution(task);
     } catch (error) {
       if (!(error instanceof TaskCanceled)) {

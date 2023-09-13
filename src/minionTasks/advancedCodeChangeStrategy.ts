@@ -35,7 +35,7 @@ export interface MinionTaskSolution {
 
 type MinionTaskSolutionWithMeta = SolutionWithMeta<MinionTaskSolution>;
 
-export const advancedCodeChangeStrategy = async (task: MinionTask) => {
+export const advancedCodeChangeStrategy = async (task: MinionTask, test?: boolean) => {
   const tempDirectoryPath = path.resolve(__dirname, 'temp');
 
   if (!fs.existsSync(tempDirectoryPath)) {
@@ -50,7 +50,7 @@ export const advancedCodeChangeStrategy = async (task: MinionTask) => {
   mutateAppendToLog(task, 'Stage 4 (DeepAnalysis)');
   fs.writeFileSync(originalTaskFilePath, task.originalContent);
 
-  const criteriaDefinition = await generateScoreTests(task);
+  const criteriaDefinition = await generateScoreTests(task, test);
   const parsedCriteriaDefinition: { items: ScoreTestType[] } = criteriaDefinition && JSON.parse(criteriaDefinition);
   const selectionData: Selection = {
     start: task.selection.start,

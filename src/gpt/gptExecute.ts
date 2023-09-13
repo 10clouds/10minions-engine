@@ -8,7 +8,8 @@ import { isZodString } from '../utils/isZodString';
 import { calculateCosts } from './calculateCosts';
 import { ensureICanRunThis } from './ensureIcanRunThis';
 import { processOpenAIResponseStream } from './processOpenAIResponseStream';
-import { GPTExecuteRequestData, GPTExecuteRequestMessage, GPTExecuteRequestPrompt, GPTMode, GPTModel, MODEL_DATA } from './types';
+import { FAST_MODE_TOKENS, GPTExecuteRequestData, GPTExecuteRequestMessage, GPTExecuteRequestPrompt, GPTMode, GPTModel, MODEL_DATA } from './types';
+import { countTokens } from './countTokens';
 
 let openAIApiKey: string | undefined;
 
@@ -48,9 +49,9 @@ export async function gptExecute<OutputTypeSchema extends z.ZodType>({
   if (mode === GPTMode.FAST) {
     model = 'gpt-3.5-turbo-16k-0613';
 
-    const usedTokens = MODEL_DATA[model].encode(messagesAsString).length + maxTokens;
+    const usedTokens = countTokens(messagesAsString, mode) + maxTokens;
 
-    if (usedTokens < MODEL_DATA['gpt-3.5-turbo-0613'].maxTokens) {
+    if (usedTokens < FAST_MODE_TOKENS) {
       model = 'gpt-3.5-turbo-0613';
     }
   }
