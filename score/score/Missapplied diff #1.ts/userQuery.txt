@@ -1,5 +1,0 @@
-Fix this error:
-
-Argument of type 'Document' is not assignable to parameter of type 'TextDocument'.
-  Type 'Document' is missing the following properties from type 'TextDocument': uri, fileName, isUntitled, languageId, and 13 more.
-Line: 57 Column: 64
