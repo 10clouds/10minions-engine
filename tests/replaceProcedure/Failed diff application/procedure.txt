@@ -1,0 +1,75 @@
+I will replace the existing for loop in the applyModificationProcedure function with a new asynchronous for loop that includes a promise with a timeout function. This will allow other processes to run in between iterations of the loop.
+
+REPLACE
+```typescript
+  for (let line of lines) {
+    let possibiltiies: CommandSegment[] = inCommand ? inCommand.followedBy || [] : COMMAND_STRUCTURE;
+    let possibleNextCommands = possibiltiies.filter((command) => line.startsWith(command.name));
+
+    if (possibleNextCommands.length === 0) {
+      if (inCommand) {
+
+        //If we have out of order command?
+        let outOfOrderNewCommands = COMMAND_STRUCTURE.filter((command) => line.startsWith(command.name));
+
+        if (outOfOrderNewCommands.length > 0) {
+          let outOfOrderNewCommand = outOfOrderNewCommands.sort((a, b) => a.name.length - b.name.length)[0];
+
+          //close the current command
+          let findEnd = inCommand.followedBy?.find((followedBy) => followedBy.name.startsWith("END_") && followedBy.execute);
+
+          if (findEnd) {
+            currentCode = findEnd.execute!(currentCode, languageId, params);
+            inCommand = undefined;
+            params = {};
+          } else {
+            throw new Error(`Missing any of: ${(inCommand.followedBy || []).map((c) => c.name).join(", ")}`);
+          }
+
+          newCommand(outOfOrderNewCommand, line);
+        } else {
+          params[inCommand.name] += (params[inCommand.name] ? "\n" : "") + line;
+        }
+      }
+      continue;
+    }
+
+    newCommand(possibleNextCommands.sort((a, b) => a.name.length - b.name.length)[0], line);
+  }
+```
+WITH
+```typescript
+for await (let line of lines) {
+  await new Promise(r => setTimeout(r, 1));
+
+  let possibiltiies: CommandSegment[] = inCommand ? inCommand.followedBy || [] : COMMAND_STRUCTURE;
+  let possibleNextCommands = possibiltiies.filter((command) => line.startsWith(command.name));
+
+  if (possibleNextCommands.length === 0) {
+    if (inCommand) {
+      let outOfOrderNewCommands = COMMAND_STRUCTURE.filter((command) => line.startsWith(command.name));
+
+      if (outOfOrderNewCommands.length > 0) {
+        let outOfOrderNewCommand = outOfOrderNewCommands.sort((a, b) => a.name.length - b.name.length)[0];
+        let findEnd = inCommand.followedBy?.find((followedBy) => followedBy.name.startsWith("END_") && followedBy.execute);
+
+        if (findEnd) {
+          currentCode = findEnd.execute!(currentCode, languageId, params);
+          inCommand = undefined;
+          params = {};
+        } else {
+          throw new Error(`Missing any of: ${(inCommand.followedBy || []).map((c) => c.name).join(", ")}`);
+        }
+
+        newCommand(outOfOrderNewCommand, line);
+      } else {
+        params[inCommand.name] += (params[inCommand.name] ? "\n" : "") + line;
+      }
+      continue;
+    }
+  }
+
+  newCommand(possibleNextCommands.sort((a, b) => a.name.length - b.name.length)[0], line);
+}
+```
+END_REPLACE

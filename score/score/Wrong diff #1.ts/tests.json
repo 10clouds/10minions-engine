@@ -1,0 +1,36 @@
+[
+  {
+    "type": "gptAssert",
+    "mode": "QUALITY",
+    "assertion": "The code contains a class that implements the EditorDocument interface"
+  },
+  {
+    "type": "functionReturnTypeCheck",
+    "functionName": "getEditorManager",
+    "expectedType": "EditorManager"
+  },
+  {
+    "type": "functionReturnTypeCheck",
+    "functionName": "setEditorManager",
+    "expectedType": "void"
+  },
+  {
+    "type": "gptAssert",
+    "mode": "QUALITY",
+    "assertion": "The implemented class includes all properties and methods defined in the EditorDocument interface"
+  },
+  {
+    "type": "simpleStringFind",
+    "stringToFind": "getText(range?: EditorRange): string;"
+  },
+  {
+    "type": "gptAssert",
+    "mode": "QUALITY",
+    "assertion": "The class implementing the EditorDocument interface properly handles optional parameters in its methods"
+  },
+  {
+    "type": "functionReturnTypeCheck",
+    "functionName": "lineAt",
+    "expectedType": "{readonly text: string; readonly lineNumber: number;}"
+  }
+]

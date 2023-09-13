@@ -1,0 +1,37 @@
+[
+  {
+    "type": "gptAssert",
+    "mode": "QUALITY",
+    "assertion": "The code is valid TypeScript code"
+  },
+  {
+    "type": "gptAssert",
+    "mode": "QUALITY",
+    "assertion": "The 'getCachedResult' function should check if the cache for a particular request data hash exists and is not empty"
+  },
+  {
+    "type": "gptAssert",
+    "mode": "QUALITY",
+    "assertion": "The 'getCachedResult' function should retrieve a cached result for a specified request data hash from Firestore if it exists"
+  },
+  {
+    "type": "functionReturnTypeCheck",
+    "functionName": "getCachedResult",
+    "expectedType": "Promise<string | undefined>"
+  },
+  {
+    "type": "gptAssert",
+    "mode": "QUALITY",
+    "assertion": "'getRequestHash' function of the 'AnalyticsManager' object should be called with the correct parameter when 'getCachedResult' is called"
+  },
+  {
+    "type": "gptAssert",
+    "mode": "QUALITY",
+    "assertion": "If the Firestore collection 'openAICalls' does not contain a document with the specified 'requestDataHash', 'getCachedResult' function should return 'undefined'"
+  },
+  {
+    "type": "gptAssert",
+    "mode": "QUALITY",
+    "assertion": "Elements pushed into the cache should be strings as the 'responseData' in Firestore documents is expected to be of type string"
+  }
+]
