@@ -1,10 +1,11 @@
-import { taskChooseStrategy } from '../strategyAndKnowledge/mutators/taskChooseStrategy';
+import { taskChooseKnowledgeAndStrategy } from '../strategyAndKnowledge/mutators/taskChooseKnowledgeAndStrategy';
 import { mutateEndStage } from '../tasks/mutators/mutateEndStage';
 import { mutateStageFinishing } from '../tasks/mutators/mutateStageFinishing';
 import { mutateStartStage } from '../tasks/mutators/mutateStartStage';
 import { MinionTask } from './MinionTask';
 import { advancedCodeChangeStrategy } from './advancedCodeChangeStrategy';
 import { createChooseStrategyPrompt } from './createChooseStrategyPrompt';
+import { MINION_TASK_KNOWLEDGE } from './knowledge';
 import { mutateCreateAnswer } from './mutators/mutateCreateAnswer';
 import { mutateCreateModification } from './mutators/mutateCreateModification';
 import { mutateCreateModificationProcedure } from './mutators/mutateCreateModificationProcedure';
@@ -17,13 +18,22 @@ export async function mutateExecuteMinionTaskStages(task: MinionTask) {
   mutateEndStage(task);
 
   mutateStartStage({ task, name: 'Understanding ...', progressIncrement: 0.3 });
-  task.strategyId = (await taskChooseStrategy(task, MINION_TASK_STRATEGIES, createChooseStrategyPrompt)).strategy.id as '' | MINION_TASK_STRATEGY_ID;
+  const { strategy, relevantKnowledge } = await taskChooseKnowledgeAndStrategy({
+    task,
+    systemDescription: 'You are an AI Command Center, capable of improve code and support developer/programmer during development.',
+    availableStrategies: MINION_TASK_STRATEGIES,
+    availableKnowledge: MINION_TASK_KNOWLEDGE,
+    taskToPrompt: createChooseStrategyPrompt,
+  });
+
+  task.strategyId = strategy.id as MINION_TASK_STRATEGY_ID;
+  task.relevantKnowledgeIds = relevantKnowledge.map((knowledge) => knowledge.id);
   mutateEndStage(task);
 
   switch (task.strategyId) {
     case 'AnswerQuestion':
       mutateStartStage({ task, name: 'Conceptualising ...', progressIncrement: 0.6 });
-      await mutateCreateAnswer(task);
+      await mutateCreateAnswer(task, relevantKnowledge);
       mutateEndStage(task);
       break;
     case 'CodeChange':

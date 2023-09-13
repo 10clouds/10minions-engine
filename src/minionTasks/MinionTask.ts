@@ -36,6 +36,7 @@ export class MinionTask implements TaskContext {
   progress = 1;
   stageTargetProgress = 1;
   strategyId: MINION_TASK_STRATEGY_ID | '';
+  relevantKnowledgeIds: string[] = [];
 
   get isError(): boolean {
     if (!this.stopped) {
@@ -104,6 +105,7 @@ export class MinionTask implements TaskContext {
     inlineMessage = '',
     executionStage = '',
     strategyId = '',
+    relevantKnowledgeIds = [],
     logContent = '',
     totalCost = 0,
     aplicationStatus = ApplicationStatus.NOT_APPLIED,
@@ -125,6 +127,7 @@ export class MinionTask implements TaskContext {
     executionStage?: string;
     inlineMessage?: string;
     strategyId?: MINION_TASK_STRATEGY_ID | '';
+    relevantKnowledgeIds?: string[];
     logContent?: string;
     totalCost?: number;
     aplicationStatus?: ApplicationStatus;
@@ -146,6 +149,7 @@ export class MinionTask implements TaskContext {
     this.inlineMessage = inlineMessage;
     this.executionStage = executionStage;
     this.strategyId = strategyId;
+    this.relevantKnowledgeIds = relevantKnowledgeIds;
     this.logContent = logContent;
     this.totalCost = totalCost;
     this.aplicationStatus = aplicationStatus;

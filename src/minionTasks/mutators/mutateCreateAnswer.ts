@@ -9,6 +9,7 @@ import { mutateAppendToLog } from '../../tasks/logs/mutators/mutateAppendToLog';
 import { mutateAppendToLogNoNewline } from '../../tasks/logs/mutators/mutateAppendToLogNoNewline';
 import { mutateReportSmallProgress } from '../../tasks/mutators/mutateReportSmallProgress';
 import { createFullPromptFromSections } from '../../gpt/createFullPromptFromSections';
+import { Knowledge } from '../../strategyAndKnowledge/Knowledge';
 
 function createPrompt(
   selectedText: string,
@@ -17,6 +18,7 @@ function createPrompt(
   selectionPosition: EditorPosition,
   userQuery: string,
   fileName: string,
+  relevantKnowledge: Knowledge[],
 ) {
   return createFullPromptFromSections({
     intro: `
@@ -41,6 +43,7 @@ At the end provide your final answer, this is the only thing that will be suppli
           : `(Language: ${document.languageId})`
       }`]: selectedText ? selectedText : fullFileContents,
       [`TASK (applies to CODE SNIPPET section only, not the entire FILE CONTEXT)`]: userQuery,
+      ...Object.fromEntries(relevantKnowledge.map((k) => [k.id, k.content])),
     },
     outro: `
 If the task is not clear or there is lack of details try to generate response base on file name.
@@ -51,7 +54,7 @@ Let's take it step by step.
   });
 }
 
-export async function mutateCreateAnswer(task: MinionTask) {
+export async function mutateCreateAnswer(task: MinionTask, relevantKnowledge: Knowledge[]) {
   if (task.strategyId === '') {
     throw new Error('Classification is undefined');
   }
@@ -66,7 +69,7 @@ export async function mutateCreateAnswer(task: MinionTask) {
     return task.stopped;
   };
 
-  const promptWithContext = createPrompt(selectedText, document, fullFileContents, task.selection.start, userQuery, task.baseName);
+  const promptWithContext = createPrompt(selectedText, document, fullFileContents, task.selection.start, userQuery, task.baseName, relevantKnowledge);
 
   const tokensCode = countTokens(promptWithContext, GPTMode.FAST);
   const luxiouriosTokens = tokensCode * 1.5;
