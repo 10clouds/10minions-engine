@@ -1,4 +1,0 @@
-let testDirs = [
-  "replaceReal1",
-  "replaceReal2",
-];
