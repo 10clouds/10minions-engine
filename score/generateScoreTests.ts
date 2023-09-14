@@ -1,11 +1,13 @@
 import { z } from 'zod';
 import { countTokens } from '../src/gpt/countTokens';
 import { gptExecute } from '../src/gpt/gptExecute';
-import { GPTMode } from '../src/gpt/types';
+import { GPTMode, QUALITY_MODE_TOKENS } from '../src/gpt/types';
 import { MinionTask } from '../src/minionTasks/MinionTask';
 import { extractExtensionNameFromPath } from '../src/utils/extractFileNameFromPath';
 import { TestSchemas, listOfTypes } from './types';
 import { SIMPLE_STRING_FIND, GPT_ASSERT, FUNCTION_RETURN_TYPE_CHECK } from './types';
+import { createPrompt } from '@inquirer/prompts';
+import { ensureIRunThisInRange } from '../src/gpt/ensureIRunThisInRange';
 enum Languages {
   'js' = 'javascript',
   'ts' = 'typescript',
@@ -86,13 +88,20 @@ const prompt = async (minionTask: MinionTask, test?: boolean) => {
 export const generateScoreTests = async (minionTask?: MinionTask, test?: boolean) => {
   if (!minionTask) return;
   const fullPrompt = await prompt(minionTask, test);
-  const inputTokensCount = countTokens(fullPrompt, GPTMode.QUALITY);
-  const outputTokensCount = 500;
-  const maxTokens = inputTokensCount + outputTokensCount;
+  const fullPromptTokens = countTokens(fullPrompt, GPTMode.QUALITY) + 500;
+
+  const mode: GPTMode = fullPromptTokens > QUALITY_MODE_TOKENS ? GPTMode.FAST : GPTMode.QUALITY;
+
+  const maxTokens = ensureIRunThisInRange({
+    prompt: fullPrompt,
+    mode: mode,
+    preferedTokens: fullPromptTokens,
+    minTokens: fullPromptTokens,
+  });
 
   console.log('GENERATING TEST CASES...');
 
-  const response = await gptExecute({
+  const { result, cost } = await gptExecute({
     fullPrompt,
     onChunk: async (chunk: string) => {},
     maxTokens,
@@ -108,7 +117,10 @@ export const generateScoreTests = async (minionTask?: MinionTask, test?: boolean
   });
 
   console.log('======= RESPONSE =======');
-  console.log(response.result);
+  console.log(result);
 
-  return JSON.stringify(response.result);
+  return {
+    result: JSON.stringify(result),
+    cost,
+  };
 };

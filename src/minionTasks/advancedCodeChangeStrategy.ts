@@ -35,8 +35,9 @@ export interface MinionTaskSolution {
 
 type MinionTaskSolutionWithMeta = SolutionWithMeta<MinionTaskSolution>;
 
-export const advancedCodeChangeStrategy = async (task: MinionTask) => {
+export const advancedCodeChangeStrategy = async (task: MinionTask, test?: boolean) => {
   const tempDirectoryPath = path.resolve(__dirname, 'temp');
+  let costs = task.totalCost || 0;
 
   if (!fs.existsSync(tempDirectoryPath)) {
     fs.mkdirSync(tempDirectoryPath);
@@ -50,13 +51,19 @@ export const advancedCodeChangeStrategy = async (task: MinionTask) => {
   mutateAppendToLog(task, 'Stage 4 (DeepAnalysis)');
   fs.writeFileSync(originalTaskFilePath, task.originalContent);
 
-  const criteriaDefinition = await generateScoreTests(task);
-  const parsedCriteriaDefinition: { items: ScoreTestType[] } = criteriaDefinition && JSON.parse(criteriaDefinition);
+  const criteriaDefinition = await generateScoreTests(task, test);
+  
+  if(criteriaDefinition) {
+    costs += criteriaDefinition.cost
+  }
+
+  const parsedCriteriaDefinition: { items: ScoreTestType[] } = criteriaDefinition && JSON.parse(criteriaDefinition.result);
   const selectionData: Selection = {
     start: task.selection.start,
     end: task.selection.end,
     selectedText: task.selectedText,
   };
+
   const initialSolutionsPromises = [];
 
   for (let i = 0; i < ITERATIONS; i++) {
@@ -87,6 +94,7 @@ export const advancedCodeChangeStrategy = async (task: MinionTask) => {
       }),
     );
 
+    costs += tempMinionTask.totalCost
     mutateEndStage(task);
   }
 
@@ -151,9 +159,11 @@ export const advancedCodeChangeStrategy = async (task: MinionTask) => {
   fs.unlinkSync(originalTaskFilePath);
 
   const { modificationDescription, modificationProcedure } = finalSolution.solution;
+  task.totalCost += costs;
   task.modificationProcedure = modificationProcedure;
   task.modificationDescription = modificationDescription;
   console.log('FINAL TASK: ', task);
+  console.log('TASK COST: ', task.totalCost);
   task.onChange(true);
   mutateEndStage(task);
 };

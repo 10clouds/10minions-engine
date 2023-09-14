@@ -12,6 +12,7 @@ class TodoCodeLensProvider implements vscode.CodeLensProvider {
       const match = todoPattern.exec(lineOfText.text);
       const todoMessage = match?.[1];
       if (match) {
+        const range = new vscode.Range(new vscode.Position(lineNum, match.index), new vscode.Position(lineNum, match?.index + match[0].length));
         const rangeForSelection = new vscode.Range(new vscode.Position(lineNum, match.index), new vscode.Position(lineNum, match.index + match[0].length));
         const selection = new vscode.Selection(rangeForSelection.start, rangeForSelection.end);
         const todoCodeLens = new vscode.CodeLens(range, { command: "10minions.executeTask", title: "Execute task", arguments: [document.uri, selection, todoMessage] });
@@ -64,11 +65,11 @@ export class MinionTaskAutoRunner {
         const document = await vscode.workspace.openTextDocument(uri);
         MinionTasksManager.instance.runMinionOnCurrentSelectionAndEditor(
           todoMessage,
-        document,
-        selection
+          document,
+          selection
         );
-        })
-        );
+      })
+    );
 
     context.subscriptions.push(vscode.languages.registerCodeLensProvider({ scheme: "file", language: "typescript" }, new TodoCodeLensProvider()));
 

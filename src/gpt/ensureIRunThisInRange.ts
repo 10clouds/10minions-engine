@@ -1,4 +1,5 @@
 import { TokenError } from './TokenError';
+import { countTokens } from './countTokens';
 import { getModel } from './getModel';
 import { GPTMode, MODEL_DATA } from './types';
 
@@ -20,7 +21,7 @@ export function ensureIRunThisInRange({ prompt, minTokens, preferedTokens, mode 
   preferedTokens = Math.ceil(preferedTokens);
 
   const model = getModel(mode);
-  const usedTokens = MODEL_DATA[model].encode(prompt).length + EXTRA_BUFFER_FOR_ENCODING_OVERHEAD;
+  const usedTokens = countTokens(prompt, mode) + EXTRA_BUFFER_FOR_ENCODING_OVERHEAD;
   const availableTokens = MODEL_DATA[model].maxTokens - usedTokens;
 
   if (availableTokens < minTokens) {

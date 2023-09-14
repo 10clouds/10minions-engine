@@ -45,29 +45,6 @@ Follow this rules when using INSERT / BEFORE / END_INSERT command sequence:
 * All lines and whitespace in the text you are inserting matter.
 * You MUST use all 3 parts of the command: INSERT, BEFORE and END_INSERT.
 `.trim(),
-
-  /*`
-
-  # REPLACE_ALL / END_REPLACE_ALL
-
-  Use this command if most of the file is modified. When you are ready to output the final consolidated result, start it with the following line:
-
-  REPLACE_ALL
-
-  Followed by the lines of a full consolidated final, production ready, code, described in REQUESTED MODIFICATION when applied to ORIGINAL CODE. Followed by the following line:
-
-  END_REPLACE_ALL
-
-  Follow this rules when using REPLACE / WITH / END_REPLACE command sequence:
-  * All lines and whitespace in the text you are replacing matter, try to keep the newlines and indentation the same so proper match can be found.
-  * Keep in mind that all lines after WITH, and until next REPLACE, will be used, even the empty ones. So any output after final WITH will be part of the final replacement.
-  * Do not invent your own commands, use only the ones described above.
-  * After REPLACEments the code should be final, production ready, as described in REQUESTED MODIFICATION.
-
-  `.trim()
-
-  ,
-  */
   `
 # Syntax and description of a MODIFY_OTHER command
 
@@ -84,7 +61,7 @@ END_MODIFY_OTHER
 
 export const OUTPUT_FORMAT = `
 
-Star your answer with the overview of what you are going to do, and then, follow it by one more COMMANDS.
+Start your answer with the overview of what you are going to do, and then, follow it by one more COMMANDS.
 
 ## General considerations:
 * Do not invent your own commands, use only the ones described below.
@@ -95,58 +72,6 @@ ${AVAILABLE_COMMANDS.join('\n\n')}
 
 `.trim();
 
-export async function createModificationProcedure(
-  refCode: string,
-  modification: string,
-  onChunk: (chunk: string) => Promise<void>,
-  isCancelled: () => boolean,
-  fileName: string,
-) {
-  //replace any lines with headers in format ===== HEADER ==== (must start and end the line without any additioanl characters) with # HEADER
-  modification = modification.replace(
-    /^(====+)([^=]+)(====+)$/gm,
-
-    (match, p1, p2) => {
-      return `#${p2}`;
-    },
-  );
-  const promptWithContext = createPrompt(refCode, modification, fileName);
-  const fullPromptTokens = countTokens(promptWithContext, GPTMode.QUALITY);
-  const fullPromptTokensFinalTokens = fullPromptTokens > QUALITY_MODE_TOKENS ? countTokens(promptWithContext, GPTMode.FAST) : fullPromptTokens;
-  const onlyModificationTokens = countTokens(modification, GPTMode.QUALITY);
-  const modificationFinalTokens = onlyModificationTokens > QUALITY_MODE_TOKENS ? countTokens(modification, GPTMode.FAST) : onlyModificationTokens;
-
-  // TODO: left as reference
-  const tokens = fullPromptTokens > QUALITY_MODE_TOKENS ? modificationFinalTokens : fullPromptTokensFinalTokens;
-  // const luxiouriosTokens = modificationTokens * 1.5;
-  // const absoluteMinimumTokens = modificationTokens;
-
-  if (DEBUG_PROMPTS) {
-    onChunk('<<<< PROMPT >>>>\n\n');
-    onChunk(promptWithContext + '\n\n');
-    onChunk('<<<< EXECUTION >>>>\n\n');
-  }
-
-  const maxTokens = ensureIRunThisInRange({
-    prompt: promptWithContext,
-    mode: GPTMode.QUALITY,
-    preferedTokens: fullPromptTokensFinalTokens,
-    minTokens: modificationFinalTokens,
-  });
-  const mode: GPTMode = maxTokens > QUALITY_MODE_TOKENS ? GPTMode.FAST : GPTMode.QUALITY;
-
-  console.log('MODIFICATION PROCEDURE TOKENS: ', maxTokens);
-
-  return await gptExecute({
-    fullPrompt: promptWithContext,
-    onChunk,
-    maxTokens,
-    temperature: 0,
-    isCancelled,
-    mode,
-    outputSchema: z.string(),
-  });
-}
 function createPrompt(refCode: string, modification: string, fileName: string) {
   return `
 You are a higly intelligent AI file composer tool, you can take a piece of text and a modification described in natural langue, and return a consolidated answer.
@@ -177,4 +102,51 @@ You are a higly intelligent AI file composer tool, you can take a piece of text 
 
 Let's take this step by step, first, describe in detail what you are going to do, and then perform previously described commands in FORMAT OF THE ANSWER section.
 `.trim();
+}
+
+export async function createModificationProcedure(
+  refCode: string,
+  modification: string,
+  onChunk: (chunk: string) => Promise<void>,
+  isCancelled: () => boolean,
+  fileName: string,
+) {
+  //replace any lines with headers in format ===== HEADER ==== (must start and end the line without any additioanl characters) with # HEADER
+  modification = modification.replace(
+    /^(====+)([^=]+)(====+)$/gm,
+
+    (match, p1, p2) => {
+      return `#${p2}`;
+    },
+  );
+  const promptWithContext = createPrompt(refCode, modification, fileName);
+  const minTokens = countTokens(refCode, GPTMode.QUALITY) + 500;
+  const fullPromptTokens = countTokens(promptWithContext, GPTMode.QUALITY) + 500;
+
+  if (DEBUG_PROMPTS) {
+    onChunk('<<<< PROMPT >>>>\n\n');
+    onChunk(promptWithContext + '\n\n');
+    onChunk('<<<< EXECUTION >>>>\n\n');
+  }
+
+  const mode: GPTMode = fullPromptTokens > QUALITY_MODE_TOKENS ? GPTMode.FAST : GPTMode.QUALITY;
+
+  const maxTokens = ensureIRunThisInRange({
+    prompt: promptWithContext,
+    mode: mode,
+    preferedTokens: fullPromptTokens,
+    minTokens: minTokens,
+  });
+
+  console.log('MODIFICATION PROCEDURE TOKENS: ', maxTokens);
+
+  return await gptExecute({
+    fullPrompt: promptWithContext,
+    onChunk,
+    maxTokens,
+    temperature: 0,
+    isCancelled,
+    mode,
+    outputSchema: z.string(),
+  });
 }

@@ -3,7 +3,7 @@ import { gptExecute } from '../../gpt/gptExecute';
 import { EditorDocument, EditorPosition } from '../../managers/EditorManager';
 import { ensureIRunThisInRange } from '../../gpt/ensureIRunThisInRange';
 import { countTokens } from '../../gpt/countTokens';
-import { GPTMode } from '../../gpt/types';
+import { GPTMode, QUALITY_MODE_TOKENS } from '../../gpt/types';
 import { z } from 'zod';
 import { mutateAppendToLogNoNewline } from '../../tasks/logs/mutators/mutateAppendToLogNoNewline';
 import { MINION_TASK_STRATEGY_ID } from '../strategies';
@@ -95,15 +95,16 @@ export async function mutateCreateModification(task: MinionTask) {
 
   const promptWithContext = createPrompt(classification, selectedText, document, fullFileContents, task.selection.start, userQuery, task.baseName);
 
-  const tokensCode = countTokens(promptWithContext, GPTMode.QUALITY);
-  const luxiouriosTokens = tokensCode * 1.5;
-  const absoluteMinimumTokens = tokensCode;
+  const minTokens = countTokens(fullFileContents, GPTMode.QUALITY) + 500;
+  const fullPromptTokens = countTokens(promptWithContext, GPTMode.QUALITY) + 500;
 
-  const tokensToUse = ensureIRunThisInRange({
+  const mode: GPTMode = fullPromptTokens > QUALITY_MODE_TOKENS ? GPTMode.FAST : GPTMode.QUALITY;
+
+  const maxTokens = ensureIRunThisInRange({
     prompt: promptWithContext,
-    mode: GPTMode.QUALITY,
-    preferedTokens: luxiouriosTokens,
-    minTokens: absoluteMinimumTokens,
+    mode: mode,
+    preferedTokens: fullPromptTokens,
+    minTokens: minTokens,
   });
 
   const { result, cost } = await gptExecute({
@@ -114,8 +115,8 @@ export async function mutateCreateModification(task: MinionTask) {
       mutateReportSmallProgress(task);
     },
     isCancelled,
-    mode: GPTMode.QUALITY,
-    maxTokens: tokensToUse,
+    mode,
+    maxTokens,
     controller: new AbortController(),
     outputSchema: z.string(),
   });

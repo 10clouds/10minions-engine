@@ -12,7 +12,7 @@ import { mutateCreateModificationProcedure } from './mutators/mutateCreateModifi
 import { mutateStageStarting } from './mutators/mutateStageStarting';
 import { MINION_TASK_STRATEGIES, MINION_TASK_STRATEGY_ID } from './strategies';
 
-export async function mutateExecuteMinionTaskStages(task: MinionTask) {
+export async function mutateExecuteMinionTaskStages(task: MinionTask, test?: boolean) {
   mutateStartStage({ task, name: 'Starting ...', progressIncrement: 0.05 });
   mutateStageStarting(task);
   mutateEndStage(task);
@@ -36,18 +36,19 @@ export async function mutateExecuteMinionTaskStages(task: MinionTask) {
       await mutateCreateAnswer(task, relevantKnowledge);
       mutateEndStage(task);
       break;
-    case 'CodeChange':
-      mutateStartStage({ task, name: 'Conceptualising ...', progressIncrement: 0.3 });
-      await mutateCreateModification(task);
-      mutateEndStage(task);
-
-      mutateStartStage({ task, name: 'Preparing Changes ...', progressIncrement: 0.3 });
-      await mutateCreateModificationProcedure(task);
-      mutateEndStage(task);
-      break;
+    // TODO: left as reference
     // case 'CodeChange':
-    //   await advancedCodeChangeStrategy(task);
+    //   mutateStartStage({ task, name: 'Conceptualising ...', progressIncrement: 0.3 });
+    //   await mutateCreateModification(task);
+    //   mutateEndStage(task);
+
+    //   mutateStartStage({ task, name: 'Preparing Changes ...', progressIncrement: 0.3 });
+    //   await mutateCreateModificationProcedure(task);
+    //   mutateEndStage(task);
     //   break;
+    case 'CodeChange':
+      await advancedCodeChangeStrategy(task, test);
+      break;
     default:
       throw new Error(`Strategy ${task.strategyId} not implemented`);
   }

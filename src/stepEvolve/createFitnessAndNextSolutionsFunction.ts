@@ -1,4 +1,3 @@
-import { generateScoreTests } from '../../score/generateScoreTests';
 import { rateMinionTask } from '../../score/rateMinionTask';
 import { ScoreTestType } from '../../score/types';
 import { FitnessAndNextSolutionsFunction, SolutionWithMeta } from '../../src/stepEvolve/FitnessFunction';

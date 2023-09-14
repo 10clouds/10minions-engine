@@ -13,7 +13,7 @@ export function run(): Promise<void> {
     timeout: 600000,
     //diff: true,
     //bail: true,
-    grep: 'Fix Node',
+    // grep: 'Incorrectly generated diff #5',
   });
 
   const testsRoot = path.resolve(__dirname);
