@@ -41,26 +41,22 @@ export async function createFixesForSolution(
     },
   });
   const maxTokens = countTokens(fullPrompt, GPTMode.FAST);
+  const gptResult = await gptExecute({
+    fullPrompt,
+    maxTokens,
+    mode: GPTMode.FAST,
+    outputName: 'suggestions',
+    outputSchema: z
+      .object({
+        suggestions: z.array(z.string().describe('Suggestion to the user, what should be improved in order to maximize criteria.')).describe('Suggestions'),
+      })
+      .describe('Suggestions'),
+  });
 
-  const result =
-    criteriaWithBelowAverageRating.length > 0
-      ? await gptExecute({
-          fullPrompt,
-          maxTokens,
-          mode: GPTMode.FAST,
-          outputName: 'suggestions',
-          outputSchema: z
-            .object({
-              suggestions: z
-                .array(z.string().describe('Suggestion to the user, what should be improved in order to maximize criteria.'))
-                .describe('Suggestions'),
-            })
-            .describe('Suggestions'),
-        })
-      : { result: { suggestions: [] } };
+  const result = criteriaWithBelowAverageRating.length > 0 ? gptResult : { result: { suggestions: [], cost: 0 } };
 
   const allSuggestions = [...result.result.suggestions];
-
+  task.totalCost += gptResult.cost;
   console.log('allSuggestions', allSuggestions);
   // TODO: add maintain suggestions
   // TODO: add createNewSolutionFix

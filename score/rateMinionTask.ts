@@ -125,6 +125,7 @@ export async function rateMinionTask(task: MinionTask, solution: string, criteri
 
     results.push(...mappedCriteria);
   }
+  task.totalCost += rawResult.cost;
 
   const finalRating = sum(results.map((c) => c.rating as number));
 
