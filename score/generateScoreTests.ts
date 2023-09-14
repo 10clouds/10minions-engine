@@ -101,7 +101,7 @@ export const generateScoreTests = async (minionTask?: MinionTask, test?: boolean
 
   console.log('GENERATING TEST CASES...');
 
-  const response = await gptExecute({
+  const { result, cost } = await gptExecute({
     fullPrompt,
     onChunk: async (chunk: string) => {},
     maxTokens,
@@ -117,7 +117,10 @@ export const generateScoreTests = async (minionTask?: MinionTask, test?: boolean
   });
 
   console.log('======= RESPONSE =======');
-  console.log(response.result);
+  console.log(result);
 
-  return JSON.stringify(response.result);
+  return {
+    result: JSON.stringify(result),
+    cost,
+  };
 };

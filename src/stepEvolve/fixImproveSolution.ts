@@ -30,20 +30,22 @@ export function improveSolutionFix({
       'YOUR PROPOSED NEW SOLUTION': '',
     },
   });
-
   const maxTokens = countTokens(fullPrompt, GPTMode.QUALITY);
+
+  const improveFixCallFunction = async () => {
+    const { result, cost } = await gptExecute({
+      fullPrompt,
+      maxTokens,
+      mode: GPTMode.QUALITY,
+      outputSchema: z.string(),
+    });
+    task.totalCost += cost;
+
+    return result;
+  };
 
   return {
     name: `Improve solution (${suggestions.replace(/\n/g, ',')})`,
-    call: async () => {
-      return (
-        await gptExecute({
-          fullPrompt,
-          maxTokens,
-          mode: GPTMode.QUALITY,
-          outputSchema: z.string(),
-        })
-      ).result;
-    },
+    call: improveFixCallFunction,
   };
 }

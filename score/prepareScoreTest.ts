@@ -19,9 +19,9 @@ export const prepareScoreTest = async (userQuery: string, fileName: string, mini
     for (let i = 0; i < ITERATIONS; i++) {
       const minionTaskFilePath = path.join(__dirname, 'score', `${fileName}/original.txt`);
       const { execution } = await initMinionTask(userQuery, minionTaskFilePath, undefined, fileName);
-      const results = await generateScoreTests(execution, true);
-      if (results) {
-        allTestCases = [...allTestCases, ...JSON.parse(results).items];
+      const tests = await generateScoreTests(execution, true);
+      if (tests?.result) {
+        allTestCases = [...allTestCases, ...JSON.parse(tests?.result).items];
       }
     }
 
