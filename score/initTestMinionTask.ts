@@ -2,6 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import { MinionTask } from '../src/minionTasks/MinionTask';
 import { getEditorManager } from '../src/managers/EditorManager';
+import { WorkspaceFilesKnowledge } from '../src/minionTasks/generateDescriptionForWorkspaceFiles';
 
 export interface Selection {
   start: { line: number; character: number };

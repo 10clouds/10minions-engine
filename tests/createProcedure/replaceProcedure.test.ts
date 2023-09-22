@@ -7,6 +7,7 @@ import { setupCLISystemsForTest } from '../../src/CLI/setupCLISystems';
 import { applyModificationProcedure } from '../../src/minionTasks/applyModificationProcedure';
 import { createModificationProcedure } from '../../src/minionTasks/createModificationProcedure';
 import { extractFileNameFromPath } from '../../src/utils/extractFileNameFromPath';
+import { WorkspaceFilesKnowledge } from '../../src/minionTasks/generateDescriptionForWorkspaceFiles';
 
 suite('Create procedure test suite', () => {
   const baseDir = path.resolve(__dirname);
@@ -27,6 +28,12 @@ suite('Create procedure test suite', () => {
       const currentCode = readFileSync(originalFileURI, 'utf8');
       const modification = readFileSync(path.resolve(baseDir, testDir, 'modification.txt'), 'utf8');
       const expectedOutput = readFileSync(path.resolve(baseDir, testDir, 'result.txt'), 'utf8');
+      const knowledegePath = path.resolve(baseDir, testDir, 'knowledge.json');
+      let knowledge: WorkspaceFilesKnowledge[] = [];
+
+      if (fs.existsSync(knowledegePath)) {
+        knowledge = JSON.parse(readFileSync(knowledegePath, 'utf8'));
+      }
 
       const { result: procedure } = await createModificationProcedure(
         currentCode,
@@ -34,6 +41,7 @@ suite('Create procedure test suite', () => {
         async () => {},
         () => false,
         filename,
+        knowledge,
       );
 
       fs.writeFileSync(path.resolve(baseDir, testDir, 'procedure.txt'), procedure);
@@ -46,9 +54,9 @@ suite('Create procedure test suite', () => {
         modifiedContent = error.toString();
       }
 
-      // This is helper to creating and review test for developer - dont remove it
+      // This is helper for creating and review test for developer - dont remove it
       // if (modifiedContent) {
-      //  fs.writeFileSync(path.resolve(baseDir, testDir, 'modifiedContent.txt'), modifiedContent);
+      //   fs.writeFileSync(path.resolve(baseDir, testDir, 'modifiedContent.txt'), modifiedContent);
       // }
       assert.strictEqual(modifiedContent, expectedOutput);
     });

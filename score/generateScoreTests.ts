@@ -6,7 +6,6 @@ import { MinionTask } from '../src/minionTasks/MinionTask';
 import { extractExtensionNameFromPath } from '../src/utils/extractFileNameFromPath';
 import { TestSchemas, listOfTypes } from './types';
 import { SIMPLE_STRING_FIND, GPT_ASSERT, FUNCTION_RETURN_TYPE_CHECK } from './types';
-import { createPrompt } from '@inquirer/prompts';
 import { ensureIRunThisInRange } from '../src/gpt/ensureIRunThisInRange';
 enum Languages {
   'js' = 'javascript',

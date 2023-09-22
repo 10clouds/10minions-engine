@@ -2,6 +2,8 @@ import { ApplicationStatus, MinionTask } from './MinionTask';
 import { getEditorManager } from '../managers/EditorManager';
 import { getMinionTasksManager } from '../managers/MinionTasksManager';
 import { MINION_TASK_STRATEGY_ID } from './strategies';
+import { Knowledge } from '../strategyAndKnowledge/Knowledge';
+import { WorkspaceFilesKnowledge } from './generateDescriptionForWorkspaceFiles';
 
 export type SerializedMinionTask = {
   id: string;
@@ -27,6 +29,7 @@ export type SerializedMinionTask = {
   logContent: string;
   contentWhenDismissed: string;
   aplicationStatus?: ApplicationStatus;
+  relevantKnowledge?: WorkspaceFilesKnowledge[];
 };
 
 export function serializeMinionTask(minionTask: MinionTask): SerializedMinionTask {
@@ -54,6 +57,7 @@ export function serializeMinionTask(minionTask: MinionTask): SerializedMinionTas
     logContent: minionTask.logContent,
     contentWhenDismissed: minionTask.contentWhenDismissed,
     aplicationStatus: minionTask.aplicationStatus,
+    relevantKnowledge: minionTask.relevantKnowledge,
   };
 }
 
@@ -89,6 +93,7 @@ export function deserializeMinionTask(data: SerializedMinionTask): MinionTask {
     logContent: data.logContent,
     contentWhenDismissed: data.contentWhenDismissed,
     aplicationStatus: data.aplicationStatus,
+    relevantKnowledge: data.relevantKnowledge,
   });
 
   return minionTask;

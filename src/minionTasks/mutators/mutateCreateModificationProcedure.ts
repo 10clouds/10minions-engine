@@ -7,11 +7,12 @@ import { mutateStopExecution } from '../../tasks/mutators/mutateStopExecution';
 import { mutateReportSmallProgress } from '../../tasks/mutators/mutateReportSmallProgress';
 
 export async function mutateCreateModificationProcedure(task: MinionTask) {
-  if (task.strategyId === '') {
+  const { strategyId, originalContent, modificationDescription, baseName, relevantKnowledge, stopped } = task;
+  if (strategyId === '') {
     throw new Error('Classification is undefined');
   }
 
-  if (task.strategyId === 'AnswerQuestion') {
+  if (strategyId === 'AnswerQuestion') {
     return;
   }
 
@@ -19,8 +20,8 @@ export async function mutateCreateModificationProcedure(task: MinionTask) {
 
   try {
     const { result, cost } = await createModificationProcedure(
-      task.originalContent,
-      task.modificationDescription,
+      originalContent,
+      modificationDescription,
       async (chunk: string) => {
         mutateReportSmallProgress(task);
         if (DEBUG_RESPONSES) {
@@ -30,10 +31,12 @@ export async function mutateCreateModificationProcedure(task: MinionTask) {
         }
       },
       () => {
-        return task.stopped;
+        return stopped;
       },
-      task.baseName,
+      baseName,
+      relevantKnowledge,
     );
+
     task.modificationProcedure = result;
     task.totalCost += cost;
   } catch (error) {
