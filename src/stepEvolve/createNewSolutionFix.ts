@@ -1,22 +1,35 @@
-import { mutatorApplyMinionTask } from '../minionTasks/mutators/mutateApplyMinionTask';
 import { mutateCreateModification } from '../minionTasks/mutators/mutateCreateModification';
 import { mutateCreateModificationProcedure } from '../minionTasks/mutators/mutateCreateModificationProcedure';
 import { mutateStopExecution } from '../tasks/mutators/mutateStopExecution';
 import { MinionTask } from '../minionTasks/MinionTask';
 import { MinionTaskSolution } from '../minionTasks/advancedCodeChangeStrategy';
+import { applyModificationProcedure } from '../minionTasks/applyModificationProcedure';
+
+const MAX_ATTEMPTS_NUMBER = 4;
 
 export const createNewSolutionFix = async (task: MinionTask): Promise<MinionTaskSolution> => {
   task.strategyId = 'CodeChange';
   await mutateCreateModification(task);
-  await mutateCreateModificationProcedure(task);
-  mutateStopExecution(task);
-  console.log('Applying new solution...');
-  await mutatorApplyMinionTask(task);
-  const resultingCode = (await task.document()).getText();
+  let error = null;
+  let modifiedContent = '';
+  let iteration = 0;
+  do {
+    console.log('Create procedure attempt: ', iteration);
+    task.stopped = false;
+    try {
+      await mutateCreateModificationProcedure(task);
+      mutateStopExecution(task);
+      modifiedContent = await applyModificationProcedure(task.originalContent, task.modificationProcedure, 'ts');
+    } catch (err) {
+      error = err;
+    }
+    iteration++;
+  } while (error && iteration < MAX_ATTEMPTS_NUMBER);
 
   return {
-    resultingCode,
+    resultingCode: modifiedContent,
     modificationProcedure: task.modificationProcedure,
     modificationDescription: task.modificationDescription,
+    originalCode: task.originalContent,
   };
 };

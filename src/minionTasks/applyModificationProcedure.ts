@@ -190,7 +190,7 @@ export async function applyModificationProcedure(originalCode: string, modificat
   }
 
   if (originalCode === currentCode) {
-    throw new Error('No procedure');
+    throw new Error('The code has not been changed');
   }
 
   return currentCode;

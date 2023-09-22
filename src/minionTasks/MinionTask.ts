@@ -5,6 +5,7 @@ import { getOriginalContentProvider } from '../managers/OriginalContentProvider'
 import { TaskContext } from '../tasks/TaskContext';
 import { APPLIED_STAGE_NAME, APPLYING_STAGE_NAME, CANCELED_STAGE_NAME, FINISHED_STAGE_NAME } from '../tasks/stageNames';
 import { MINION_TASK_STRATEGY_ID } from './strategies';
+import { WorkspaceFilesKnowledge } from './generateDescriptionForWorkspaceFiles';
 
 export enum ApplicationStatus {
   APPLIED = 'applied',
@@ -82,8 +83,8 @@ export class MinionTask implements TaskContext {
   modificationProcedure: string;
 
   inlineMessage: string;
-
   aplicationStatus?: ApplicationStatus;
+  relevantKnowledge?: WorkspaceFilesKnowledge[];
 
   constructor({
     id,
@@ -109,6 +110,7 @@ export class MinionTask implements TaskContext {
     logContent = '',
     totalCost = 0,
     aplicationStatus = ApplicationStatus.NOT_APPLIED,
+    relevantKnowledge = [],
   }: {
     id: string;
     minionIndex: number;
@@ -131,6 +133,7 @@ export class MinionTask implements TaskContext {
     logContent?: string;
     totalCost?: number;
     aplicationStatus?: ApplicationStatus;
+    relevantKnowledge?: WorkspaceFilesKnowledge[];
   }) {
     this.id = id;
     this.minionIndex = minionIndex;
@@ -153,6 +156,7 @@ export class MinionTask implements TaskContext {
     this.logContent = logContent;
     this.totalCost = totalCost;
     this.aplicationStatus = aplicationStatus;
+    this.relevantKnowledge = relevantKnowledge;
   }
 
   get originalContentURI() {

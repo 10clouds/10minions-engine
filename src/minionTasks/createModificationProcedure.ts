@@ -4,105 +4,11 @@ import { countTokens } from '../gpt/countTokens';
 import { ensureIRunThisInRange } from '../gpt/ensureIRunThisInRange';
 import { gptExecute } from '../gpt/gptExecute';
 import { GPTMode, QUALITY_MODE_TOKENS } from '../gpt/types';
+import { trimKnowledge } from './utils/trimKnowledge';
+import { createPrompt } from './prompts/createModificationProcedurePrompt';
+import { WorkspaceFilesKnowledge } from './generateDescriptionForWorkspaceFiles';
 
-export const AVAILABLE_COMMANDS = [
-  `
-# Syntax and description of a REPLACE command
-
-Use this to replace a block of lines of code with another block of lines of code. Start it with the following line:
-
-REPLACE
-
-Followed by the lines of code you are replacing, and then, when ready to output the text to replace, start it with the following command:
-
-WITH
-
-Followed by the code you are replacing with. End the sequence with the following command:
-
-END_REPLACE
-
-Follow this rules when using REPLACE / WITH / END_REPLACE command sequence:
-* All lines and whitespace in the text you are replacing matter, try to keep the newlines and indentation the same so proper match can be found.
-* You MUST use all 3 parts of the command: REPLACE, WITH and END_REPLACE.
-`.trim(),
-
-  `
-# Syntax and description of a INSERT command
-
-Use this to insert new code after a given piece of code. Start it with the following line:
-
-INSERT
-
-Followed by the lines of code you are inserting, and then, when ready to output the text that should follow the inserted text, start it with the following command:
-
-BEFORE
-
-Followed by the code that should follow the inserted code. End the sequence with the following command:
-
-END_INSERT
-
-Follow this rules when using INSERT / BEFORE / END_INSERT command sequence:
-* All lines and whitespace in the text you are inserting matter.
-* You MUST use all 3 parts of the command: INSERT, BEFORE and END_INSERT.
-`.trim(),
-  `
-# Syntax and description of a MODIFY_OTHER command
-
-If REQUESTED_MODIFICATION specifies that other files must be created or modified, use this command to specify any modifications that need to happen in other files. User will apply them manually, so they don't have to compile, and can have instructions on how to apply them. Start it with the following line:
-
-MODIFY_OTHER
-
-Followed by the lines of instructions on what to modify and how. Followed by the following line:
-
-END_MODIFY_OTHER
-
-`.trim(),
-];
-
-export const OUTPUT_FORMAT = `
-
-Start your answer with the overview of what you are going to do, and then, follow it by one more COMMANDS.
-
-## General considerations:
-* Do not invent your own commands, use only the ones described below.
-* After all INSERTS and REPLACEmeents the code should be final, production ready, as described in REQUESTED MODIFICATION.
-
-## Available commands are:
-${AVAILABLE_COMMANDS.join('\n\n')}
-
-`.trim();
-
-function createPrompt(refCode: string, modification: string, fileName: string) {
-  return `
-You are a higly intelligent AI file composer tool, you can take a piece of text and a modification described in natural langue, and return a consolidated answer.
-
-==== FORMAT OF THE ANSWER ====
-${OUTPUT_FORMAT} 
-
-==== THINGS TO TAKE INTO CONSIDERATION ====
-* If you are not sure what is the TASK or TASK details are not specified, try to generate response based on FILENAME: '${fileName}'.
-* ALWAYS use FILENAME as a hint when you answering the question.
-* You have been provided an exact modification (REQUESTED MODIFICATION section) that needs to be applied to the code (ORIGINAL CODE section).
-* Make sure to exactly match the structure of the original and exactly the intention of the modification.
-* You MUST ALWAYS expand all comments like "// ...", "/* remainig code */" or "// ...rest of the code remains the same..." to the exact code that they refer to. You are producting final production ready code, so you need complete code based on ORIGINAL CODE.
-* If in the REQUESTED MODIFICATION section there are only comments, and user asked something that does not requrie modification of the code. Write the answer as a code comment in appropriate spot.
-* You must always leave a mark on the final file, if there is nothing to modify in the file, you must leave a comment in the file describing why there is nothing to modify.
-* Always check if brackets are closed and if code will compile correctly "{" have to end with "}",  "[" have to end with "]" etc.
-* Always check if the final result has all closing commands like END_REPLACE or END_INSERT or END_MODIFY_OTHER
-* Always remember if language is a typed programming language to add proper types to parameters and other variables
-
-==== ORIGINAL CODE ====
-${refCode}
-
-==== REQUESTED MODIFICATION ====
-${modification}
-
-==== FINAL SUMMARY ====
-You are a higly intelligent AI file composer tool, you can take a piece of text and a modification described in natural langue, and return a consolidated answer.
-
-Let's take this step by step, first, describe in detail what you are going to do, and then perform previously described commands in FORMAT OF THE ANSWER section.
-`.trim();
-}
+const EXTRA_TOKENS = 500;
 
 export async function createModificationProcedure(
   refCode: string,
@@ -110,6 +16,7 @@ export async function createModificationProcedure(
   onChunk: (chunk: string) => Promise<void>,
   isCancelled: () => boolean,
   fileName: string,
+  knowledge: WorkspaceFilesKnowledge[] = [],
 ) {
   //replace any lines with headers in format ===== HEADER ==== (must start and end the line without any additioanl characters) with # HEADER
   modification = modification.replace(
@@ -119,9 +26,11 @@ export async function createModificationProcedure(
       return `#${p2}`;
     },
   );
-  const promptWithContext = createPrompt(refCode, modification, fileName);
-  const minTokens = countTokens(refCode, GPTMode.QUALITY) + 500;
-  const fullPromptTokens = countTokens(promptWithContext, GPTMode.QUALITY) + 500;
+
+  const promptData = { refCode, modification, fileName };
+  let promptWithContext = createPrompt(promptData);
+  const minTokens = countTokens(refCode, GPTMode.QUALITY) + EXTRA_TOKENS;
+  const fullPromptTokens = countTokens(promptWithContext, GPTMode.QUALITY) + EXTRA_TOKENS;
 
   if (DEBUG_PROMPTS) {
     onChunk('<<<< PROMPT >>>>\n\n');
@@ -131,12 +40,20 @@ export async function createModificationProcedure(
 
   const mode: GPTMode = fullPromptTokens > QUALITY_MODE_TOKENS ? GPTMode.FAST : GPTMode.QUALITY;
 
-  const maxTokens = ensureIRunThisInRange({
+  let maxTokens = ensureIRunThisInRange({
     prompt: promptWithContext,
     mode: mode,
     preferedTokens: fullPromptTokens,
     minTokens: minTokens,
   });
+
+  const promptWithKnowledgeData = trimKnowledge({ maxTokens, knowledge, mode, createPrompt, promptData, minTokens, extraTokens: EXTRA_TOKENS });
+
+  if (promptWithKnowledgeData) {
+    const { maxTokens: newTokens, newPrompt } = promptWithKnowledgeData;
+    maxTokens = newTokens;
+    promptWithContext = newPrompt;
+  }
 
   console.log('MODIFICATION PROCEDURE TOKENS: ', maxTokens);
 

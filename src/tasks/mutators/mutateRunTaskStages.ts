@@ -4,8 +4,14 @@ import { calculateAndFormatExecutionTime } from '../../utils/calculateAndFormatE
 import { TaskContext } from '../TaskContext';
 import { TaskCanceled } from '../utils/TaskCanceled';
 import { mutateStopExecution } from './mutateStopExecution';
+import { WorkspaceFilesKnowledge } from '../../minionTasks/generateDescriptionForWorkspaceFiles';
 
-export function mutateRunTaskStages<TC extends TaskContext>(task: TC, execute: (task: TC, test?: boolean) => Promise<void>, test?: boolean) {
+export function mutateRunTaskStages<TC extends TaskContext>(
+  task: TC,
+  execute: (task: TC, workspaceFilesKnowledge?: WorkspaceFilesKnowledge[], test?: boolean) => Promise<void>,
+  workspaceFilesKnowledge?: WorkspaceFilesKnowledge[],
+  test?: boolean,
+) {
   return new Promise<void>(async (resolve, reject) => {
     if (task.stopped) {
       return;
@@ -16,7 +22,7 @@ export function mutateRunTaskStages<TC extends TaskContext>(task: TC, execute: (
 
     try {
       task.progress = 0;
-      await execute(task, test);
+      await execute(task, workspaceFilesKnowledge, test);
       await mutateStopExecution(task);
     } catch (error) {
       if (!(error instanceof TaskCanceled)) {
