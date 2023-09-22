@@ -1,6 +1,7 @@
 import * as admin from 'firebase-admin';
 import { getAnalyticsManager } from './AnalyticsManager';
 
+// It is used to cache the results of the OpenAI API calls and it is imported by project that use this npm package.
 export class SimpleOpenAICacheManager {
   private firestore: admin.firestore.Firestore | undefined;
 
@@ -35,7 +36,7 @@ export class SimpleOpenAICacheManager {
         data.push(doc.data().responseData as string);
       }
     });
-
+    // TODO: add explenation why this is done like that
     const randomIndex = Math.floor(Math.random() * data.length);
     return data[randomIndex];
   }

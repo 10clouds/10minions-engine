@@ -38,10 +38,6 @@ export function commonStringEndArray(indents: string[]) {
   return commonIndent;
 }
 
-export function removeEmptyLines(slice: string[]) {
-  return slice.filter((line) => line.trim().length > 0);
-}
-
 export function removeIndent(slice: string[], indent?: string) {
   if (indent === undefined) {
     const indents = slice.map((line) => line.match(/(^\s*)/)?.[1] || '');
@@ -63,24 +59,6 @@ export function applyIndent(slice: string[], indent: string[] | string) {
 
     return line.trim().length > 0 ? indent + line : line;
   });
-}
-
-export function jaccardSimilarityIndex(a: string, b: string): number {
-  // Step 1: Convert each input string into a set of characters
-  const setA = new Set(a);
-  const setB = new Set(b);
-
-  // Step 2: Calculate the intersection of the two sets
-  const intersection = new Set([...setA].filter((x) => setB.has(x)));
-
-  // Step 3: Calculate the union of the two sets
-  const union = new Set([...setA, ...setB]);
-
-  // Step 4: Calculate the Jaccard similarity index by dividing the intersection size by the union size
-  const similarityIndex = intersection.size / union.size;
-
-  // Step 5: Return the Jaccard similarity index as the result
-  return similarityIndex;
 }
 
 /**
@@ -124,35 +102,6 @@ export function levenshteinDistanceSimilarity(a: string, b: string): number {
   return 1 - levenshteinDistance(a, b) / len;
 }
 
-export function sorensenDiceCoefficient(first: string, second: string) {
-  first = first.replace(/\s+/g, '');
-  second = second.replace(/\s+/g, '');
-
-  if (first === second) return 1; // identical or empty
-  if (first.length < 2 || second.length < 2) return 0; // if either is a 0-letter or 1-letter string
-
-  const firstBigrams = new Map();
-  for (let i = 0; i < first.length - 1; i++) {
-    const bigram = first.substring(i, i + 2);
-    const count = firstBigrams.has(bigram) ? firstBigrams.get(bigram) + 1 : 1;
-
-    firstBigrams.set(bigram, count);
-  }
-
-  let intersectionSize = 0;
-  for (let i = 0; i < second.length - 1; i++) {
-    const bigram = second.substring(i, i + 2);
-    const count = firstBigrams.has(bigram) ? firstBigrams.get(bigram) : 0;
-
-    if (count > 0) {
-      firstBigrams.set(bigram, count - 1);
-      intersectionSize++;
-    }
-  }
-
-  return (2.0 * intersectionSize) / (first.length + second.length - 2);
-}
-
 export function equalsStringSimilarity(a: string, b: string): number {
   let matchingChars = 0;
 
@@ -171,37 +120,6 @@ export function equalsStringSimilarity(a: string, b: string): number {
   }
 
   return matchingChars / max;
-}
-
-export function trimEmptyLinesAtTheBeginingAndEnd(textLines: string[]): string[] {
-  let start = 0;
-  let end = textLines.length - 1;
-
-  while (start < end && textLines[start].trim().length === 0) {
-    start++;
-  }
-
-  while (end > start && textLines[end].trim().length === 0) {
-    end--;
-  }
-
-  return textLines.slice(start, end + 1);
-}
-
-export function longestCommonSubsequenceLength(s1: string, s2: string): number {
-  const dp = Array.from({ length: s1.length + 1 }, () => new Array(s2.length + 1).fill(0));
-
-  for (let i = 1; i <= s1.length; i++) {
-    for (let j = 1; j <= s2.length; j++) {
-      if (s1[i - 1] === s2[j - 1]) {
-        dp[i][j] = dp[i - 1][j - 1] + 1;
-      } else {
-        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
-      }
-    }
-  }
-
-  return dp[s1.length][s2.length];
 }
 
 export function normalizeWhiteSpace(s: string): string {

@@ -45,5 +45,4 @@ export async function mutateCreateModificationProcedure(task: MinionTask) {
   }
 
   mutateAppendToLog(task, '');
-  mutateAppendToLog(task, '');
 }

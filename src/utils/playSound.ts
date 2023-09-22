@@ -40,29 +40,36 @@ async function playSound(path: string, volume = 0.5) {
    */
   const volumeAdjustedByOS = process.platform === 'darwin' ? Math.min(2, volume * 2) : volume;
 
+  if (!process.platform) {
+    throw Error('OS not detected');
+  }
+
   let playCommand;
+  const filePath = path;
+  const escapedFilePath = filePath.replace(/"/g, '\\"');
+
   switch (process.platform) {
     case 'aix':
-      playCommand = aixPlayCommand(path, volume);
+      playCommand = aixPlayCommand(escapedFilePath, volume);
       break;
     case 'darwin':
-      playCommand = darwinPlayCommand(path, volumeAdjustedByOS);
+      playCommand = darwinPlayCommand(escapedFilePath, volumeAdjustedByOS);
       break;
     case 'freebsd':
-      playCommand = freebsdPlayCommand(path, volume);
+      playCommand = freebsdPlayCommand(escapedFilePath, volume);
       break;
     case 'linux':
-      playCommand = linuxPlayCommand(path, volume);
+      playCommand = linuxPlayCommand(escapedFilePath, volume);
       break;
     case 'openbsd':
-      playCommand = openbsdPlayCommand(path, volume);
+      playCommand = openbsdPlayCommand(escapedFilePath, volume);
       break;
     case 'sunos':
-      playCommand = sunosPlayCommand(path, volume);
+      playCommand = sunosPlayCommand(escapedFilePath, volume);
       break;
     case 'win32':
     default:
-      playCommand = win32PlayCommand(path, volumeAdjustedByOS);
+      playCommand = win32PlayCommand(escapedFilePath, volumeAdjustedByOS);
       break;
   }
 

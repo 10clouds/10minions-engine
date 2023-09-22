@@ -37,22 +37,6 @@ export function initCLISystems() {
   setLogProvider(undefined);
   setOriginalContentProvider(undefined);
 
-  const reportChange = (uri: string) => {
-    // TODO
-  };
-
-  const reportChangeInTask = (id: string) => {
-    // TODO
-  };
-
-  setLogProvider({
-    reportChangeInTask,
-  });
-
-  setOriginalContentProvider({
-    reportChange,
-  });
-
   setEditorManager(new CLIEditorManager());
 }
 
