@@ -52,8 +52,10 @@ export async function taskChooseKnowledgeAndStrategy<TC extends TaskContext>({
 
         Do not add materials if they are not needed.
        
-        You have access to the following materials:
+        Do not shorten materials with '...' or similar, provide the full description and id.
 
+        You have access to the following materials:
+        
         ${isKnowledge ? shuffleArray(availableKnowledge.map((c) => `* ${c.id} - ${c.description} `)).join('\n        ') : ''}
 
         Do not perform the actual command, revise the result or generate any code.
@@ -87,7 +89,7 @@ export async function taskChooseKnowledgeAndStrategy<TC extends TaskContext>({
     preferedTokens: fullPromptTokens,
     minTokens: minTokens,
   });
-
+  const KnowledgeIdsEnum = z.enum([availableKnowledge[0].id, ...availableKnowledge.slice(1).map((s) => s.id)]);
   const result = await taskGPTExecute(task, {
     fullPrompt: promptWithContext,
     mode,
@@ -95,7 +97,7 @@ export async function taskChooseKnowledgeAndStrategy<TC extends TaskContext>({
     outputName: 'choose',
     outputSchema: z
       .object({
-        neededKnowledge: z.array(z.enum([availableKnowledge[0].id, ...availableKnowledge.slice(1).map((s) => s.id)])),
+        neededKnowledge: z.array(KnowledgeIdsEnum),
         strategy: z.enum([availableStrategies[0].id, ...availableStrategies.slice(1).map((s) => s.id)]),
       })
       .describe('Choose needed knowledge and strategy for the task'),
