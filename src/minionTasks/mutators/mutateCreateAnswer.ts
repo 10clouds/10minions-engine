@@ -1,57 +1,19 @@
 import { MinionTask } from '../MinionTask';
-import { EditorDocument, EditorPosition } from '../../managers/EditorManager';
 import { gptExecute } from '../../gpt/gptExecute';
 import { countTokens } from '../../gpt/countTokens';
 import { ensureIRunThisInRange } from '../../gpt/ensureIRunThisInRange';
-import { GPTMode } from '../../gpt/types';
+import { GPTMode, QUALITY_MODE_TOKENS } from '../../gpt/types';
 import { z } from 'zod';
 import { mutateAppendToLog } from '../../tasks/logs/mutators/mutateAppendToLog';
 import { mutateAppendToLogNoNewline } from '../../tasks/logs/mutators/mutateAppendToLogNoNewline';
 import { mutateReportSmallProgress } from '../../tasks/mutators/mutateReportSmallProgress';
-import { createFullPromptFromSections } from '../../gpt/createFullPromptFromSections';
+import { Knowledge } from '../../strategyAndKnowledge/Knowledge';
+import { createPrompt } from '../prompts/createAnswerPrompt';
+import { trimKnowledge } from '../utils/trimKnowledge';
 
-function createPrompt(
-  selectedText: string,
-  document: EditorDocument,
-  fullFileContents: string,
-  selectionPosition: EditorPosition,
-  userQuery: string,
-  fileName: string,
-) {
-  return createFullPromptFromSections({
-    intro: `
-You are an expert senior software architect, with 10 years of experience, experience in numerous projects and up to date knowledge and an IQ of 200.
-Your collegue asked you to tell him about something, the task is provided below in TASK section.
-Perform that task.
+const EXTRA_TOKENS = 200;
 
-Your job is to professionally answer the question.
-
-Think about what your collegue might have in mind when he wrote his task, and try to fulfill his intention. Try to follow the task as pricesely as possible.
-
-Take this step by step, and describe your reasoning along the way.
-
-At the end provide your final answer, this is the only thing that will be supplied to your collegue as a result of this task.
-    `.trim(),
-    sections: {
-      ...(selectedText ? { [`FILE CONTEXT (Language: ${document.languageId})`]: fullFileContents } : {}),
-
-      [`CODE SNIPPET ${
-        selectedText
-          ? `(starts on line ${selectionPosition.line + 1} column: ${selectionPosition.character + 1} in the file)`
-          : `(Language: ${document.languageId})`
-      }`]: selectedText ? selectedText : fullFileContents,
-      [`TASK (applies to CODE SNIPPET section only, not the entire FILE CONTEXT)`]: userQuery,
-    },
-    outro: `
-If the task is not clear or there is lack of details try to generate response base on file name.
-File name: ${fileName}
-
-Let's take it step by step.
-`.trim(),
-  });
-}
-
-export async function mutateCreateAnswer(task: MinionTask) {
+export async function mutateCreateAnswer(task: MinionTask, relevantKnowledge: Knowledge[]) {
   if (task.strategyId === '') {
     throw new Error('Classification is undefined');
   }
@@ -65,19 +27,43 @@ export async function mutateCreateAnswer(task: MinionTask) {
   const isCancelled = () => {
     return task.stopped;
   };
+  const promptData = {
+    selectedText,
+    document,
+    fullFileContents,
+    selectionPosition: task.selection.start,
+    userQuery,
+    fileName: task.baseName,
+  };
+  let promptWithContext = createPrompt(promptData);
 
-  const promptWithContext = createPrompt(selectedText, document, fullFileContents, task.selection.start, userQuery, task.baseName);
+  const minTokens = countTokens(fullFileContents, GPTMode.QUALITY) + EXTRA_TOKENS;
+  const fullPromptTokens = countTokens(promptWithContext, GPTMode.QUALITY) + EXTRA_TOKENS;
 
-  const tokensCode = countTokens(promptWithContext, GPTMode.FAST);
-  const luxiouriosTokens = tokensCode * 1.5;
-  const absoluteMinimumTokens = tokensCode;
+  const mode: GPTMode = fullPromptTokens > QUALITY_MODE_TOKENS ? GPTMode.FAST : GPTMode.QUALITY;
 
-  const tokensToUse = ensureIRunThisInRange({
+  let maxTokens = ensureIRunThisInRange({
     prompt: promptWithContext,
-    mode: GPTMode.FAST,
-    preferedTokens: luxiouriosTokens,
-    minTokens: absoluteMinimumTokens,
+    mode: mode,
+    preferedTokens: fullPromptTokens,
+    minTokens: minTokens,
   });
+
+  const promptWithKnowledgeData = trimKnowledge({
+    maxTokens,
+    knowledge: task.relevantKnowledge || [],
+    mode,
+    createPrompt,
+    promptData,
+    minTokens,
+    extraTokens: EXTRA_TOKENS,
+  });
+
+  if (promptWithKnowledgeData) {
+    const { maxTokens: newTokens, newPrompt } = promptWithKnowledgeData;
+    maxTokens = newTokens;
+    promptWithContext = newPrompt;
+  }
 
   const { result, cost } = await gptExecute({
     fullPrompt: promptWithContext,
@@ -87,8 +73,8 @@ export async function mutateCreateAnswer(task: MinionTask) {
       mutateReportSmallProgress(task);
     },
     isCancelled,
-    mode: GPTMode.FAST,
-    maxTokens: tokensToUse,
+    mode,
+    maxTokens,
     controller: new AbortController(),
     outputSchema: z.string(),
   });

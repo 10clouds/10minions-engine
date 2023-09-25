@@ -1,6 +1,5 @@
 import { createFullPromptFromSections } from '../gpt/createFullPromptFromSections';
 import { MinionTask } from './MinionTask';
-import { MINION_TASK_STRATEGIES } from './strategies';
 
 export async function createChooseStrategyPrompt(task: MinionTask) {
   const document = await task.document();
@@ -10,7 +9,13 @@ export async function createChooseStrategyPrompt(task: MinionTask) {
 You are an expert senior software architect, with 10 years of experience, experience in numerous projects and up to date knowledge and an IQ of 200.
 Your collegue asked you to help him with some code, the task is provided below in TASK section.
 
-Your job is to choose strategy for handling the task, so tomorrow, when you get back to this task, you know what to do.
+To choose the most accurate files take a look on imports in CODE section in the first place.
+
+Based on CODE file chose best materials and strategy to resolve TASK - try to look for used functions and imports from other files.
+
+Choose only this functions that are the most valuable and are included in CODE.
+
+Your job is to choose strategy and best materials for handling the TASK, so tomorrow, when you get back to this TASK, you know what to do.
 `.trim(),
     sections: {
       ...(task.selectedText

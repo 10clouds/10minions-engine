@@ -6,6 +6,7 @@ import { input, select, confirm } from '@inquirer/prompts';
 import chalk from 'chalk';
 import { prepareScoreTest } from './prepareScoreTest';
 import { extractFileNameFromPath } from '../src/utils/extractFileNameFromPath';
+import { WorkspaceFilesKnowledge } from '../src/minionTasks/generateDescriptionForWorkspaceFiles';
 
 export interface TestRequiredData {
   selectedText: string;
@@ -18,6 +19,7 @@ export interface TestRequiredData {
   id: string;
   pluginVersion: string;
   vsCodeVersion: string;
+  relevantKnowledge: WorkspaceFilesKnowledge[];
 }
 
 enum TestType {
@@ -105,7 +107,7 @@ const createTestInfoFile = (testData: TestRequiredData, path: string) => {
 };
 
 const createScoreTestFiles = async (testData: TestRequiredData, config: TestConfig): Promise<void> => {
-  const { selectedText, originalContent, userQuery } = testData;
+  const { selectedText, originalContent, userQuery, relevantKnowledge = [] } = testData;
   const languageFileExtension = TestLanguagesExtensions[config.language];
   const testDirPath = createTestsDirectory(config.testType, `${config.testName}.${languageFileExtension}`);
   const testFileNamePrefix = `${testDirPath}/`;
@@ -116,12 +118,13 @@ const createScoreTestFiles = async (testData: TestRequiredData, config: TestConf
   }
   createTestFile(originalContent, `${testFileNamePrefix}original.txt`);
   createTestFile(userQuery, `${testFileNamePrefix}userQuery.txt`);
+  createTestFile(JSON.stringify(relevantKnowledge), `${testFileNamePrefix}knowledge.json`);
   const test = await prepareScoreTest(userQuery, `${config.testName}.${languageFileExtension}`, testData);
   createTestFile(test ?? '', `${testFileNamePrefix}tests.json`);
 };
 
 const createProcedureTestFiles = async (testData: TestRequiredData, config: TestConfig) => {
-  const { finalContent, originalContent, modificationDescription, modificationProcedure } = testData;
+  const { finalContent, originalContent, modificationDescription, modificationProcedure, relevantKnowledge } = testData;
   const testDirPath = createTestsDirectory(config.testType, config.testName);
   const testFileNamePrefix = `${testDirPath}/`;
   const originalFileName = extractFileNameFromPath(testData.documentURI);
@@ -129,6 +132,7 @@ const createProcedureTestFiles = async (testData: TestRequiredData, config: Test
 
   if (config.testType === TestType.CREATE_PROCEDURE) {
     createTestFile(modificationDescription, `${testFileNamePrefix}modification.txt`);
+    createTestFile(JSON.stringify(relevantKnowledge), `${testFileNamePrefix}knowledge.json`);
     createTestFile(originalContent, `${testFileNamePrefix}${originalFileName}.original.txt`);
   } else {
     createTestFile(originalContent, `${testFileNamePrefix}original.txt`);

@@ -6,7 +6,6 @@ import { MinionTask } from '../src/minionTasks/MinionTask';
 import { extractExtensionNameFromPath } from '../src/utils/extractFileNameFromPath';
 import { TestSchemas, listOfTypes } from './types';
 import { SIMPLE_STRING_FIND, GPT_ASSERT, FUNCTION_RETURN_TYPE_CHECK } from './types';
-import { createPrompt } from '@inquirer/prompts';
 import { ensureIRunThisInRange } from '../src/gpt/ensureIRunThisInRange';
 enum Languages {
   'js' = 'javascript',
@@ -85,27 +84,28 @@ const prompt = async (minionTask: MinionTask, test?: boolean) => {
   `;
 };
 
+const EXTRA_TOKENS = 500;
+
 export const generateScoreTests = async (minionTask?: MinionTask, test?: boolean) => {
   if (!minionTask) return;
+  const mode: GPTMode = GPTMode.FAST;
   const fullPrompt = await prompt(minionTask, test);
-  const fullPromptTokens = countTokens(fullPrompt, GPTMode.QUALITY) + 500;
-
-  const mode: GPTMode = fullPromptTokens > QUALITY_MODE_TOKENS ? GPTMode.FAST : GPTMode.QUALITY;
+  const fullPromptTokens = countTokens(fullPrompt, mode) + EXTRA_TOKENS;
 
   const maxTokens = ensureIRunThisInRange({
     prompt: fullPrompt,
-    mode: mode,
+    mode,
     preferedTokens: fullPromptTokens,
     minTokens: fullPromptTokens,
   });
 
   console.log('GENERATING TEST CASES...');
 
-  const response = await gptExecute({
+  const { result, cost } = await gptExecute({
     fullPrompt,
     onChunk: async (chunk: string) => {},
     maxTokens,
-    mode: GPTMode.QUALITY,
+    mode,
     temperature: 1,
     controller: new AbortController(),
     outputName: 'classification',
@@ -115,9 +115,11 @@ export const generateScoreTests = async (minionTask?: MinionTask, test?: boolean
       })
       .describe('Classification'),
   });
-
   console.log('======= RESPONSE =======');
-  console.log(response.result);
+  console.log(result);
 
-  return JSON.stringify(response.result);
+  return {
+    result: JSON.stringify(result),
+    cost,
+  };
 };

@@ -19,9 +19,9 @@ export const prepareScoreTest = async (userQuery: string, fileName: string, mini
     for (let i = 0; i < ITERATIONS; i++) {
       const minionTaskFilePath = path.join(__dirname, 'score', `${fileName}/original.txt`);
       const { execution } = await initMinionTask(userQuery, minionTaskFilePath, undefined, fileName);
-      const results = await generateScoreTests(execution, true);
-      if (results) {
-        allTestCases = [...allTestCases, ...JSON.parse(results).items];
+      const tests = await generateScoreTests(execution, true);
+      if (tests?.result) {
+        allTestCases = [...allTestCases, ...JSON.parse(tests?.result).items];
       }
     }
 
@@ -41,15 +41,15 @@ export const prepareScoreTest = async (userQuery: string, fileName: string, mini
   [SELECTED TEXT]
   ${minionTask.selectedText}
   `;
-
-    const inputTokensCount = countTokens(prompt, GPTMode.QUALITY);
+    const mode = GPTMode.FAST;
+    const inputTokensCount = countTokens(prompt, mode);
     const outputTokensCount = 350;
     const maxTokens = inputTokensCount + outputTokensCount;
     const response = await gptExecute({
       fullPrompt: prompt,
       onChunk: async (chunk: string) => {},
       maxTokens,
-      mode: GPTMode.QUALITY,
+      mode,
       temperature: 0,
       controller: new AbortController(),
       outputSchema: z.string(),

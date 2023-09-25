@@ -14,10 +14,9 @@ import { ScoreTestType } from '../../score/types';
 import { format as dtFormat } from 'date-and-time';
 import { createNewSolutionFix } from '../stepEvolve/createNewSolutionFix';
 
-const ITERATIONS = 6;
+const ITERATIONS = 3;
 const MAX_STALE_ITERATIONS = 3;
-// TODO: fix threeshold bug - when there is no solution with fitness above threeshold, cant replace error is shown
-const THRESHOLD = 10;
+const THRESHOLD = 120;
 const BRANCHING = 3;
 
 const FULL_PROGRESS = 1;
@@ -25,22 +24,17 @@ const PROGRESS_FOR_PRE_STAGES = 0.2;
 const PROGRESS_FOR_STRATEGY_STAGES = FULL_PROGRESS - PROGRESS_FOR_PRE_STAGES;
 const PROGRESS_PER_PRE_STAGE = PROGRESS_FOR_PRE_STAGES / ITERATIONS;
 
-const originalTaskFilePath = path.resolve(__dirname, `temp/temp-minion-original.txt`);
-
 export interface MinionTaskSolution {
   resultingCode: string;
   modificationProcedure: string;
   modificationDescription: string;
+  originalCode?: string;
 }
 
 type MinionTaskSolutionWithMeta = SolutionWithMeta<MinionTaskSolution>;
 
 export const advancedCodeChangeStrategy = async (task: MinionTask, test?: boolean) => {
-  const tempDirectoryPath = path.resolve(__dirname, 'temp');
-
-  if (!fs.existsSync(tempDirectoryPath)) {
-    fs.mkdirSync(tempDirectoryPath);
-  }
+  let costs = task.totalCost || 0;
 
   mutateStartStage({
     task,
@@ -48,15 +42,20 @@ export const advancedCodeChangeStrategy = async (task: MinionTask, test?: boolea
     progressIncrement: PROGRESS_FOR_STRATEGY_STAGES,
   });
   mutateAppendToLog(task, 'Stage 4 (DeepAnalysis)');
-  fs.writeFileSync(originalTaskFilePath, task.originalContent);
 
   const criteriaDefinition = await generateScoreTests(task, test);
-  const parsedCriteriaDefinition: { items: ScoreTestType[] } = criteriaDefinition && JSON.parse(criteriaDefinition);
+
+  if (criteriaDefinition) {
+    costs += criteriaDefinition.cost;
+  }
+
+  const parsedCriteriaDefinition: { items: ScoreTestType[] } = criteriaDefinition && JSON.parse(criteriaDefinition.result);
   const selectionData: Selection = {
     start: task.selection.start,
     end: task.selection.end,
     selectedText: task.selectedText,
   };
+
   const initialSolutionsPromises = [];
 
   for (let i = 0; i < ITERATIONS; i++) {
@@ -66,15 +65,8 @@ export const advancedCodeChangeStrategy = async (task: MinionTask, test?: boolea
       progressIncrement: PROGRESS_PER_PRE_STAGE,
     });
 
-    const tempTaskFileName = `temp-minion-${i}.txt`;
-    const originalFileContent = fs.readFileSync(path.join(__dirname, 'temp', `temp-minion-original.txt`), 'utf8');
-    const tempMinionTaskPath = path.resolve(__dirname, `temp/${tempTaskFileName}`);
-    fs.writeFileSync(tempMinionTaskPath, originalFileContent);
-    const minionTaskFilePath = path.join(__dirname, 'temp', tempTaskFileName);
-
-    const { execution: tempMinionTask } = await initMinionTask(task.userQuery, minionTaskFilePath, selectionData);
-    tempMinionTask.originalContent = originalFileContent;
-
+    const { execution: tempMinionTask } = await initMinionTask(task.userQuery, task.documentURI.fsPath, selectionData);
+    tempMinionTask.relevantKnowledge = task.relevantKnowledge;
     initialSolutionsPromises.push(
       createSolutionWithMetaWithFitness({
         solution: await createNewSolutionFix(tempMinionTask),
@@ -87,6 +79,7 @@ export const advancedCodeChangeStrategy = async (task: MinionTask, test?: boolea
       }),
     );
 
+    costs += tempMinionTask.totalCost;
     mutateEndStage(task);
   }
 
@@ -105,6 +98,11 @@ export const advancedCodeChangeStrategy = async (task: MinionTask, test?: boolea
               task,
               'Initial solution is: ' + solutionWithMeta.solution + ' ' + solutionWithMeta.totalFitness + ' (' + solutionWithMeta.createdWith + ')' + '.',
             );
+          }
+          const logsPath = path.resolve(__dirname, 'logs');
+
+          if (!fs.existsSync(logsPath)) {
+            fs.mkdirSync(logsPath, { recursive: true });
           }
           writeFileSync(
             path.join(__dirname, 'logs', `${iteration}-${dtFormat(new Date(), 'YYYY-MM-DD_HH-mm-ss')}.json`),
@@ -143,17 +141,12 @@ export const advancedCodeChangeStrategy = async (task: MinionTask, test?: boolea
     ],
   });
 
-  for (let i = 0; i < ITERATIONS; i++) {
-    const tempTaskFileName = `temp-minion-${i}.txt`;
-    const minionTaskFilePath = path.join(__dirname, 'temp', tempTaskFileName);
-    fs.unlinkSync(minionTaskFilePath);
-  }
-  fs.unlinkSync(originalTaskFilePath);
-
   const { modificationDescription, modificationProcedure } = finalSolution.solution;
+  task.totalCost += costs;
   task.modificationProcedure = modificationProcedure;
   task.modificationDescription = modificationDescription;
   console.log('FINAL TASK: ', task);
+  console.log('TASK COST: ', task.totalCost);
   task.onChange(true);
   mutateEndStage(task);
 };

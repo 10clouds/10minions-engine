@@ -10,11 +10,11 @@ import { initMinionTask } from './initTestMinionTask';
 import { TestDefinition, functionReturnTypeCheckSchema, gptAssertSchema, simpleStringFindSchema } from './types';
 import { logFilePath, logToFile } from './utils/logToFile';
 import { rateMinionTask } from './rateMinionTask';
-import { MinionTask } from '../src/minionTasks/MinionTask';
 import { mutatorApplyMinionTask } from '../src/minionTasks/mutators/mutateApplyMinionTask';
 import { mutateRunTaskStages } from '../src/tasks/mutators/mutateRunTaskStages';
 import { mutateExecuteMinionTaskStages } from '../src/minionTasks/mutateExecuteMinionTaskStages';
 import { format as dtFormat } from 'date-and-time';
+import { WorkspaceFilesKnowledge } from '../src/minionTasks/generateDescriptionForWorkspaceFiles';
 interface ScoringTestOptions extends OptionValues {
   iterations: number;
   pattern?: string;
@@ -51,8 +51,14 @@ async function runTest({
       throw new Error(`Test validation failed for '${fileName}': ${validation.errors.join(', ')}`);
     }
   }
+  const testPath = path.join(__dirname, 'score', fileName);
+  const userQuery = fs.readFileSync(path.join(testPath, `userQuery.txt`), 'utf8');
+  const knowledegePath = path.resolve(__dirname, testPath, 'knowledge.json');
+  let knowledge: WorkspaceFilesKnowledge[] = [];
 
-  const userQuery = fs.readFileSync(path.join(__dirname, 'score', `${fileName}/userQuery.txt`), 'utf8');
+  if (fs.existsSync(knowledegePath)) {
+    knowledge = JSON.parse(fs.readFileSync(knowledegePath, 'utf8'));
+  }
 
   const statistics = {
     total: 0,
@@ -73,8 +79,8 @@ async function runTest({
     fs.writeFileSync(directoryPath, originalFileContent);
     const minionTaskFilePath = path.join(__dirname, 'score', `${fileName}/temp.txt`);
     const { execution } = await initMinionTask(userQuery, minionTaskFilePath, undefined, fileName);
-
-    await mutateRunTaskStages(execution, mutateExecuteMinionTaskStages, true);
+    execution.relevantKnowledge = knowledge;
+    await mutateRunTaskStages(execution, mutateExecuteMinionTaskStages, undefined, true);
     console.log('STRATEGY: ', execution.strategyId);
     logToFile(`Strategy of ${i + 1} of iteration is ${execution.strategyId}`);
 

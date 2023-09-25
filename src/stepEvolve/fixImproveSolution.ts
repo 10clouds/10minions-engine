@@ -3,9 +3,12 @@ import { MinionTask } from '../minionTasks/MinionTask';
 import { SolutionWithMeta } from './FitnessFunction';
 import { gptExecute } from '../gpt/gptExecute';
 import { createFullPromptFromSections } from '../gpt/createFullPromptFromSections';
-import { GPTMode } from '../gpt/types';
+import { GPTMode, QUALITY_MODE_TOKENS } from '../gpt/types';
 import { countTokens } from '../gpt/countTokens';
 import { MinionTaskSolution } from '../minionTasks/advancedCodeChangeStrategy';
+import { ensureIRunThisInRange } from '../gpt/ensureIRunThisInRange';
+
+const EXTRA_TOKENS = 200;
 
 export function improveSolutionFix({
   task,
@@ -17,33 +20,52 @@ export function improveSolutionFix({
   suggestions: string;
 }) {
   console.log('Improving solution fix...');
-  const { modificationDescription, userQuery } = task;
-
+  const { modificationDescription, modificationProcedure, userQuery } = task;
+  const solution = solutionWithMeta.solution.resultingCode;
   const fullPrompt = createFullPromptFromSections({
     intro:
-      'Improve the following SOLUTION that fullfill USER_QUERY request based on MODIFICATION_DESCRIPTION, use SUGGESTIONS as guidance. Do not output any section markers or additional sections in your response, just the new improved solution.',
+      'Improve the following SOLUTION and MODIFICATION_PROCEDURE that fullfill USER_QUERY request based on MODIFICATION_DESCRIPTION, use SUGGESTIONS as guidance. Do not output any section markers or additional sections in your response, just the new improved solution, improved MODIFICATION_PROCEDURE.',
     sections: {
       MODIFICATION_DESCRIPTION: modificationDescription,
+      MODIFICATION_PROCEDURE: modificationProcedure,
       USER_QUERY: userQuery,
-      SOLUTION: solutionWithMeta.solution.resultingCode,
+      SOLUTION: solution,
       SUGGESTIONS: suggestions,
       'YOUR PROPOSED NEW SOLUTION': '',
     },
   });
+  const mode: GPTMode = GPTMode.FAST;
+  const minTokens = countTokens(solution, mode) + EXTRA_TOKENS;
+  const fullPromptTokens = countTokens(fullPrompt, mode) + EXTRA_TOKENS;
 
-  const maxTokens = countTokens(fullPrompt, GPTMode.QUALITY);
+  const maxTokens = ensureIRunThisInRange({
+    prompt: fullPrompt,
+    mode: mode,
+    preferedTokens: fullPromptTokens,
+    minTokens: minTokens,
+  });
+
+  const improveFixCallFunction = async () => {
+    const { result, cost } = await gptExecute({
+      fullPrompt,
+      maxTokens,
+      mode,
+      outputSchema: z.object({
+        resultingCode: z.string(),
+        modificationProcedure: z.string(),
+      }),
+    });
+    task.totalCost += cost;
+
+    return {
+      resultingCode: result.resultingCode,
+      modificationDescription,
+      modificationProcedure: result.modificationProcedure,
+    };
+  };
 
   return {
     name: `Improve solution (${suggestions.replace(/\n/g, ',')})`,
-    call: async () => {
-      return (
-        await gptExecute({
-          fullPrompt,
-          maxTokens,
-          mode: GPTMode.QUALITY,
-          outputSchema: z.string(),
-        })
-      ).result;
-    },
+    call: improveFixCallFunction,
   };
 }

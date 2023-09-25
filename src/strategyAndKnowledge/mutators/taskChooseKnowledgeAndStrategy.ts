@@ -10,6 +10,8 @@ import { TaskContext } from '../../tasks/TaskContext';
 import { mutateAppendSectionToLog } from '../../tasks/logs/mutators/mutateAppendSectionToLog';
 import { mutateAppendToLog } from '../../tasks/logs/mutators/mutateAppendToLog';
 import { taskGPTExecute } from '../../tasks/mutators/taskGPTExecute';
+import { countTokens } from '../../gpt/countTokens';
+import { ensureIRunThisInRange } from '../../gpt/ensureIRunThisInRange';
 
 export async function taskChooseKnowledgeAndStrategy<TC extends TaskContext>({
   task,
@@ -28,7 +30,9 @@ export async function taskChooseKnowledgeAndStrategy<TC extends TaskContext>({
   availableKnowledge: Knowledge[];
   taskToPrompt: (task: TC) => Promise<string>;
 }) {
+  const taskPrompt = await taskToPrompt(originalCommand ?? task);
   const mode = GPTMode.FAST;
+  const isKnowledge = Boolean(availableKnowledge.length);
 
   const promptWithContext: GPTExecuteRequestMessage[] = [
     {
@@ -47,21 +51,23 @@ export async function taskChooseKnowledgeAndStrategy<TC extends TaskContext>({
         Prioritize the most important materials first, as the latter might not fit into the context window.
 
         Do not add materials if they are not needed.
+       
+        Do not shorten materials with '...' or similar, provide the full description and id.
 
         You have access to the following materials:
-
-        ${shuffleArray(availableKnowledge.map((c) => `* ${c.id} - ${c.description}`)).join('\n        ')}
+        
+        ${isKnowledge ? shuffleArray(availableKnowledge.map((c) => `* ${c.id} - ${c.description} `)).join('\n        ') : ''}
 
         Do not perform the actual command, revise the result or generate any code.
       `),
     },
     ...(originalCommand
       ? ([
-          { role: 'user', content: `Original command:\n""" ${await taskToPrompt(originalCommand)} """` },
+          { role: 'user', content: `Original command:\n""" ${taskPrompt} """` },
           { role: 'user', content: `Result that will be revised:\n""" ${originalResult} """` },
-          { role: 'user', content: `Request for revision: """ ${await taskToPrompt(task)} """` },
+          { role: 'user', content: `Request for revision: """ ${taskPrompt} """` },
         ] as GPTExecuteRequestMessage[])
-      : ([{ role: 'user', content: `Command from the user: """ ${await taskToPrompt(task)} """` }] as GPTExecuteRequestMessage[])),
+      : ([{ role: 'user', content: `Command from the user: """ ${taskPrompt} """` }] as GPTExecuteRequestMessage[])),
   ];
 
   if (DEBUG_PROMPTS) {
@@ -73,15 +79,25 @@ export async function taskChooseKnowledgeAndStrategy<TC extends TaskContext>({
     mutateAppendToLog(task, '<<<< EXECUTION >>>>');
     mutateAppendToLog(task, '');
   }
+  const prompt = JSON.stringify(promptWithContext);
+  const minTokens = countTokens(taskPrompt, mode) + 500;
+  const fullPromptTokens = countTokens(prompt, mode) + 500;
 
+  const maxTokens = ensureIRunThisInRange({
+    prompt,
+    mode: mode,
+    preferedTokens: fullPromptTokens,
+    minTokens: minTokens,
+  });
+  const KnowledgeIdsEnum = z.enum([availableKnowledge[0].id, ...availableKnowledge.slice(1).map((s) => s.id)]);
   const result = await taskGPTExecute(task, {
     fullPrompt: promptWithContext,
     mode,
-    maxTokens: 100,
+    maxTokens,
     outputName: 'choose',
     outputSchema: z
       .object({
-        neededKnowledge: z.array(z.enum([availableKnowledge[0].id, ...availableKnowledge.slice(1).map((s) => s.id)])),
+        neededKnowledge: z.array(KnowledgeIdsEnum),
         strategy: z.enum([availableStrategies[0].id, ...availableStrategies.slice(1).map((s) => s.id)]),
       })
       .describe('Choose needed knowledge and strategy for the task'),
