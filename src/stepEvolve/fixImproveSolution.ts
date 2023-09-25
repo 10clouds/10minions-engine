@@ -34,11 +34,9 @@ export function improveSolutionFix({
       'YOUR PROPOSED NEW SOLUTION': '',
     },
   });
-
-  const minTokens = countTokens(solution, GPTMode.QUALITY) + EXTRA_TOKENS;
-  const fullPromptTokens = countTokens(fullPrompt, GPTMode.QUALITY) + EXTRA_TOKENS;
-
-  const mode: GPTMode = fullPromptTokens > QUALITY_MODE_TOKENS ? GPTMode.FAST : GPTMode.QUALITY;
+  const mode: GPTMode = GPTMode.FAST;
+  const minTokens = countTokens(solution, mode) + EXTRA_TOKENS;
+  const fullPromptTokens = countTokens(fullPrompt, mode) + EXTRA_TOKENS;
 
   const maxTokens = ensureIRunThisInRange({
     prompt: fullPrompt,
@@ -51,7 +49,7 @@ export function improveSolutionFix({
     const { result, cost } = await gptExecute({
       fullPrompt,
       maxTokens,
-      mode: GPTMode.QUALITY,
+      mode,
       outputSchema: z.object({
         resultingCode: z.string(),
         modificationProcedure: z.string(),

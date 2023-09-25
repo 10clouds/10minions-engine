@@ -46,7 +46,7 @@ export const trimKnowledge = <T extends PromptKnowledge>({
 
     const newPrompt = createPrompt({ ...promptData, knowledge: selectedKnowledge });
 
-    const fullPromptTokens = countTokens(newPrompt, GPTMode.QUALITY) + extraTokens;
+    const fullPromptTokens = countTokens(newPrompt, mode) + extraTokens;
 
     maxTokens = ensureIRunThisInRange({
       prompt: newPrompt,

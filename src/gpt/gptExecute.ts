@@ -17,6 +17,22 @@ export function setOpenAIApiKey(apiKey: string) {
   openAIApiKey = apiKey;
 }
 
+
+function convertResult<OutputTypeSchema extends z.ZodType>(result: string, outputSchema: OutputTypeSchema): z.infer<OutputTypeSchema> {
+  if (isZodString(outputSchema)) {
+    return result as z.infer<OutputTypeSchema>;
+  } else {
+    const parseResult = outputSchema.safeParse(JSON.parse(result));
+    if (parseResult.success) {
+      return parseResult.data;
+    } else {
+      console.log('RESULT', result);
+      console.log('SCHEMA', outputSchema);
+      throw new Error(`Could not parse result: ${result}`);
+    }
+  }
+}
+
 export async function gptExecute<OutputTypeSchema extends z.ZodType>({
   fullPrompt,
   onChunk = async () => {},
@@ -89,23 +105,10 @@ export async function gptExecute<OutputTypeSchema extends z.ZodType>({
   }
   const cachedResult = await getOpenAICacheManager().getCachedResult(requestData);
 
-  function convertResult(result: string): z.infer<OutputTypeSchema> {
-    if (isZodString(outputSchema)) {
-      return result as z.infer<OutputTypeSchema>;
-    } else {
-      const parseResult = outputSchema.safeParse(JSON.parse(result));
-      if (parseResult.success) {
-        return parseResult.data;
-      } else {
-        throw new Error(`Could not parse result: ${result}`);
-      }
-    }
-  }
-
   if (cachedResult && typeof cachedResult === 'string') {
     await onChunk(cachedResult);
     return {
-      result: convertResult(cachedResult),
+      result: convertResult(cachedResult, outputSchema),
       cost: 0,
     };
   }
@@ -133,7 +136,7 @@ export async function gptExecute<OutputTypeSchema extends z.ZodType>({
       const cost = calculateCosts(model, requestData, result, mode);
 
       return {
-        result: convertResult(result),
+        result: convertResult(result, outputSchema),
         cost,
       };
     } catch (error) {
