@@ -21,6 +21,7 @@ module.exports = {
     semi: 'off',
     '@typescript-eslint/no-empty-function': 'off',
     'prettier/prettier': 'warn',
+    'no-return-await': 'warn',
   },
   ignorePatterns: ['out', 'dist', '**/*.d.ts'],
 };

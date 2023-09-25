@@ -1,21 +1,21 @@
 import * as assert from 'assert';
-import * as fs from 'fs';
-import { readFileSync } from 'fs';
+import { writeFile, readFile } from 'node:fs/promises';
 import * as glob from 'glob';
 import * as path from 'path';
 import { applyModificationProcedure } from '../../src/minionTasks/applyModificationProcedure';
+import { lstatSync } from 'fs';
 
 suite('Replace Procedure Test Suite', () => {
   const baseDir = path.resolve(__dirname);
 
   const allPaths = glob.sync(path.resolve(baseDir, '*'));
-  const testDirs = allPaths.filter((path) => fs.lstatSync(path).isDirectory());
+  const testDirs = allPaths.filter((path) => lstatSync(path).isDirectory());
 
   for (const testDir of testDirs) {
     test(path.basename(testDir), async () => {
-      const currentCode = readFileSync(path.resolve(baseDir, testDir, 'original.txt'), 'utf8');
-      const procedure = readFileSync(path.resolve(baseDir, testDir, 'procedure.txt'), 'utf8');
-      const expectedOutput = readFileSync(path.resolve(baseDir, testDir, 'result.txt'), 'utf8');
+      const currentCode = await readFile(path.resolve(baseDir, testDir, 'original.txt'), 'utf8');
+      const procedure = await readFile(path.resolve(baseDir, testDir, 'procedure.txt'), 'utf8');
+      const expectedOutput = await readFile(path.resolve(baseDir, testDir, 'result.txt'), 'utf8');
 
       let modifiedContent;
       try {
@@ -27,7 +27,7 @@ suite('Replace Procedure Test Suite', () => {
       }
       // This is helper to creating and review test for developer - dont remove it
       // if (modifiedContent) {
-      //   fs.writeFileSync(path.resolve(baseDir, testDir, 'modifiedContent.txt'), modifiedContent);
+      //    writeFile(path.resolve(baseDir, testDir, 'modifiedContent.txt'), modifiedContent, 'utf-8');
       // }
 
       assert.strictEqual(modifiedContent, expectedOutput);

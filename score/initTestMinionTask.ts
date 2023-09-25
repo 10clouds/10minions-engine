@@ -1,8 +1,8 @@
 import path from 'path';
-import fs from 'fs';
+import { existsSync } from 'fs';
+import { readFile } from 'node:fs/promises';
 import { MinionTask } from '../src/minionTasks/MinionTask';
 import { getEditorManager } from '../src/managers/EditorManager';
-import { WorkspaceFilesKnowledge } from '../src/minionTasks/generateDescriptionForWorkspaceFiles';
 
 export interface Selection {
   start: { line: number; character: number };
@@ -14,8 +14,8 @@ export const initMinionTask = async (userQuery: string, filePath: string, select
   let readSelectedText = '';
   if (fileName) {
     const checkPath = path.join(__dirname, 'score', `${fileName}/selectedText.txt`); // Path to the selectedText file
-    const selectedTextExists = fs.existsSync(checkPath); // Check if selectedText file exists
-    readSelectedText = selectedTextExists ? fs.readFileSync(checkPath, 'utf8') : ''; // Read the selectedText file if it exists, else "".
+    const selectedTextExists = existsSync(checkPath); // Check if selectedText file exists
+    readSelectedText = selectedTextExists ? await readFile(checkPath, 'utf-8') : ''; // Read the selectedText file if it exists, else "".
   }
 
   let start = { line: 0, character: 0 };

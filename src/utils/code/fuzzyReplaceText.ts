@@ -112,39 +112,47 @@ export function exactLinesSimilarityAndMap(
         originalSimilarityLines++;
       },
     },
-    ...[1].map((skippedOriginalLines) => ({
-      condition: () => originalLine + skippedOriginalLines < original.length && findLine < find.length,
-      simiarity: () => lineSimilarityFunction(original[originalLine + skippedOriginalLines], find[findLine]),
-      skippedOriginalLines: () => skippedOriginalLines,
-      skippedFindLines: () => 0,
-      apply: () => {
-        mappedFind.push(mapFindLine(original[originalLine + skippedOriginalLines], find[findLine]));
+    (() => {
+      const skippedOriginalLines = 1;
 
-        originalLine++;
-        findLine++;
-        originalSimilarityLines++;
+      return {
+        condition: () => originalLine + skippedOriginalLines < original.length && findLine < find.length,
+        simiarity: () => lineSimilarityFunction(original[originalLine + skippedOriginalLines], find[findLine]),
+        skippedOriginalLines: () => skippedOriginalLines,
+        skippedFindLines: () => 0,
+        apply: () => {
+          mappedFind.push(mapFindLine(original[originalLine + skippedOriginalLines], find[findLine]));
 
-        originalLine += skippedOriginalLines;
-      },
-    })),
-    ...[1].map((skippedFindLines) => ({
-      condition: () => originalLine < original.length && findLine + skippedFindLines < find.length,
-      simiarity: () => lineSimilarityFunction(original[originalLine], find[findLine + skippedFindLines]),
-      skippedOriginalLines: () => 0,
-      skippedFindLines: () => skippedFindLines,
-      apply: () => {
-        for (let i = 0; i < skippedFindLines; i++) {
-          mappedFind.push(mapFindLine(undefined, find[findLine + i]));
-        }
-        mappedFind.push(mapFindLine(original[originalLine], find[findLine + skippedFindLines]));
+          originalLine++;
+          findLine++;
+          originalSimilarityLines++;
 
-        originalLine++;
-        findLine++;
-        originalSimilarityLines++;
+          originalLine += skippedOriginalLines;
+        },
+      };
+    })(),
+    (() => {
+      const skippedFindLines = 1;
 
-        findLine += skippedFindLines;
-      },
-    })),
+      return {
+        condition: () => originalLine < original.length && findLine + skippedFindLines < find.length,
+        simiarity: () => lineSimilarityFunction(original[originalLine], find[findLine + skippedFindLines]),
+        skippedOriginalLines: () => 0,
+        skippedFindLines: () => skippedFindLines,
+        apply: () => {
+          for (let i = 0; i < skippedFindLines; i++) {
+            mappedFind.push(mapFindLine(undefined, find[findLine + i]));
+          }
+          mappedFind.push(mapFindLine(original[originalLine], find[findLine + skippedFindLines]));
+
+          originalLine++;
+          findLine++;
+          originalSimilarityLines++;
+
+          findLine += skippedFindLines;
+        },
+      };
+    })(),
     {
       condition: () => originalLine < original.length && findLine >= find.length,
       simiarity: () => 0,

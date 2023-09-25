@@ -1,6 +1,6 @@
 import * as assert from 'assert';
-import * as fs from 'fs';
-import { readFileSync } from 'fs';
+import { writeFile } from 'node:fs/promises';
+import { existsSync, lstatSync, readFileSync } from 'fs';
 import * as glob from 'glob';
 import * as path from 'path';
 import { setupCLISystemsForTest } from '../../src/CLI/setupCLISystems';
@@ -13,7 +13,7 @@ suite('Create procedure test suite', () => {
   const baseDir = path.resolve(__dirname);
 
   const allPaths = glob.sync(path.resolve(baseDir, '*'));
-  const testDirs = allPaths.filter((path) => fs.lstatSync(path).isDirectory());
+  const testDirs = allPaths.filter((path) => lstatSync(path).isDirectory());
 
   setupCLISystemsForTest();
 
@@ -31,7 +31,7 @@ suite('Create procedure test suite', () => {
       const knowledegePath = path.resolve(baseDir, testDir, 'knowledge.json');
       let knowledge: WorkspaceFilesKnowledge[] = [];
 
-      if (fs.existsSync(knowledegePath)) {
+      if (existsSync(knowledegePath)) {
         knowledge = JSON.parse(readFileSync(knowledegePath, 'utf8'));
       }
 
@@ -44,7 +44,7 @@ suite('Create procedure test suite', () => {
         knowledge,
       );
 
-      fs.writeFileSync(path.resolve(baseDir, testDir, 'procedure.txt'), procedure);
+      writeFile(path.resolve(baseDir, testDir, 'procedure.txt'), procedure, 'utf-8');
 
       let modifiedContent;
       try {
@@ -56,7 +56,7 @@ suite('Create procedure test suite', () => {
 
       // This is helper for creating and review test for developer - dont remove it
       // if (modifiedContent) {
-      //   fs.writeFileSync(path.resolve(baseDir, testDir, 'modifiedContent.txt'), modifiedContent);
+      //   writeFile(path.resolve(baseDir, testDir, 'modifiedContent.txt'), modifiedContent, 'utf-8');
       // }
       assert.strictEqual(modifiedContent, expectedOutput);
     });
