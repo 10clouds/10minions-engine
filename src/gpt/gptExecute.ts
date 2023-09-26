@@ -17,7 +17,6 @@ export function setOpenAIApiKey(apiKey: string) {
   openAIApiKey = apiKey;
 }
 
-
 function convertResult<OutputTypeSchema extends z.ZodType>(result: string, outputSchema: OutputTypeSchema): z.infer<OutputTypeSchema> {
   if (isZodString(outputSchema)) {
     return result as z.infer<OutputTypeSchema>;

@@ -41,7 +41,7 @@ export const generateDescriptionForFiles = async (files: WorkspaceFileData[]) =>
           id: path,
           description,
           functions,
-          content,,
+          content,
           summaryContentTokensCount: countKnowledgeTokens(content),
         });
       }
