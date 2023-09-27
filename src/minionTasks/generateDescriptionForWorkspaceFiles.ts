@@ -25,29 +25,31 @@ export const countKnowledgeTokens = (content: string) => ({
 });
 
 export const generateDescriptionForFiles = async (files: WorkspaceFileData[]) => {
-  const workspaceFilesKnowledge: WorkspaceFilesKnowledge[] = [];
-
-  files.forEach(async (file, i) => {
+  let i = 0;
+  const promises = [];
+  while (files.length - 1 >= i) {
+    const file = files[i];
     const { path, content } = file;
     console.log('GENERATING DATA FOR: ', path, ' iteration: ', i);
     try {
       const data = await mutateCreateFileDescription(file);
+      i++;
 
       if (data) {
         const { description, functions } = data;
-
-        workspaceFilesKnowledge.push({
+        promises.push({
           id: path,
           description,
           functions,
-          content: content,
+          content,
           summaryContentTokensCount: countKnowledgeTokens(content),
         });
       }
     } catch (err) {
       console.error(err);
     }
-  });
+  }
+  const results = await Promise.all(promises);
 
-  return workspaceFilesKnowledge;
+  return results.filter(Boolean);
 };

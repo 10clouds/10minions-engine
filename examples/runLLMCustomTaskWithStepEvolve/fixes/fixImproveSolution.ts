@@ -25,7 +25,7 @@ export function improveSolutionFix({
             sections: { PROBLEM: task.task, SOLUTION: solutionWithMeta.solution, SUGGESTIONS: suggestions, 'YOUR PROPOSED NEW SOLUTION': '' },
           }),
           maxTokens: 500,
-          mode: GPTMode.QUALITY,
+          mode: GPTMode.FAST,
           outputSchema: z.string(),
         })
       ).result;

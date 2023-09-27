@@ -84,16 +84,17 @@ const prompt = async (minionTask: MinionTask, test?: boolean) => {
   `;
 };
 
+const EXTRA_TOKENS = 500;
+
 export const generateScoreTests = async (minionTask?: MinionTask, test?: boolean) => {
   if (!minionTask) return;
+  const mode: GPTMode = GPTMode.FAST;
   const fullPrompt = await prompt(minionTask, test);
-  const fullPromptTokens = countTokens(fullPrompt, GPTMode.QUALITY) + 500;
-
-  const mode: GPTMode = fullPromptTokens > QUALITY_MODE_TOKENS ? GPTMode.FAST : GPTMode.QUALITY;
+  const fullPromptTokens = countTokens(fullPrompt, mode) + EXTRA_TOKENS;
 
   const maxTokens = ensureIRunThisInRange({
     prompt: fullPrompt,
-    mode: mode,
+    mode,
     preferedTokens: fullPromptTokens,
     minTokens: fullPromptTokens,
   });
@@ -104,7 +105,7 @@ export const generateScoreTests = async (minionTask?: MinionTask, test?: boolean
     fullPrompt,
     onChunk: async (chunk: string) => {},
     maxTokens,
-    mode: GPTMode.QUALITY,
+    mode,
     temperature: 1,
     controller: new AbortController(),
     outputName: 'classification',
@@ -114,7 +115,6 @@ export const generateScoreTests = async (minionTask?: MinionTask, test?: boolean
       })
       .describe('Classification'),
   });
-
   console.log('======= RESPONSE =======');
   console.log(result);
 

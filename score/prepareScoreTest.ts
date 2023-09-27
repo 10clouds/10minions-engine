@@ -41,15 +41,15 @@ export const prepareScoreTest = async (userQuery: string, fileName: string, mini
   [SELECTED TEXT]
   ${minionTask.selectedText}
   `;
-
-    const inputTokensCount = countTokens(prompt, GPTMode.QUALITY);
+    const mode = GPTMode.FAST;
+    const inputTokensCount = countTokens(prompt, mode);
     const outputTokensCount = 350;
     const maxTokens = inputTokensCount + outputTokensCount;
     const response = await gptExecute({
       fullPrompt: prompt,
       onChunk: async (chunk: string) => {},
       maxTokens,
-      mode: GPTMode.QUALITY,
+      mode,
       temperature: 0,
       controller: new AbortController(),
       outputSchema: z.string(),
