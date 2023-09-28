@@ -9,6 +9,7 @@ export enum MessageToWebViewType {
   TOKEN_COUNT,
   CHOSEN_CODE_UPDATED,
   SUGGESTIONS,
+  UPDATE_FILE_LOADING_STATUS,
 }
 
 export enum MessageToVSCodeType {
@@ -25,6 +26,7 @@ export enum MessageToVSCodeType {
   OPEN_SELECTION,
   MARK_AS_APPLIED,
   EDIT_API_KEY,
+  GET_WORKSPACE_FILES,
 }
 export type MessageToWebView =
   | { type: MessageToWebViewType.CLEAR_AND_FOCUS_ON_INPUT }
@@ -37,6 +39,7 @@ export type MessageToWebView =
   | { type: MessageToWebViewType.API_KEY_MISSING_MODELS; models: string[] }
   | { type: MessageToWebViewType.TOKEN_COUNT; value: number }
   | { type: MessageToWebViewType.CHOSEN_CODE_UPDATED; code: string }
+  | { type: MessageToWebViewType.UPDATE_FILE_LOADING_STATUS; inProgress: boolean; progress: number; currentFilePath?: string }
   | {
       type: MessageToWebViewType.SUGGESTIONS;
       suggestions: string[];
@@ -64,4 +67,5 @@ export type MessageToVSCode =
       reapply: boolean;
     }
   | { type: MessageToVSCodeType.OPEN_SELECTION; minionTaskId: string }
-  | { type: MessageToVSCodeType.MARK_AS_APPLIED; minionTaskId: string };
+  | { type: MessageToVSCodeType.MARK_AS_APPLIED; minionTaskId: string }
+  | { type: MessageToVSCodeType.GET_WORKSPACE_FILES };

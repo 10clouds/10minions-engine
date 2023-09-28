@@ -23,7 +23,9 @@ function createPrompt(fileData: WorkspaceFileData) {
   });
 }
 
-export async function mutateCreateFileDescription(fileData: WorkspaceFileData) {
+export async function mutateCreateFileDescription(fileData: WorkspaceFileData, onProcessStart?: () => void) {
+  onProcessStart?.();
+
   const promptWithContext = createPrompt(fileData);
   const mode: GPTMode = GPTMode.FAST;
 
