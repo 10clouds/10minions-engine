@@ -24,17 +24,17 @@ export const countKnowledgeTokens = (content: string) => ({
   [GPTMode.QUALITY]: countTokens(content, GPTMode.QUALITY),
 });
 
-export const generateDescriptionForFiles = async (files: WorkspaceFileData[]) => {
+// TODO: this loop is no needed anymore - refactor this in future to just accept a WorkspaceFileData not WorkspaceFileData[]
+export const generateDescriptionForFiles = async (files: WorkspaceFileData[], onProcessStart?: () => void) => {
   let i = 0;
   const promises = [];
   while (files.length - 1 >= i) {
     const file = files[i];
     const { path, content } = file;
-    console.log('GENERATING DATA FOR: ', path, ' iteration: ', i);
+    console.log('GENERATING DATA FOR: ', path);
     try {
-      const data = await mutateCreateFileDescription(file);
+      const data = await mutateCreateFileDescription(file, onProcessStart);
       i++;
-
       if (data) {
         const { description, functions } = data;
         promises.push({
