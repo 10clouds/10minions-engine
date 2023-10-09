@@ -1,4 +1,5 @@
 import { z } from 'zod';
+
 import { gptExecute } from '../../gpt/gptExecute';
 import { GPTMode } from '../../gpt/types';
 import { TaskContext } from '../TaskContext';
@@ -10,7 +11,9 @@ export interface ShortNameContext {
   selectedText: string;
 }
 
-export async function mutateGenerateShortName(task: TaskContext & ShortNameContext) {
+export async function mutateGenerateShortName(
+  task: TaskContext & ShortNameContext,
+) {
   task.shortName = '...';
   task.onChange(true);
 

@@ -1,5 +1,5 @@
-import { TaskContext } from '../TaskContext';
 import { FINISHED_STAGE_NAME } from '../stageNames';
+import { TaskContext } from '../TaskContext';
 
 export async function mutateStopExecution(
   task: TaskContext,
