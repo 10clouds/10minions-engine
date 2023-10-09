@@ -17,7 +17,9 @@ export function uniqueWeightedRandomElements<T extends { weight: number }>(
   }
 
   if (ret.length !== count) {
-    throw new Error('Something wrong with the options, unable to generate viable result');
+    throw new Error(
+      'Something wrong with the options, unable to generate viable result',
+    );
   }
 
   return ret;

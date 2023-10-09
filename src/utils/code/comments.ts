@@ -27,5 +27,6 @@ export function getCommentForLanguage(language: string, content: string) {
 export function canAddComment(language: string): boolean {
   // Add new language cases here if necessary
   const unsupportedLanguages = ['json'];
+
   return !unsupportedLanguages.includes(language);
 }

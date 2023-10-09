@@ -1,12 +1,19 @@
-export function commonStringEnd(commonIndent: string, lineIndent: string): string {
+export function commonStringEnd(
+  commonIndent: string,
+  lineIndent: string,
+): string {
   let commonEnd = '';
   for (let i = 0; i < Math.min(commonIndent.length, lineIndent.length); i++) {
-    if (commonIndent[commonIndent.length - i - 1] === lineIndent[lineIndent.length - i - 1]) {
+    if (
+      commonIndent[commonIndent.length - i - 1] ===
+      lineIndent[lineIndent.length - i - 1]
+    ) {
       commonEnd = commonIndent[commonIndent.length - i - 1] + commonEnd;
     } else {
       break;
     }
   }
+
   return commonEnd;
 }
 
@@ -19,6 +26,7 @@ export function commonStringStart(commonIndent: string, lineIndent: string) {
       break;
     }
   }
+
   return commonStart;
 }
 
@@ -39,16 +47,17 @@ export function commonStringEndArray(indents: string[]) {
 }
 
 export function removeIndent(slice: string[], indent?: string) {
-  if (indent === undefined) {
+  let indentCopy = indent;
+  if (indentCopy === undefined) {
     const indents = slice.map((line) => line.match(/(^\s*)/)?.[1] || '');
-    indent = commonStringEndArray(indents);
+    indentCopy = commonStringEndArray(indents);
   }
 
-  if (indent === undefined) {
+  if (indentCopy === undefined) {
     return slice;
   }
 
-  return slice.map((line) => line.slice(indent?.length));
+  return slice.map((line) => line.slice(indentCopy?.length));
 }
 
 export function applyIndent(slice: string[], indent: string[] | string) {
@@ -99,6 +108,7 @@ export function levenshteinDistanceSimilarity(a: string, b: string): number {
   if (len === 0) {
     return 1;
   }
+
   return 1 - levenshteinDistance(a, b) / len;
 }
 

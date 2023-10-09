@@ -40,8 +40,8 @@ export class MultiSet {
     // eslint-disable-next-line eqeqeq
     if (v != null && v > 0) {
       return v;
-    } else {
-      return 0;
     }
+
+    return 0;
   }
 }

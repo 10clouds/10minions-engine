@@ -1,26 +1,32 @@
-import * as path from 'path';
-import { PathLike } from 'fs';
 import { exec } from 'child_process';
+import { PathLike } from 'fs';
+import path from 'path';
+import { promisify } from 'util';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const execPromise = require('util').promisify(exec);
+const execPromise = promisify(exec);
 /* AIX PLAY COMMAND */
-const aixPlayCommand = (filePath: PathLike, volume: number) => `aplay \"${filePath}\" -v ${volume}`;
+const aixPlayCommand = (filePath: PathLike, volume: number) =>
+  `aplay \"${filePath}\" -v ${volume}`;
 
 /* DARWIN PLAY COMMAND */
-const darwinPlayCommand = (filePath: PathLike, volume: number) => `afplay \"${filePath}\" -v ${volume}`;
+const darwinPlayCommand = (filePath: PathLike, volume: number) =>
+  `afplay \"${filePath}\" -v ${volume}`;
 
 /* FREEBSD PLAY COMMAND */
-const freebsdPlayCommand = (filePath: PathLike, volume: number) => `play -v ${volume} \"${filePath}\"`;
+const freebsdPlayCommand = (filePath: PathLike, volume: number) =>
+  `play -v ${volume} \"${filePath}\"`;
 
 /* LINUX PLAY COMMAND */
-const linuxPlayCommand = (filePath: PathLike, volume: number) => `paplay --volume=${Math.round(volume * 32768)} \"${filePath}\"`;
+const linuxPlayCommand = (filePath: PathLike, volume: number) =>
+  `paplay --volume=${Math.round(volume * 32768)} \"${filePath}\"`;
 
 /* OPENBSD PLAY COMMAND */
-const openbsdPlayCommand = (filePath: PathLike, volume: number) => `aucat -i \"${filePath}\" -v ${volume}`;
+const openbsdPlayCommand = (filePath: PathLike, volume: number) =>
+  `aucat -i \"${filePath}\" -v ${volume}`;
 
 /* SUNOS PLAY COMMAND */
-const sunosPlayCommand = (filePath: PathLike, volume: number) => `audioplay \"${filePath}\" -v ${volume}`;
+const sunosPlayCommand = (filePath: PathLike, volume: number) =>
+  `audioplay \"${filePath}\" -v ${volume}`;
 
 /* WIN32 PLAY COMMAND */
 const addPresentationCore = `Add-Type -AssemblyName presentationCore;`;
@@ -30,7 +36,9 @@ const playAudio = `$player.Play();`;
 const stopAudio = `Start-Sleep 1; Start-Sleep -s $player.NaturalDuration.TimeSpan.TotalSeconds;Exit;`;
 
 const win32PlayCommand = (filePath: PathLike, volume: number) =>
-  `powershell -c ${addPresentationCore} ${createMediaPlayer} ${loadAudioFile(filePath)} $player.Volume = ${volume}; ${playAudio} ${stopAudio}`;
+  `powershell -c ${addPresentationCore} ${createMediaPlayer} ${loadAudioFile(
+    filePath,
+  )} $player.Volume = ${volume}; ${playAudio} ${stopAudio}`;
 
 async function playSound(path: string, volume = 0.5) {
   /**
@@ -38,7 +46,8 @@ async function playSound(path: string, volume = 0.5) {
    * Mac: afplay's volume is from 0 to 255, default is 1. However, volume > 2 usually result in distortion.
    * Therefore, it is better to limit the volume on Mac, and set a common scale of 0 to 1 for simplicity
    */
-  const volumeAdjustedByOS = process.platform === 'darwin' ? Math.min(2, volume * 2) : volume;
+  const volumeAdjustedByOS =
+    process.platform === 'darwin' ? Math.min(2, volume * 2) : volume;
 
   if (!process.platform) {
     throw Error('OS not detected');
@@ -73,11 +82,7 @@ async function playSound(path: string, volume = 0.5) {
       break;
   }
 
-  try {
-    await execPromise(playCommand, { windowsHide: true });
-  } catch (err) {
-    throw err;
-  }
+  await execPromise(playCommand, { windowsHide: true });
 }
 
 let globalExtensionPath: string;

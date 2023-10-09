@@ -13,7 +13,8 @@ export function stripAllComments(code: string[]): string[] {
     let foundComment = false;
 
     for (let li = 0; li < line.length; li++) {
-      const startsJavascriptLineComment = !inBlockComment && line[li] === '/' && line[li + 1] === '/';
+      const startsJavascriptLineComment =
+        !inBlockComment && line[li] === '/' && line[li + 1] === '/';
       const startsPythonLineComment = !inBlockComment && line[li] === '#';
 
       if (startsJavascriptLineComment || startsPythonLineComment) {
@@ -21,10 +22,18 @@ export function stripAllComments(code: string[]): string[] {
         break; // This is a single line comment
       }
 
-      const startsJavascriptBlockComment = !inBlockComment && line[li] === '/' && line[li + 1] === '*';
-      const startsPythonBlockComment = !inBlockComment && (line.substring(li, li + 3) === "'''" || line.substring(li, li + 3) === '"""');
-      const endsJavascriptBlockComment = inBlockComment && line[li] === '*' && line[li + 1] === '/';
-      const endsPythonBlockComment = inBlockComment && (line.substring(li, li + 3) === "'''" || line.substring(li, li + 3) === '"""');
+      const startsJavascriptBlockComment =
+        !inBlockComment && line[li] === '/' && line[li + 1] === '*';
+      const startsPythonBlockComment =
+        !inBlockComment &&
+        (line.substring(li, li + 3) === "'''" ||
+          line.substring(li, li + 3) === '"""');
+      const endsJavascriptBlockComment =
+        inBlockComment && line[li] === '*' && line[li + 1] === '/';
+      const endsPythonBlockComment =
+        inBlockComment &&
+        (line.substring(li, li + 3) === "'''" ||
+          line.substring(li, li + 3) === '"""');
 
       if (startsJavascriptBlockComment) {
         foundComment = true;

@@ -11,6 +11,9 @@ export function mutateStartStage({
   progressIncrement?: number;
   progress?: number;
 }) {
-  task.stageTargetProgress = Math.min(1.0, progress !== undefined ? progress : task.progress + progressIncrement);
+  task.stageTargetProgress = Math.min(
+    1.0,
+    progress !== undefined ? progress : task.progress + progressIncrement,
+  );
   task.executionStage = name;
 }

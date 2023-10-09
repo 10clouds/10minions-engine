@@ -43,5 +43,6 @@ export function formatPrompt(prompt: string) {
 
   // Remove the same amount of indentation from all lines
   const formattedLines = lines.map((line) => line.slice(minIndentation));
+
   return formattedLines.join('\n');
 }
