@@ -1,4 +1,5 @@
 import { z } from 'zod';
+
 import { createFullPromptFromSections } from '../../../src/gpt/createFullPromptFromSections';
 import { gptExecute } from '../../../src/gpt/gptExecute';
 import { GPTMode } from '../../../src/gpt/types';
@@ -22,7 +23,12 @@ export function improveSolutionFix({
           fullPrompt: createFullPromptFromSections({
             intro:
               'Improve the following SOLUTION to the PROBLEM described below, use SUGGESTIONS as guidance. Do not output any section markers or additional sections in your response, just the new improved solution.',
-            sections: { PROBLEM: task.task, SOLUTION: solutionWithMeta.solution, SUGGESTIONS: suggestions, 'YOUR PROPOSED NEW SOLUTION': '' },
+            sections: {
+              PROBLEM: task.task,
+              SOLUTION: solutionWithMeta.solution,
+              SUGGESTIONS: suggestions,
+              'YOUR PROPOSED NEW SOLUTION': '',
+            },
           }),
           maxTokens: 500,
           mode: GPTMode.FAST,

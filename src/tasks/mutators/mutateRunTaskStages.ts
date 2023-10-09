@@ -8,8 +8,12 @@ import { WorkspaceFilesKnowledge } from '../../minionTasks/generateDescriptionFo
 
 export function mutateRunTaskStages<TC extends TaskContext>(
   task: TC,
-  execute: (task: TC, workspaceFilesKnowledge?: WorkspaceFilesKnowledge[], test?: boolean) => Promise<void>,
-  workspaceFilesKnowledge?: WorkspaceFilesKnowledge[],
+  execute: (
+    task: TC,
+    getExternalData?: () => Promise<WorkspaceFilesKnowledge[]>,
+    test?: boolean,
+  ) => Promise<void>,
+  getExternalData?: () => Promise<WorkspaceFilesKnowledge[]>,
   test?: boolean,
 ) {
   return new Promise<void>(async (resolve, reject) => {
@@ -22,7 +26,7 @@ export function mutateRunTaskStages<TC extends TaskContext>(
 
     try {
       task.progress = 0;
-      await execute(task, workspaceFilesKnowledge, test);
+      await execute(task, getExternalData, test);
       await mutateStopExecution(task);
     } catch (error) {
       if (!(error instanceof TaskCanceled)) {
@@ -30,13 +34,20 @@ export function mutateRunTaskStages<TC extends TaskContext>(
         console.error('Error in execution', error);
       }
 
-      await mutateStopExecution(task, error instanceof Error ? `Error: ${error.message}` : String(error));
+      await mutateStopExecution(
+        task,
+        error instanceof Error ? `Error: ${error.message}` : String(error),
+      );
     } finally {
       const executionTime = Date.now() - task.startTime;
-      const formattedExecutionTime = calculateAndFormatExecutionTime(executionTime);
+      const formattedExecutionTime =
+        calculateAndFormatExecutionTime(executionTime);
 
       mutateAppendToLog(task, `Total Cost: ~${task.totalCost.toFixed(2)}$`);
-      mutateAppendToLog(task, `${task.executionStage} (Execution Time: ${formattedExecutionTime})`);
+      mutateAppendToLog(
+        task,
+        `${task.executionStage} (Execution Time: ${formattedExecutionTime})`,
+      );
 
       task.progress = 1;
     }

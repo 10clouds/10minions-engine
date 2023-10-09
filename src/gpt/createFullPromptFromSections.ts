@@ -14,7 +14,12 @@ export function createFullPromptFromSections({
   const cleanedOutro = outro?.replaceAll(sectionMarker, '');
 
   // Remove section markers from each section
-  const cleanedSections = Object.fromEntries(Object.entries(sections).map(([name, section]) => [name, section.replaceAll(sectionMarker, '')]));
+  const cleanedSections = Object.fromEntries(
+    Object.entries(sections).map(([name, section]) => [
+      name,
+      section.replaceAll(sectionMarker, ''),
+    ]),
+  );
 
   // Create the full prompt
   const sectionPrompts = Object.entries(cleanedSections)

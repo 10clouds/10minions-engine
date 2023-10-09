@@ -1,10 +1,14 @@
-import { ApplicationStatus, MinionTask } from '../MinionTask';
+import { getEditorManager } from '../../managers/EditorManager';
 import { mutateAppendToLog } from '../../tasks/logs/mutators/mutateAppendToLog';
 import { mutateAppendToLogNoNewline } from '../../tasks/logs/mutators/mutateAppendToLogNoNewline';
-import { FINISHED_STAGE_NAME, APPLYING_STAGE_NAME, APPLIED_STAGE_NAME } from '../../tasks/stageNames';
-import { getEditorManager } from '../../managers/EditorManager';
-import { mutatorApplyFallback } from './mutateApplyFallback';
+import {
+  APPLIED_STAGE_NAME,
+  APPLYING_STAGE_NAME,
+  FINISHED_STAGE_NAME,
+} from '../../tasks/stageNames';
 import { applyModificationProcedure } from '../applyModificationProcedure';
+import { ApplicationStatus, MinionTask } from '../MinionTask';
+import { mutatorApplyFallback } from './mutateApplyFallback';
 
 export const LOG_NO_FALLBACK_MARKER = `Applied changes for user review.\n\n`;
 
@@ -14,6 +18,7 @@ export async function mutatorApplyMinionTask(minionTask: MinionTask) {
   if (minionTask.executionStage !== FINISHED_STAGE_NAME) {
     getEditorManager().showErrorMessage(`Cannot apply unfinished task.`);
     minionTask.aplicationStatus = ApplicationStatus.NOT_APPLIED;
+
     return;
   }
 
@@ -47,7 +52,11 @@ export async function mutatorApplyMinionTask(minionTask: MinionTask) {
 
     const preprocessedContent = minionTask.originalContent;
 
-    const modifiedContent = await applyModificationProcedure(preprocessedContent, minionTask.modificationProcedure, document.languageId);
+    const modifiedContent = await applyModificationProcedure(
+      preprocessedContent,
+      minionTask.modificationProcedure,
+      document.languageId,
+    );
     minionTask.aplicationStatus = ApplicationStatus.APPLIED;
 
     await getEditorManager().applyWorkspaceEdit(async (edit) => {
@@ -73,6 +82,7 @@ export async function mutatorApplyMinionTask(minionTask: MinionTask) {
     mutateAppendToLog(minionTask, `Applied modification as plain top comments`);
     mutateAppendToLog(minionTask, ``);
     minionTask.onChange(true);
+
     return;
   } finally {
     clearInterval(interval);
@@ -83,5 +93,7 @@ export async function mutatorApplyMinionTask(minionTask: MinionTask) {
   minionTask.progress = 1;
   mutateAppendToLogNoNewline(minionTask, LOG_NO_FALLBACK_MARKER);
   minionTask.onChange(true);
-  getEditorManager().showInformationMessage(`Modification applied successfully.`);
+  getEditorManager().showInformationMessage(
+    `Modification applied successfully.`,
+  );
 }

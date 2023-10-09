@@ -1,8 +1,10 @@
-import path from 'path';
-import { existsSync } from 'fs';
 import { readFile } from 'node:fs/promises';
-import { MinionTask } from '../src/minionTasks/MinionTask';
+
+import { existsSync } from 'fs';
+import path from 'path';
+
 import { getEditorManager } from '../src/managers/EditorManager';
+import { MinionTask } from '../src/minionTasks/MinionTask';
 
 export interface Selection {
   start: { line: number; character: number };
@@ -10,18 +12,29 @@ export interface Selection {
   selectedText: string;
 }
 
-export const initMinionTask = async (userQuery: string, filePath: string, selectionData?: Selection, fileName?: string) => {
+export const initMinionTask = async (
+  userQuery: string,
+  filePath: string,
+  selectionData?: Selection,
+  fileName?: string,
+) => {
   let readSelectedText = '';
   if (fileName) {
-    const checkPath = path.join(__dirname, 'score', `${fileName}/selectedText.txt`); // Path to the selectedText file
+    const checkPath = path.join(
+      __dirname,
+      'score',
+      `${fileName}/selectedText.txt`,
+    ); // Path to the selectedText file
     const selectedTextExists = existsSync(checkPath); // Check if selectedText file exists
-    readSelectedText = selectedTextExists ? await readFile(checkPath, 'utf-8') : ''; // Read the selectedText file if it exists, else "".
+    readSelectedText = selectedTextExists
+      ? await readFile(checkPath, 'utf-8')
+      : ''; // Read the selectedText file if it exists, else "".
   }
 
   let start = { line: 0, character: 0 };
   let end = { line: 0, character: 0 };
 
-  if (selectionData && selectionData?.selectedText !== '') {
+  if (selectionData && selectionData.selectedText !== '') {
     start = selectionData.start;
     end = selectionData.end;
   } else if (readSelectedText !== '') {
@@ -35,7 +48,9 @@ export const initMinionTask = async (userQuery: string, filePath: string, select
   }
   const execution = await MinionTask.create({
     userQuery,
-    document: await getEditorManager().openTextDocument(getEditorManager().createUri(filePath)),
+    document: await getEditorManager().openTextDocument(
+      getEditorManager().createUri(filePath),
+    ),
     // Use dynamically calculated 'start' and 'end'
     selection: { start, end },
     selectedText: selectionData ? selectionData.selectedText : readSelectedText,

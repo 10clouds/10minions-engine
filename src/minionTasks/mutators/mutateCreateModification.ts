@@ -1,12 +1,13 @@
-import { MinionTask } from '../MinionTask';
-import { gptExecute } from '../../gpt/gptExecute';
-import { ensureIRunThisInRange } from '../../gpt/ensureIRunThisInRange';
-import { countTokens } from '../../gpt/countTokens';
-import { GPTMode, QUALITY_MODE_TOKENS } from '../../gpt/types';
 import { z } from 'zod';
+
+import { countTokens } from '../../gpt/countTokens';
+import { ensureIRunThisInRange } from '../../gpt/ensureIRunThisInRange';
+import { gptExecute } from '../../gpt/gptExecute';
+import { GPTMode, QUALITY_MODE_TOKENS } from '../../gpt/types';
 import { mutateAppendToLogNoNewline } from '../../tasks/logs/mutators/mutateAppendToLogNoNewline';
 import { mutateReportSmallProgress } from '../../tasks/mutators/mutateReportSmallProgress';
-import { PromptData, createPrompt } from '../prompts/createModificationPrompt';
+import { MinionTask } from '../MinionTask';
+import { createPrompt, PromptData } from '../prompts/createModificationPrompt';
 import { trimKnowledge } from '../utils/trimKnowledge';
 
 const EXTRA_TOKENS = 500;
@@ -35,16 +36,19 @@ export async function mutateCreateModification(task: MinionTask) {
   };
   let promptWithContext = createPrompt(promptData);
 
-  const minTokens = countTokens(fullFileContents, GPTMode.QUALITY) + EXTRA_TOKENS;
-  const fullPromptTokens = countTokens(promptWithContext, GPTMode.QUALITY) + EXTRA_TOKENS;
+  const minTokens =
+    countTokens(fullFileContents, GPTMode.QUALITY) + EXTRA_TOKENS;
+  const fullPromptTokens =
+    countTokens(promptWithContext, GPTMode.QUALITY) + EXTRA_TOKENS;
 
-  const mode: GPTMode = fullPromptTokens > QUALITY_MODE_TOKENS ? GPTMode.FAST : GPTMode.QUALITY;
+  const mode: GPTMode =
+    fullPromptTokens > QUALITY_MODE_TOKENS ? GPTMode.FAST : GPTMode.QUALITY;
 
   let maxTokens = ensureIRunThisInRange({
     prompt: promptWithContext,
-    mode: mode,
+    mode,
     preferedTokens: fullPromptTokens,
-    minTokens: minTokens,
+    minTokens,
   });
 
   const promptWithKnowledgeData = trimKnowledge({

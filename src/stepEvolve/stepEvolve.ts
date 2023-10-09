@@ -1,3 +1,4 @@
+import { MinionTask } from '../minionTasks/MinionTask';
 import { getRandomElement } from '../utils/random/getRandomElement';
 import { type SolutionWithMeta } from './FitnessFunction';
 import { FitnessObserver } from './FitnessObserver';
@@ -9,6 +10,7 @@ export async function stepEvolve<S>({
   maxNumIterations = 5,
   maxStaleIterations = 2,
   observers,
+  task,
 }: {
   initialSolutions: SolutionWithMeta<S>[];
   threshold: number;
@@ -16,7 +18,10 @@ export async function stepEvolve<S>({
   maxNumIterations?: number;
   maxStaleIterations?: number;
   observers: FitnessObserver<S>[];
-}): Promise<SolutionWithMeta<S>> {
+  task?: MinionTask;
+}): Promise<SolutionWithMeta<S> | null> {
+  if (task?.stopped) return null;
+
   const current = initialSolutions.slice();
   console.log('START STEP EVOLVE');
   current.sort((a, b) => b.totalFitness - a.totalFitness);
@@ -24,8 +29,10 @@ export async function stepEvolve<S>({
   let currentIteration = startIterationFrom;
   let lastChangeIteration = startIterationFrom;
 
-  await Promise.all(observers.map((o) => o.onInitialSolutions?.(current, currentIteration)));
-  while (true) {
+  await Promise.all(
+    observers.map((o) => o.onInitialSolutions?.(current, currentIteration)),
+  );
+  while (!task?.stopped) {
     if (current[0].totalFitness >= threshold) {
       console.log('Threshold reached');
       break;
@@ -36,14 +43,18 @@ export async function stepEvolve<S>({
       break;
     }
 
-    if (maxStaleIterations && currentIteration - lastChangeIteration > maxStaleIterations) {
+    if (
+      maxStaleIterations &&
+      currentIteration - lastChangeIteration > maxStaleIterations
+    ) {
       console.log('Max stale iterations reached');
       break;
     }
 
     currentIteration++;
 
-    const candidateSolutions = await getRandomElement(current).nextPossibleSolutions();
+    const candidateSolutions =
+      await getRandomElement(current).nextPossibleSolutions();
 
     if (candidateSolutions.length === 0) {
       throw new Error('No candidates available');
@@ -67,11 +78,26 @@ export async function stepEvolve<S>({
       }
     }
 
-    await Promise.all(observers.map((o) => o.onProgressMade?.(oldCurrent, accepted, rejected, current, currentIteration)));
-    await new Promise((r) => setTimeout(r, 0));
+    await Promise.all(
+      observers.map(
+        (o) =>
+          o.onProgressMade?.(
+            oldCurrent,
+            accepted,
+            rejected,
+            current,
+            currentIteration,
+          ),
+      ),
+    );
+    await new Promise((r) => {
+      setTimeout(r, 0);
+    });
   }
 
-  await Promise.all(observers.map((o) => o.onFinalSolution?.(current[0], currentIteration)));
+  await Promise.all(
+    observers.map((o) => o.onFinalSolution?.(current[0], currentIteration)),
+  );
 
   return current[0];
 }

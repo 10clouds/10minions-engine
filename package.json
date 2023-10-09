@@ -30,6 +30,8 @@
     "zod-to-json-schema": "^3.21.4"
   },
   "devDependencies": {
+    "@10clouds/eslint-config": "^2.0.0-pre.14",
+    "@ianvs/prettier-plugin-sort-imports": "^4.1.0",
     "@inquirer/confirm": "^2.0.4",
     "@inquirer/prompts": "^2.3.0",
     "@inquirer/select": "^1.2.3",
@@ -46,8 +48,10 @@
     "commander": "^11.0.0",
     "date-and-time": "^3.0.2",
     "eslint": "^8.39.0",
-    "eslint-config-prettier": "^8.9.0",
+    "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-simple-import-sort": "^10.0.0",
+    "eslint-plugin-unused-imports": "^3.0.0",
     "glob": "^8.1.0",
     "mocha": "^10.2.0",
     "prettier": "^3.0.0",

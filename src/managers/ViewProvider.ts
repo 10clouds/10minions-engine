@@ -21,5 +21,6 @@ export function getViewProvider(): ViewProvider {
   if (!globalViewProvider) {
     throw new Error(`ViewProvider is not set.`);
   }
+
   return globalViewProvider;
 }

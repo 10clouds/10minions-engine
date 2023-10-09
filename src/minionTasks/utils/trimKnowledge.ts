@@ -26,40 +26,43 @@ export const trimKnowledge = <T extends PromptKnowledge>({
   extraTokens = 0,
 }: Parameters<T>) => {
   const modelMaxTokens = MODEL_DATA[getModel(mode)].maxTokens;
-  if (!knowledge.length) {
+  if (!knowledge.length || maxTokens >= modelMaxTokens) {
     return null;
   }
-  if (maxTokens < modelMaxTokens) {
-    const targetSum = modelMaxTokens - maxTokens;
-    let currentSum = knowledge[0].summaryContentTokensCount[mode];
-    const selectedKnowledge: WorkspaceFilesKnowledge[] = [];
 
-    knowledge.forEach((knowledge) => {
-      const { summaryContentTokensCount } = knowledge;
-      if (currentSum <= targetSum) {
-        selectedKnowledge.push(knowledge);
-        currentSum += summaryContentTokensCount[mode];
-      }
-    });
+  const targetSum = modelMaxTokens - maxTokens;
+  let currentSum = 0;
+  const selectedKnowledge: WorkspaceFilesKnowledge[] = [];
 
-    console.log('SELECTED KNOWLEDGE: ', selectedKnowledge);
-
-    const newPrompt = createPrompt({ ...promptData, knowledge: selectedKnowledge });
-
-    const fullPromptTokens = countTokens(newPrompt, mode) + extraTokens;
-
-    maxTokens = ensureIRunThisInRange({
-      prompt: newPrompt,
-      mode,
-      preferedTokens: fullPromptTokens,
-      minTokens: minTokens,
-    });
-
-    return {
-      newPrompt,
-      maxTokens,
-    };
+  for (const k of knowledge) {
+    const { summaryContentTokensCount } = k;
+    if (currentSum + summaryContentTokensCount[mode] > targetSum) {
+      break;
+    }
+    selectedKnowledge.push(k);
+    currentSum += summaryContentTokensCount[mode];
   }
 
-  return null;
+  console.log('SELECTED KNOWLEDGE: ', selectedKnowledge);
+
+  const newPrompt = createPrompt({
+    ...promptData,
+    knowledge: selectedKnowledge,
+  });
+
+  const fullPromptTokens = countTokens(newPrompt, mode) + extraTokens;
+
+  const newMaxTokens = ensureIRunThisInRange({
+    prompt: newPrompt,
+    mode,
+    preferedTokens: fullPromptTokens,
+    minTokens,
+  });
+
+  console.log('NEW MAX TOKENS: ', newMaxTokens);
+
+  return {
+    newPrompt,
+    maxTokens: newMaxTokens,
+  };
 };

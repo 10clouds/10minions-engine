@@ -1,6 +1,6 @@
+import { format as dtFormat } from 'date-and-time';
 import fs from 'fs';
 import path from 'path';
-import { format as dtFormat } from 'date-and-time';
 
 const directoryPath = path.join(__dirname, 'logs');
 // Added the Date object to get the current date and time and formatted it as per requirement (YYYY-MM-DD_HH-MM-SS).
@@ -15,5 +15,8 @@ export function logToFile(logMessage: string) {
     fs.mkdirSync(directoryPath); // If logs directory does not exist, create it
   }
 
-  fs[fs.existsSync(logFilePath) ? 'appendFileSync' : 'writeFileSync'](logFilePath, logMessage + '\n');
+  fs[fs.existsSync(logFilePath) ? 'appendFileSync' : 'writeFileSync'](
+    logFilePath,
+    `${logMessage}\n`,
+  );
 }

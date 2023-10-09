@@ -11,7 +11,10 @@ export class ConsistencyObserver<S> implements FitnessObserver<S> {
   currentSolutionWithMeta: SolutionWithMeta<S> | undefined;
   currentConsistencyCheckString: string | undefined;
 
-  onInitialSolution?: (solutionWithMeta: SolutionWithMeta<S>, iteration: number) => Promise<void>;
+  onInitialSolution?: (
+    solutionWithMeta: SolutionWithMeta<S>,
+    iteration: number,
+  ) => Promise<void>;
   onProgressMade?: (
     oldSolutionsWithMeta: SolutionWithMeta<S>[],
     accepted: SolutionWithMeta<S>[],
@@ -19,5 +22,8 @@ export class ConsistencyObserver<S> implements FitnessObserver<S> {
     newSolutions: SolutionWithMeta<S>[],
     iteration: number,
   ) => Promise<void>;
-  onFinalSolution?: (solutionWithMeta: SolutionWithMeta<S>, iteration: number) => Promise<void>;
+  onFinalSolution?: (
+    solutionWithMeta: SolutionWithMeta<S>,
+    iteration: number,
+  ) => Promise<void>;
 }

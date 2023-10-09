@@ -30,8 +30,8 @@ export class CustomTask implements TaskContext {
     stageTargetProgress,
     startTime,
     logContent,
-    rejectTask: rejectTask,
-    resolveTask: resolveTask,
+    rejectTask,
+    resolveTask,
   }: {
     id: string;
     userInput: string;

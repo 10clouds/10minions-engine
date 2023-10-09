@@ -1,7 +1,7 @@
-import { ApplicationStatus, MinionTask } from '../MinionTask';
-import { mutateAppendToLogNoNewline } from '../../tasks/logs/mutators/mutateAppendToLogNoNewline';
 import { getEditorManager } from '../../managers/EditorManager';
+import { mutateAppendToLogNoNewline } from '../../tasks/logs/mutators/mutateAppendToLogNoNewline';
 import { decomposeMarkdownString } from '../../utils/string/decomposeMarkdownString';
+import { ApplicationStatus, MinionTask } from '../MinionTask';
 
 export const LOG_PLAIN_COMMENT_MARKER = `\nPLAIN COMMENT FALLBACK\n`;
 
@@ -24,7 +24,13 @@ ${minionTask.modificationDescription}
   minionTask.aplicationStatus = ApplicationStatus.APPLIED_AS_FALLBACK;
 
   await getEditorManager().applyWorkspaceEdit(async (edit) => {
-    edit.insert(minionTask.documentURI, { line: 0, character: 0 }, decomposedString + '\n');
+    edit.insert(
+      minionTask.documentURI,
+      { line: 0, character: 0 },
+      `${decomposedString}\n`,
+    );
   });
-  getEditorManager().showInformationMessage(`Modification applied successfully.`);
+  getEditorManager().showInformationMessage(
+    `Modification applied successfully.`,
+  );
 }

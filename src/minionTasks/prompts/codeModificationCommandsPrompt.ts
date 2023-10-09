@@ -38,7 +38,7 @@ Follow this rules when using INSERT / BEFORE / END_INSERT command sequence:
 * All lines and whitespace in the text you are inserting matter.
 * You MUST use all 3 parts of the command: INSERT, BEFORE and END_INSERT.
 `.trim(),
-  `
+  ` 
 # Syntax and description of a MODIFY_OTHER command
 
 If REQUESTED_MODIFICATION specifies that other files must be created or modified, use this command to specify any modifications that need to happen in other files. User will apply them manually, so they don't have to compile, and can have instructions on how to apply them. Start it with the following line:

@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+
 import { decomposeMarkdownString } from '../../src/utils/string/decomposeMarkdownString';
 
 suite('Decomposer Test Suite', () => {
@@ -23,7 +24,7 @@ Here's the final modified segment:
 \`\`\`typescript
 // ...
 if (minionTask) {
-  const document = await minionTask.document();
+  const document = await minionTask.document(); 
   const editor = await vscode.window.showTextDocument(document);
 
   let { startIndex, endIndex, confidence } = fuzzyFindText({ currentCode: document.getText(), findText: minionTask.selectedText });

@@ -1,4 +1,5 @@
-import z, { string } from 'zod';
+import z from 'zod';
+
 import { GPTMode } from '../src/gpt/types';
 
 export const GPT_ASSERT = 'gptAssert';
@@ -9,9 +10,16 @@ export type GPT_ASSERT_TYPE = typeof GPT_ASSERT;
 export type SIMPLE_STRING_FIND_TYPE = typeof SIMPLE_STRING_FIND;
 export type FUNCTION_RETURN_TYPE_CHECK_TYPE = typeof FUNCTION_RETURN_TYPE_CHECK;
 
-type TestDefinitionType = GPT_ASSERT_TYPE | SIMPLE_STRING_FIND_TYPE | FUNCTION_RETURN_TYPE_CHECK_TYPE;
+type TestDefinitionType =
+  | GPT_ASSERT_TYPE
+  | SIMPLE_STRING_FIND_TYPE
+  | FUNCTION_RETURN_TYPE_CHECK_TYPE;
 
-export const listOfTypes = [GPT_ASSERT, SIMPLE_STRING_FIND, FUNCTION_RETURN_TYPE_CHECK];
+export const listOfTypes = [
+  GPT_ASSERT,
+  SIMPLE_STRING_FIND,
+  FUNCTION_RETURN_TYPE_CHECK,
+];
 
 export type TestDefinition =
   | { type: GPT_ASSERT_TYPE; mode: GPTMode; assertion: string }
@@ -31,7 +39,14 @@ interface BaseSchema {
     functionName?: { type: 'string' };
     expectedType?: { type: 'string' };
   };
-  required: ('type' | 'mode' | 'assertion' | 'stringToFind' | 'functionName' | 'expectedType')[];
+  required: (
+    | 'type'
+    | 'mode'
+    | 'assertion'
+    | 'stringToFind'
+    | 'functionName'
+    | 'expectedType'
+  )[];
 }
 
 export const gptAssertSchema = {
@@ -77,7 +92,11 @@ export const FunctionReturnTypeCheckSchema = z.object({
   expectedType: z.string(),
 });
 
-export const TestSchemas = z.union([GptAssertSchema, SimpleStringFindSchema, FunctionReturnTypeCheckSchema]);
+export const TestSchemas = z.union([
+  GptAssertSchema,
+  SimpleStringFindSchema,
+  FunctionReturnTypeCheckSchema,
+]);
 
 export interface GPTAssertTestType {
   type: GPT_ASSERT_TYPE;
@@ -104,10 +123,27 @@ export interface ScoreTest {
   assertion?: string;
 }
 
-export type ScoreTestType = GPTAssertTestType | SimpleStringToFindTestType | FunctionReturnTypeCheckTestType;
+export type ScoreTestType =
+  | GPTAssertTestType
+  | SimpleStringToFindTestType
+  | FunctionReturnTypeCheckTestType;
 
 export interface ScoreTestTypeMap {
   [GPT_ASSERT]: GPTAssertTestType;
   [FUNCTION_RETURN_TYPE_CHECK]: FunctionReturnTypeCheckTestType;
   [SIMPLE_STRING_FIND]: SimpleStringToFindTestType;
+}
+
+export interface TestInfo {
+  originalFilePath: string;
+  minionTaskId: string;
+  pluginVersion: string;
+  vsCodeVersion: string;
+  date: string;
+  testResults: {
+    score: string;
+    date: string;
+    testQueueName?: string;
+    iterations?: number;
+  }[];
 }

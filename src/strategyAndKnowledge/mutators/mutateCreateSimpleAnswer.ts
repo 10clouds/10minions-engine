@@ -1,10 +1,11 @@
 import { z } from 'zod';
+
 import { createFullPromptFromSections } from '../../gpt/createFullPromptFromSections';
 import { GPTMode } from '../../gpt/types';
-import { TaskContext } from '../../tasks/TaskContext';
 import { mutateAppendSectionToLog } from '../../tasks/logs/mutators/mutateAppendSectionToLog';
 import { mutateAppendToLogNoNewline } from '../../tasks/logs/mutators/mutateAppendToLogNoNewline';
 import { taskGPTExecute } from '../../tasks/mutators/taskGPTExecute';
+import { TaskContext } from '../../tasks/TaskContext';
 import { Knowledge } from '../Knowledge';
 
 export async function mutateCreateSimpleAnswer<TC extends TaskContext>({
@@ -22,11 +23,13 @@ export async function mutateCreateSimpleAnswer<TC extends TaskContext>({
 
   const fullPrompt = createFullPromptFromSections({
     intro: `${prePrompt}: "${input}"`,
-    sections: Object.fromEntries(relevantKnowledge.map((k) => [k.id, k.content])),
+    sections: Object.fromEntries(
+      relevantKnowledge.map((k) => [k.id, k.content]),
+    ),
   });
 
   const answer = await taskGPTExecute(task, {
-    fullPrompt: fullPrompt,
+    fullPrompt,
     mode: GPTMode.QUALITY,
     maxTokens: 400,
     outputSchema: z.string(),

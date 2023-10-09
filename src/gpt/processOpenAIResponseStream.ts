@@ -1,7 +1,8 @@
 import AsyncLock from 'async-lock';
-import { extractParsedLines } from './extractParsedLines';
 import { Response } from 'node-fetch';
+
 import { CANCELED_STAGE_NAME } from '../tasks/stageNames';
+import { extractParsedLines } from './extractParsedLines';
 
 const openAILock = new AsyncLock();
 
@@ -25,15 +26,18 @@ export async function processOpenAIResponseStream({
 
   return new Promise<string>((resolve, reject) => {
     if (!stream) {
-      return reject('No stream');
+      reject('No stream');
+
+      return;
     }
 
-    stream.on('data', async (value) => {
+    stream.on('data', (value: AllowSharedBufferSource) => {
       try {
         if (isCancelled() || controller.signal.aborted) {
           stream.removeAllListeners();
           reject(CANCELED_STAGE_NAME);
-          return;
+
+          // return;
         }
         const chunk = decoder.decode(value);
         chunkBuffer += chunk;
@@ -49,11 +53,16 @@ export async function processOpenAIResponseStream({
         }
 
         const tokens = parsedLines
-          .map((l) => l.choices[0].delta.content || l.choices[0].delta.function_call?.arguments || '')
+          .map(
+            (l) =>
+              l.choices[0].delta.content ||
+              l.choices[0].delta.function_call?.arguments ||
+              '',
+          )
           .filter((c) => c)
           .join('');
 
-        await openAILock.acquire('openAI', async () => {
+        openAILock.acquire('openAI', async () => {
           await onChunk(tokens);
         });
 
@@ -68,6 +77,7 @@ export async function processOpenAIResponseStream({
       if (isCancelled() || controller.signal.aborted) {
         stream.removeAllListeners();
         reject(CANCELED_STAGE_NAME);
+
         return;
       }
       resolve(fullContent);

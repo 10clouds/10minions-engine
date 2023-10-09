@@ -12,14 +12,15 @@ export const criteriaDefinition: Criterion<string>[] = [
       const emojiPattern = emojiRegex();
       const emojis = solution.match(emojiPattern);
       const points = 20 - (emojis?.length || 0) * 5;
+
       return points;
     },
     suggestions: (solution) => {
       if (solution.match(emojiRegex())) {
         return ['Use less emojis', 'Remove emojis'];
-      } else {
-        return [];
       }
+
+      return [];
     },
   },
   {
@@ -30,6 +31,7 @@ export const criteriaDefinition: Criterion<string>[] = [
     calculate: (solution) => {
       const distance = Math.max(Math.abs(750 - solution.length) - 50, 0);
       const points = 20 / (1 + distance / 50);
+
       return points;
     },
     suggestions: (solution) => {
@@ -70,8 +72,10 @@ export const criteriaDefinition: Criterion<string>[] = [
   },
   {
     name: 'Style of great CEO',
-    maxPointsIf: 'post should be written in a style that a person like Steve Jobs, Bill Gates or Elon Musk could have written it',
-    maintain: 'Keep the post in a style that a person like Steve Jobs, Bill Gates or Elon Musk could have written it',
+    maxPointsIf:
+      'post should be written in a style that a person like Steve Jobs, Bill Gates or Elon Musk could have written it',
+    maintain:
+      'Keep the post in a style that a person like Steve Jobs, Bill Gates or Elon Musk could have written it',
     maxPoints: 20,
     calculate: 'GPT',
     suggestions: 'GPT',

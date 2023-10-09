@@ -1,6 +1,9 @@
 import { encode as encodeGPT35 } from 'gpt-tokenizer/cjs/model/gpt-3.5-turbo';
 import { encode as encodeGPT4 } from 'gpt-tokenizer/cjs/model/gpt-4';
-import { type ChatCompletionRequestMessage, type CreateChatCompletionRequest } from 'openai';
+import {
+  type ChatCompletionRequestMessage,
+  type CreateChatCompletionRequest,
+} from 'openai';
 import { JsonSchema7Type } from 'zod-to-json-schema/src/parseDef';
 
 export enum GPTMode {
@@ -12,7 +15,10 @@ export const QUALITY_MODE_TOKENS = 8192;
 export const FAST_MODE_TOKENS = 4096;
 export const FAST_MODE_TURBO_TOKENS = 16384;
 
-export type GPTModel = 'gpt-4-0613' | 'gpt-3.5-turbo-0613' | 'gpt-3.5-turbo-16k-0613'; // | "gpt-4-32k-0613"
+export type GPTModel =
+  | 'gpt-4-0613'
+  | 'gpt-3.5-turbo-0613'
+  | 'gpt-3.5-turbo-16k-0613'; // | "gpt-4-32k-0613"
 
 export type FunctionDef = {
   name: string;

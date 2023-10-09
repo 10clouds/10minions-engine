@@ -39,7 +39,13 @@ export type MessageToWebView =
   | { type: MessageToWebViewType.API_KEY_MISSING_MODELS; models: string[] }
   | { type: MessageToWebViewType.TOKEN_COUNT; value: number }
   | { type: MessageToWebViewType.CHOSEN_CODE_UPDATED; code: string }
-  | { type: MessageToWebViewType.UPDATE_FILE_LOADING_STATUS; inProgress: boolean; progress: number; currentFilePath?: string }
+  | {
+      type: MessageToWebViewType.UPDATE_FILE_LOADING_STATUS;
+      inProgress: boolean;
+      progress: number;
+      loading: boolean;
+      currentFilePath?: string;
+    }
   | {
       type: MessageToWebViewType.SUGGESTIONS;
       suggestions: string[];

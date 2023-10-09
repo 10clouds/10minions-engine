@@ -12,7 +12,7 @@ class Employee {
   constructor(name: string, id: number){
     this.name = name;
     this.id = id;
-  }
+  } 
   
   displayInfo(): void {
     console.log('Employee Name: {this.name}, Employee ID: {this.id}');

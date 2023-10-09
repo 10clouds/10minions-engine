@@ -1,17 +1,18 @@
 import { z } from 'zod';
-import { Knowledge } from '../Knowledge';
+
 import { DEBUG_PROMPTS } from '../../const';
+import { countTokens } from '../../gpt/countTokens';
+import { ensureIRunThisInRange } from '../../gpt/ensureIRunThisInRange';
 import { getModel } from '../../gpt/getModel';
 import { GPTExecuteRequestMessage, GPTMode, MODEL_DATA } from '../../gpt/types';
-import { shuffleArray } from '../../utils/random/shuffleArray';
-import { formatPrompt } from '../../utils/string/formatPrompt';
-import { Strategy } from '../Strategy';
-import { TaskContext } from '../../tasks/TaskContext';
 import { mutateAppendSectionToLog } from '../../tasks/logs/mutators/mutateAppendSectionToLog';
 import { mutateAppendToLog } from '../../tasks/logs/mutators/mutateAppendToLog';
 import { taskGPTExecute } from '../../tasks/mutators/taskGPTExecute';
-import { countTokens } from '../../gpt/countTokens';
-import { ensureIRunThisInRange } from '../../gpt/ensureIRunThisInRange';
+import { TaskContext } from '../../tasks/TaskContext';
+import { shuffleArray } from '../../utils/random/shuffleArray';
+import { formatPrompt } from '../../utils/string/formatPrompt';
+import { Knowledge } from '../Knowledge';
+import { Strategy } from '../Strategy';
 
 export async function taskChooseKnowledgeAndStrategy<TC extends TaskContext>({
   task,
@@ -42,11 +43,15 @@ export async function taskChooseKnowledgeAndStrategy<TC extends TaskContext>({
 
         1. Establish the strategy to execute the command, it can be one of the following values:
 
-        ${shuffleArray(availableStrategies.map((c) => `* ${c.id} - ${c.description}`)).join('\n        ')}
+        ${shuffleArray(
+          availableStrategies.map((c) => `* ${c.id} - ${c.description}`),
+        ).join('\n        ')}
 
         2. Figure out and provide a list of materials that are needed to execute the command, and output the sum of tokens for it.
 
-        You may not exceed ${MODEL_DATA[getModel(mode)].maxTokens - 2000} tokens in total.
+        You may not exceed ${
+          MODEL_DATA[getModel(mode)].maxTokens - 2000
+        } tokens in total.
 
         Prioritize the most important materials first, as the latter might not fit into the context window.
 
@@ -56,7 +61,13 @@ export async function taskChooseKnowledgeAndStrategy<TC extends TaskContext>({
 
         You have access to the following materials:
         
-        ${isKnowledge ? shuffleArray(availableKnowledge.map((c) => `* ${c.id} - ${c.description} `)).join('\n        ') : ''}
+        ${
+          isKnowledge
+            ? shuffleArray(
+                availableKnowledge.map((c) => `* ${c.id} - ${c.description} `),
+              ).join('\n        ')
+            : ''
+        }
 
         Do not perform the actual command, revise the result or generate any code.
       `),
@@ -64,10 +75,21 @@ export async function taskChooseKnowledgeAndStrategy<TC extends TaskContext>({
     ...(originalCommand
       ? ([
           { role: 'user', content: `Original command:\n""" ${taskPrompt} """` },
-          { role: 'user', content: `Result that will be revised:\n""" ${originalResult} """` },
-          { role: 'user', content: `Request for revision: """ ${taskPrompt} """` },
+          {
+            role: 'user',
+            content: `Result that will be revised:\n""" ${originalResult} """`,
+          },
+          {
+            role: 'user',
+            content: `Request for revision: """ ${taskPrompt} """`,
+          },
         ] as GPTExecuteRequestMessage[])
-      : ([{ role: 'user', content: `Command from the user: """ ${taskPrompt} """` }] as GPTExecuteRequestMessage[])),
+      : ([
+          {
+            role: 'user',
+            content: `Command from the user: """ ${taskPrompt} """`,
+          },
+        ] as GPTExecuteRequestMessage[])),
   ];
 
   if (DEBUG_PROMPTS) {
@@ -85,11 +107,14 @@ export async function taskChooseKnowledgeAndStrategy<TC extends TaskContext>({
 
   const maxTokens = ensureIRunThisInRange({
     prompt,
-    mode: mode,
+    mode,
     preferedTokens: fullPromptTokens,
-    minTokens: minTokens,
+    minTokens,
   });
-  const KnowledgeIdsEnum = z.enum([availableKnowledge[0].id, ...availableKnowledge.slice(1).map((s) => s.id)]);
+  const KnowledgeIdsEnum = z.enum([
+    availableKnowledge[0].id,
+    ...availableKnowledge.slice(1).map((s) => s.id),
+  ]);
   const result = await taskGPTExecute(task, {
     fullPrompt: promptWithContext,
     mode,
@@ -98,7 +123,10 @@ export async function taskChooseKnowledgeAndStrategy<TC extends TaskContext>({
     outputSchema: z
       .object({
         neededKnowledge: z.array(KnowledgeIdsEnum),
-        strategy: z.enum([availableStrategies[0].id, ...availableStrategies.slice(1).map((s) => s.id)]),
+        strategy: z.enum([
+          availableStrategies[0].id,
+          ...availableStrategies.slice(1).map((s) => s.id),
+        ]),
       })
       .describe('Choose needed knowledge and strategy for the task'),
   });
@@ -106,7 +134,9 @@ export async function taskChooseKnowledgeAndStrategy<TC extends TaskContext>({
   mutateAppendToLog(task, '\n');
 
   //find classification in text
-  const matchingStrategies = availableStrategies.filter((c) => result.strategy === c.id);
+  const matchingStrategies = availableStrategies.filter(
+    (c) => result.strategy === c.id,
+  );
 
   if (matchingStrategies.length !== 1) {
     throw new Error(`Could not find strategy in the text: ${result}`);

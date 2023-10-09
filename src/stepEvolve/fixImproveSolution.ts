@@ -1,14 +1,24 @@
 import { z } from 'zod';
+
+import { countTokens } from '../gpt/countTokens';
+import { createFullPromptFromSections } from '../gpt/createFullPromptFromSections';
+import { ensureIRunThisInRange } from '../gpt/ensureIRunThisInRange';
+import { gptExecute } from '../gpt/gptExecute';
+import { GPTMode } from '../gpt/types';
+import { MinionTaskSolution } from '../minionTasks/advancedCodeChangeStrategy';
 import { MinionTask } from '../minionTasks/MinionTask';
 import { SolutionWithMeta } from './FitnessFunction';
-import { gptExecute } from '../gpt/gptExecute';
-import { createFullPromptFromSections } from '../gpt/createFullPromptFromSections';
-import { GPTMode, QUALITY_MODE_TOKENS } from '../gpt/types';
-import { countTokens } from '../gpt/countTokens';
-import { MinionTaskSolution } from '../minionTasks/advancedCodeChangeStrategy';
-import { ensureIRunThisInRange } from '../gpt/ensureIRunThisInRange';
 
 const EXTRA_TOKENS = 200;
+
+export interface ImproveSolutionFixResult {
+  name: string;
+  call: () => Promise<{
+    resultingCode: string;
+    modificationDescription: string;
+    modificationProcedure: string;
+  }>;
+}
 
 export function improveSolutionFix({
   task,
@@ -18,7 +28,7 @@ export function improveSolutionFix({
   task: MinionTask;
   solutionWithMeta: SolutionWithMeta<MinionTaskSolution>;
   suggestions: string;
-}) {
+}): ImproveSolutionFixResult {
   console.log('Improving solution fix...');
   const { modificationDescription, modificationProcedure, userQuery } = task;
   const solution = solutionWithMeta.solution.resultingCode;
@@ -40,9 +50,9 @@ export function improveSolutionFix({
 
   const maxTokens = ensureIRunThisInRange({
     prompt: fullPrompt,
-    mode: mode,
+    mode,
     preferedTokens: fullPromptTokens,
-    minTokens: minTokens,
+    minTokens,
   });
 
   const improveFixCallFunction = async () => {

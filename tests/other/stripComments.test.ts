@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+
 import { stripAllComments } from '../../src/utils/code/stripAllComments';
 
 suite('Strip All Comments Test Suite', () => {
@@ -20,7 +21,7 @@ suite('Strip All Comments Test Suite', () => {
         console.log("Hello, world!");
       }`;
     const expectedResult = `
-      function example() {
+      function example() { 
         console.log("Hello, world!");
       }`;
 

@@ -36,7 +36,15 @@ Perform that task.
 
 Your job is to do the task, so your college will be exteremely happy. If asked for them, propose changes, deliver insightfull comments in the code and output to the user all of your logic and remarks in nice looking block comment.`;
 
-export const createPrompt = ({ selectedText, document, fullFileContents, selectionPosition, userQuery, fileName, knowledge }: PromptData) => {
+export const createPrompt = ({
+  selectedText,
+  document,
+  fullFileContents,
+  selectionPosition,
+  userQuery,
+  fileName,
+  knowledge,
+}: PromptData) => {
   const settingsKeyword = 'TODO'; //vscode.workspace.getConfiguration('10minions').get('taskCommentKeyword') || "TODO";
 
   return createFullPromptFromSections({
@@ -49,10 +57,13 @@ export const createPrompt = ({ selectedText, document, fullFileContents, selecti
       If asked to perform a task from a "${settingsKeyword}:" comment, perform the task and remove the comment.`.trim(),
       ...knowledgeHelperPrompt(knowledge),
       CODE_SNIPPET: selectedText
-        ? `(starts on line ${selectionPosition.line + 1} column: ${selectionPosition.character + 1} in the file)`
+        ? `(starts on line ${selectionPosition.line + 1} column: ${
+            selectionPosition.character + 1
+          } in the file)`
         : `(Language: ${document.languageId})`,
       SELECTED_TEXT: selectedText ? selectedText : fullFileContents,
-      ['TASK (applies to CODE SNIPPET section only, not the entire FILE CONTEXT)']: userQuery,
+      ['TASK (applies to CODE SNIPPET section only, not the entire FILE CONTEXT)']:
+        userQuery,
     },
     outro: `
       If the task is not clear or there is lack of details try to generate response base on file name.

@@ -1,12 +1,17 @@
 import { z } from 'zod';
+
 import { countTokens } from '../src/gpt/countTokens';
+import { ensureIRunThisInRange } from '../src/gpt/ensureIRunThisInRange';
 import { gptExecute } from '../src/gpt/gptExecute';
-import { GPTMode, QUALITY_MODE_TOKENS } from '../src/gpt/types';
+import { GPTMode } from '../src/gpt/types';
 import { MinionTask } from '../src/minionTasks/MinionTask';
 import { extractExtensionNameFromPath } from '../src/utils/extractFileNameFromPath';
-import { TestSchemas, listOfTypes } from './types';
-import { SIMPLE_STRING_FIND, GPT_ASSERT, FUNCTION_RETURN_TYPE_CHECK } from './types';
-import { ensureIRunThisInRange } from '../src/gpt/ensureIRunThisInRange';
+import { listOfTypes, ScoreTest, TestSchemas } from './types';
+import {
+  FUNCTION_RETURN_TYPE_CHECK,
+  GPT_ASSERT,
+  SIMPLE_STRING_FIND,
+} from './types';
 enum Languages {
   'js' = 'javascript',
   'ts' = 'typescript',
@@ -21,7 +26,9 @@ const prompt = async (minionTask: MinionTask, test?: boolean) => {
   const [testFileName] = splitPath.slice(-2);
   const [fileName] = splitPath.slice(-1);
   const finalFileName = test ? testFileName : fileName;
-  const documentExtension = extractExtensionNameFromPath(finalFileName) as keyof typeof Languages;
+  const documentExtension = extractExtensionNameFromPath(
+    finalFileName,
+  ) as keyof typeof Languages;
 
   return `
   You are an expert senior software developer, with 10 years of experience, experience in numerous projects and up to date knowledge and an IQ of 200, you are also an expert in writing TDD (Test-Driven Development) or BDD (Behaviour-Driven Development) tests.
@@ -30,18 +37,24 @@ const prompt = async (minionTask: MinionTask, test?: boolean) => {
   INSTRUCTIONS should have MAXIMUM 2 sentences and be accurate as it possible.
 
   ===== IMPORTANT INFORMATION =====
-  * First INSTRUCTION always should be: "The code is valid ${Languages[documentExtension]} code"
+  * First INSTRUCTION always should be: "The code is valid ${
+    Languages[documentExtension]
+  } code"
   * INSTRUCTIONS have to be non deterministic
   * assertion field should only contain INSTRUCTION
   * Try to find out possible problem based on USER QUERY
   * DO NOT REPEAT similar instructions make all INSTRUCTION cover one problem
   * if there is no reason to generate MAXIMUM NUMBER OF RESULTS do not do it. Number of test cases can be less than MAXIMUM NUMBER OF RESULTS
   
-  You have 2 mode that you can use: "${GPTMode.QUALITY}" which is gpt-4-0613 or "${
+  You have 2 mode that you can use: "${
+    GPTMode.QUALITY
+  }" which is gpt-4-0613 or "${
     GPTMode.FAST
   }" which is gpt-3.5-turbo-16k-0613. These modes define which GPT engine should be used to execute particular instuction. You have to decide which one should be used in particular case based on your experience and huge knowledge about that.
 
-  There are ${listOfTypes.length} type of tests: ${listOfTypes.join(', ')} in most cases you will be using gptAssert type.
+  There are ${listOfTypes.length} type of tests: ${listOfTypes.join(
+    ', ',
+  )} in most cases you will be using gptAssert type.
 
   IF type is ${FUNCTION_RETURN_TYPE_CHECK} structure of test should be like:
 
@@ -86,7 +99,17 @@ const prompt = async (minionTask: MinionTask, test?: boolean) => {
 
 const EXTRA_TOKENS = 500;
 
-export const generateScoreTests = async (minionTask?: MinionTask, test?: boolean) => {
+export interface GenerateScoreTests {
+  result: GenerateScoreTestsResult;
+  cost: number;
+}
+
+export type GenerateScoreTestsResult = { items: ScoreTest[] };
+
+export const generateScoreTests = async (
+  minionTask?: MinionTask,
+  test?: boolean,
+) => {
   if (!minionTask) return;
   const mode: GPTMode = GPTMode.FAST;
   const fullPrompt = await prompt(minionTask, test);

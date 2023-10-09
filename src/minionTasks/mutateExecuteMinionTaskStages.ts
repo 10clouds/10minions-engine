@@ -2,36 +2,57 @@ import { taskChooseKnowledgeAndStrategy } from '../strategyAndKnowledge/mutators
 import { mutateEndStage } from '../tasks/mutators/mutateEndStage';
 import { mutateStageFinishing } from '../tasks/mutators/mutateStageFinishing';
 import { mutateStartStage } from '../tasks/mutators/mutateStartStage';
-import { MinionTask } from './MinionTask';
 import { advancedCodeChangeStrategy } from './advancedCodeChangeStrategy';
 import { createChooseStrategyPrompt } from './createChooseStrategyPrompt';
 import { WorkspaceFilesKnowledge } from './generateDescriptionForWorkspaceFiles';
 import { minionsKnowledge } from './knowledge/knowledge';
+import { MinionTask } from './MinionTask';
 import { mutateCreateAnswer } from './mutators/mutateCreateAnswer';
 import { mutateStageStarting } from './mutators/mutateStageStarting';
 import { MINION_TASK_STRATEGIES, MINION_TASK_STRATEGY_ID } from './strategies';
 
-export async function mutateExecuteMinionTaskStages(task: MinionTask, workspaceFilesKnowledge: WorkspaceFilesKnowledge[] = [], test?: boolean) {
+export async function mutateExecuteMinionTaskStages(
+  task: MinionTask,
+  getExternalData?: <T>() => Promise<WorkspaceFilesKnowledge[]>,
+  test?: boolean,
+) {
   mutateStartStage({ task, name: 'Starting ...', progressIncrement: 0.05 });
   mutateStageStarting(task);
   mutateEndStage(task);
-  mutateStartStage({ task, name: 'Understanding ...', progressIncrement: 0.3 });
+  mutateStartStage({
+    task,
+    name: 'Collecting knowledge ...',
+    progressIncrement: 0.1,
+  });
+
+  const workspaceFilesKnowledge = getExternalData
+    ? await getExternalData()
+    : [];
   const knowledge = [...workspaceFilesKnowledge, ...minionsKnowledge];
+  mutateEndStage(task);
+  mutateStartStage({ task, name: 'Understanding ...', progressIncrement: 0.3 });
   const { strategy, relevantKnowledge } = await taskChooseKnowledgeAndStrategy({
     task,
-    systemDescription: 'You are an AI Command Center, capable to improve code and support developer/programmer during development.',
+    systemDescription:
+      'You are an AI Command Center, capable to improve code and support developer/programmer during development.',
     availableStrategies: MINION_TASK_STRATEGIES,
     availableKnowledge: knowledge,
     taskToPrompt: createChooseStrategyPrompt,
   });
   task.strategyId = strategy.id as MINION_TASK_STRATEGY_ID;
-  task.relevantKnowledgeIds = relevantKnowledge.map((knowledge) => knowledge.id);
+  task.relevantKnowledgeIds = relevantKnowledge.map(
+    (knowledge) => knowledge.id,
+  );
   task.relevantKnowledge = relevantKnowledge as WorkspaceFilesKnowledge[];
   mutateEndStage(task);
   switch (task.strategyId) {
     case 'AnswerQuestion':
-      mutateStartStage({ task, name: 'Conceptualising ...', progressIncrement: 0.6 });
-      await mutateCreateAnswer(task, relevantKnowledge);
+      mutateStartStage({
+        task,
+        name: 'Conceptualising ...',
+        progressIncrement: 0.6,
+      });
+      await mutateCreateAnswer(task);
 
       mutateEndStage(task);
       break;

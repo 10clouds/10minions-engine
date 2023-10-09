@@ -1,9 +1,11 @@
+import { readFile } from 'node:fs/promises';
+
 import * as assert from 'assert';
-import { writeFile, readFile } from 'node:fs/promises';
+import { lstatSync } from 'fs';
 import * as glob from 'glob';
 import * as path from 'path';
+
 import { applyModificationProcedure } from '../../src/minionTasks/applyModificationProcedure';
-import { lstatSync } from 'fs';
 
 suite('Replace Procedure Test Suite', () => {
   const baseDir = path.resolve(__dirname);
@@ -13,13 +15,26 @@ suite('Replace Procedure Test Suite', () => {
 
   for (const testDir of testDirs) {
     test(path.basename(testDir), async () => {
-      const currentCode = await readFile(path.resolve(baseDir, testDir, 'original.txt'), 'utf8');
-      const procedure = await readFile(path.resolve(baseDir, testDir, 'procedure.txt'), 'utf8');
-      const expectedOutput = await readFile(path.resolve(baseDir, testDir, 'result.txt'), 'utf8');
+      const currentCode = await readFile(
+        path.resolve(baseDir, testDir, 'original.txt'),
+        'utf8',
+      );
+      const procedure = await readFile(
+        path.resolve(baseDir, testDir, 'procedure.txt'),
+        'utf8',
+      );
+      const expectedOutput = await readFile(
+        path.resolve(baseDir, testDir, 'result.txt'),
+        'utf8',
+      );
 
       let modifiedContent;
       try {
-        modifiedContent = await applyModificationProcedure(currentCode, procedure, 'typescript');
+        modifiedContent = await applyModificationProcedure(
+          currentCode,
+          procedure,
+          'typescript',
+        );
       } catch (e: unknown) {
         if (e instanceof Error) {
           modifiedContent = e.toString();

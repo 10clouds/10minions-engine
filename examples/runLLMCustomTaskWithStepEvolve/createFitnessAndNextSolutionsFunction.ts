@@ -1,9 +1,12 @@
-import { FitnessAndNextSolutionsFunction, SolutionWithMeta } from '../../src/stepEvolve/FitnessFunction';
 import { createSolutionsFromFixes } from '../../src/stepEvolve/createSolutionsFromFixes';
-import { TaskDefinition } from './TaskDefinition';
+import {
+  FitnessAndNextSolutionsFunction,
+  SolutionWithMeta,
+} from '../../src/stepEvolve/FitnessFunction';
 import { createFixesForSolution } from './createFixesForSolution';
 import { criteriaDefinition } from './criteriaDefinition';
 import { rateSolution } from './rateSolution';
+import { TaskDefinition } from './TaskDefinition';
 
 export function createFitnessAndNextSolutionsFunction({
   task,
@@ -12,11 +15,19 @@ export function createFitnessAndNextSolutionsFunction({
   task: TaskDefinition;
   maxBranching: number;
 }): FitnessAndNextSolutionsFunction<string> {
-  const fitnessAndNextSolutionsFunction = async (solutionWithMeta: SolutionWithMeta<string>) => {
-    const { finalRating, criteriaRatings } = await rateSolution(task, solutionWithMeta);
+  const fitnessAndNextSolutionsFunction = async (
+    solutionWithMeta: SolutionWithMeta<string>,
+  ) => {
+    const { finalRating, criteriaRatings } = await rateSolution(
+      task,
+      solutionWithMeta,
+    );
 
     const criteriaWithRatings = criteriaDefinition.map((c) => {
-      const criteriaRating = criteriaRatings.find((cr) => cr.criteria === c.name);
+      const criteriaRating = criteriaRatings.find(
+        (cr) => cr.criteria === c.name,
+      );
+
       return {
         ...c,
         rating: criteriaRating?.rating ?? 0,
@@ -30,7 +41,11 @@ export function createFitnessAndNextSolutionsFunction({
         return { id: c.name, fitness: c.rating };
       }),
       nextPossibleSolutions: async (): Promise<SolutionWithMeta<string>[]> => {
-        const fixes = await createFixesForSolution(task, solutionWithMeta, criteriaWithRatings);
+        const fixes = await createFixesForSolution(
+          task,
+          solutionWithMeta,
+          criteriaWithRatings,
+        );
 
         return createSolutionsFromFixes({
           solutionWithMeta,

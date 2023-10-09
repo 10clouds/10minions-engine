@@ -1,23 +1,25 @@
-import { mkdirSync, readFileSync } from 'fs';
 import { writeFile } from 'node:fs/promises';
+
+import { mkdirSync, readFileSync } from 'fs';
 import path from 'path';
+
 import { initCLISystems } from '../../src/CLI/setupCLISystems';
-import { SolutionWithMeta } from '../../src/stepEvolve/FitnessFunction';
 import { createSolutionWithMetaWithFitness } from '../../src/stepEvolve/createSolutionWithMetaWithFitness';
+import { SolutionWithMeta } from '../../src/stepEvolve/FitnessFunction';
 import { stepEvolve } from '../../src/stepEvolve/stepEvolve';
 import { Knowledge } from '../../src/strategyAndKnowledge/Knowledge';
-import { Strategy } from '../../src/strategyAndKnowledge/Strategy';
 import { mutateCreateSimpleAnswer } from '../../src/strategyAndKnowledge/mutators/mutateCreateSimpleAnswer';
 import { taskChooseKnowledgeAndStrategy } from '../../src/strategyAndKnowledge/mutators/taskChooseKnowledgeAndStrategy';
+import { Strategy } from '../../src/strategyAndKnowledge/Strategy';
 import { mutateAppendToLog } from '../../src/tasks/logs/mutators/mutateAppendToLog';
 import { mutateEndStage } from '../../src/tasks/mutators/mutateEndStage';
 import { mutateRunTaskStages } from '../../src/tasks/mutators/mutateRunTaskStages';
 import { mutateStartStage } from '../../src/tasks/mutators/mutateStartStage';
 import { formatPrompt } from '../../src/utils/string/formatPrompt';
-import { CustomTask } from './CustomTask';
 import { createFitnessAndNextSolutionsFunction } from './createFitnessAndNextSolutionsFunction';
-import { createNewSolutionFix } from './fixes/fixCreateNewSolution';
+import { CustomTask } from './CustomTask';
 import { emptyDirSync } from './emptyDirSync';
+import { createNewSolutionFix } from './fixes/fixCreateNewSolution';
 
 const TASK = formatPrompt(`
   Create a world class best official annoucement on linkedin by the CEO of 10Clouds that announces 10Clouds AI Labs.
@@ -43,32 +45,133 @@ const CUSTOM_STRATEGIES: Strategy[] = [
   },*/
   {
     id: 'DeepAnalysis',
-    description: 'Choose this when the answer requires sophisticated criteria and deep analysis',
+    description:
+      'Choose this when the answer requires sophisticated criteria and deep analysis',
   },
 ];
 
 const EXAMPLE_KNOWLEDGE: Knowledge[] = [
   {
     id: 'InfoAbout10Clouds',
-    description: 'Info About 10Clouds company, use it if you need to know more about the company.',
-    content: readFileSync(path.join(__dirname, 'knowledge', 'info-about-10c.txt'), 'utf8'),
+    description:
+      'Info About 10Clouds company, use it if you need to know more about the company.',
+    content: readFileSync(
+      path.join(__dirname, 'knowledge', 'info-about-10c.txt'),
+      'utf8',
+    ),
   },
   {
     id: 'InfoAboutCEO',
-    description: 'Info About CEO of 10Clouds, use it if you need to know more about the CEO.',
-    content: readFileSync(path.join(__dirname, 'knowledge', 'info-about-ceo.txt'), 'utf8'),
+    description:
+      'Info About CEO of 10Clouds, use it if you need to know more about the CEO.',
+    content: readFileSync(
+      path.join(__dirname, 'knowledge', 'info-about-ceo.txt'),
+      'utf8',
+    ),
   },
   {
     id: 'InfoAboutCEOPersonalBrandingStrategy',
-    description: 'Info About CEO of 10Clouds personal branding strategy, use it if you need to know more about the CEO personal branding strategy.',
-    content: readFileSync(path.join(__dirname, 'knowledge', 'info-about-ceo-branding-strategy.txt'), 'utf8'),
+    description:
+      'Info About CEO of 10Clouds personal branding strategy, use it if you need to know more about the CEO personal branding strategy.',
+    content: readFileSync(
+      path.join(__dirname, 'knowledge', 'info-about-ceo-branding-strategy.txt'),
+      'utf8',
+    ),
   },
   {
     id: 'InfoAboutAILabs',
-    description: 'Info About AI Labs (formed by 10Clouds), use it if you need to know more about the AI Labs.',
-    content: readFileSync(path.join(__dirname, 'knowledge', 'info-about-ai-labs.txt'), 'utf8'),
+    description:
+      'Info About AI Labs (formed by 10Clouds), use it if you need to know more about the AI Labs.',
+    content: readFileSync(
+      path.join(__dirname, 'knowledge', 'info-about-ai-labs.txt'),
+      'utf8',
+    ),
   },
 ];
+
+const rumDeepAnalysis = async (task: CustomTask) => {
+  const initialSolutionsPromises = [];
+  for (let i = 0; i < 3; i++) {
+    initialSolutionsPromises.push(
+      createSolutionWithMetaWithFitness({
+        solution: await createNewSolutionFix({ task: TASK }).call(),
+        createdWith: 'initial',
+        fitnessAndNextSolutionsFunction: createFitnessAndNextSolutionsFunction({
+          task: { task: TASK },
+          maxBranching: BRANCHING,
+        }),
+      }),
+    );
+  }
+  const initialSolutions = await Promise.all(initialSolutionsPromises);
+  const finalSolution = await stepEvolve({
+    initialSolutions,
+    threshold: THRESHOLD,
+    maxNumIterations: ITERATIONS,
+    maxStaleIterations: MAX_STALE_ITERATIONS,
+    observers: [
+      {
+        onInitialSolutions: async (solutionsWithMeta, iteration) => {
+          for (const solutionWithMeta of solutionsWithMeta) {
+            mutateAppendToLog(
+              task,
+              `Initial solution is: ${solutionWithMeta.solution} ${solutionWithMeta.totalFitness} (${solutionWithMeta.createdWith})` +
+                `.`,
+            );
+            writeFile(
+              path.join(__dirname, 'logs', `${iteration}.json`),
+              JSON.stringify({ iteration, solutionsWithMeta }, null, 2),
+              'utf8',
+            );
+          }
+        },
+        onProgressMade: async (
+          oldSolutionsWithMeta: SolutionWithMeta<string>[],
+          accepted: SolutionWithMeta<string>[],
+          rejected: SolutionWithMeta<string>[],
+          newSolutions: SolutionWithMeta<string>[],
+          iteration: number,
+        ) => {
+          writeFile(
+            path.join(__dirname, 'logs', `${iteration}.json`),
+            JSON.stringify(
+              { iteration, accepted, rejected, newSolutions },
+              null,
+              2,
+            ),
+            'utf8',
+          );
+          //mutateAppendToLog(task, `Solutions ${oldSolutionsWithMeta.map((s) => s.solution).join(', ')}`);
+
+          for (const solutionWithMeta of accepted) {
+            mutateAppendToLog(
+              task,
+              `New best ${iteration}: ${solutionWithMeta.solution} ${solutionWithMeta.totalFitness} (${solutionWithMeta.createdWith}).`,
+            );
+          }
+        },
+        onFinalSolution: async (solutionWithMeta, iteration) => {
+          const {
+            totalFitness,
+            solution,
+            iteration: solutionIteration,
+          } = solutionWithMeta;
+
+          mutateAppendToLog(task, 'Final solution is:');
+          mutateAppendToLog(task, '```');
+          mutateAppendToLog(task, solution);
+          mutateAppendToLog(task, '```');
+          mutateAppendToLog(task, `Fitness: ${totalFitness}`);
+          mutateAppendToLog(
+            task,
+            `Iteration: ${iteration} (Best solution found in iteration: ${solutionIteration})`,
+          );
+        },
+      },
+    ],
+  });
+  task.answer = finalSolution?.solution ?? '';
+};
 
 (async function () {
   console.log(INTRO);
@@ -83,7 +186,7 @@ const EXAMPLE_KNOWLEDGE: Knowledge[] = [
     totalCost: 0,
     stopped: false,
     onChanged: async () => {
-      console.log('Changed ' + task.progress);
+      console.log(`Changed ${task.progress}`);
     },
     executionStage: '',
     progress: 0,
@@ -99,10 +202,16 @@ const EXAMPLE_KNOWLEDGE: Knowledge[] = [
     const FULL_PROGRESS = 1;
     const NUMBER_OF_PRE_STAGES = 3;
     const PROGRESS_FOR_PRE_STAGES = 0.5;
-    const PROGRESS_FOR_STRATEGY_STAGES = FULL_PROGRESS - PROGRESS_FOR_PRE_STAGES;
-    const PROGRESS_PER_PRE_STAGE = PROGRESS_FOR_PRE_STAGES / NUMBER_OF_PRE_STAGES;
+    const PROGRESS_FOR_STRATEGY_STAGES =
+      FULL_PROGRESS - PROGRESS_FOR_PRE_STAGES;
+    const PROGRESS_PER_PRE_STAGE =
+      PROGRESS_FOR_PRE_STAGES / NUMBER_OF_PRE_STAGES;
 
-    mutateStartStage({ task, name: 'Stage 1', progressIncrement: PROGRESS_PER_PRE_STAGE });
+    mutateStartStage({
+      task,
+      name: 'Stage 1',
+      progressIncrement: PROGRESS_PER_PRE_STAGE,
+    });
     mutateAppendToLog(task, 'Stage 1');
 
     // Before invoking the stepEvolve function, delete all log files
@@ -111,23 +220,35 @@ const EXAMPLE_KNOWLEDGE: Knowledge[] = [
 
     mutateEndStage(task);
 
-    mutateStartStage({ task, name: 'Stage 2', progressIncrement: PROGRESS_PER_PRE_STAGE });
+    mutateStartStage({
+      task,
+      name: 'Stage 2',
+      progressIncrement: PROGRESS_PER_PRE_STAGE,
+    });
     mutateAppendToLog(task, 'Stage 2');
     mutateEndStage(task);
 
-    mutateStartStage({ task, name: 'Stage 3: Choose Strategy', progressIncrement: PROGRESS_PER_PRE_STAGE });
-    mutateAppendToLog(task, 'Stage 3: Choose Strategy');
-    const { strategy, relevantKnowledge } = await taskChooseKnowledgeAndStrategy({
+    mutateStartStage({
       task,
-      systemDescription: 'You are an AI Command Center, capable of writing linkedin posts.',
-      availableStrategies: CUSTOM_STRATEGIES,
-      availableKnowledge: EXAMPLE_KNOWLEDGE,
-      taskToPrompt: async (task: CustomTask) => {
-        return `User typed in "${task.userInput}"`;
-      },
+      name: 'Stage 3: Choose Strategy',
+      progressIncrement: PROGRESS_PER_PRE_STAGE,
     });
+    mutateAppendToLog(task, 'Stage 3: Choose Strategy');
+    const { strategy, relevantKnowledge } =
+      await taskChooseKnowledgeAndStrategy({
+        task,
+        systemDescription:
+          'You are an AI Command Center, capable of writing linkedin posts.',
+        availableStrategies: CUSTOM_STRATEGIES,
+        availableKnowledge: EXAMPLE_KNOWLEDGE,
+        taskToPrompt: async (task: CustomTask) => {
+          return `User typed in "${task.userInput}"`;
+        },
+      });
 
-    task.relevantKnowledgeIds = relevantKnowledge.map((knowledge) => knowledge.id);
+    task.relevantKnowledgeIds = relevantKnowledge.map(
+      (knowledge) => knowledge.id,
+    );
     task.strategyId = strategy.id;
     task.onChange(true);
 
@@ -135,7 +256,11 @@ const EXAMPLE_KNOWLEDGE: Knowledge[] = [
 
     switch (strategy.id) {
       case 'SimpleQuickAnswer':
-        mutateStartStage({ task, name: 'Stage 4 (SimpleQuickAnswer)', progressIncrement: PROGRESS_FOR_STRATEGY_STAGES });
+        mutateStartStage({
+          task,
+          name: 'Stage 4 (SimpleQuickAnswer)',
+          progressIncrement: PROGRESS_FOR_STRATEGY_STAGES,
+        });
         mutateAppendToLog(task, 'Stage 4 (SimpleQuickAnswer)');
         task.answer = await mutateCreateSimpleAnswer({
           task,
@@ -147,68 +272,13 @@ const EXAMPLE_KNOWLEDGE: Knowledge[] = [
         mutateEndStage(task);
         break;
       case 'DeepAnalysis':
-        mutateStartStage({ task, name: 'Stage 4 (DeepAnalysis)', progressIncrement: PROGRESS_FOR_STRATEGY_STAGES });
-        mutateAppendToLog(task, 'Stage 4 (DeepAnalysis)');
-
-        const initialSolutionsPromises = [];
-        for (let i = 0; i < 3; i++) {
-          initialSolutionsPromises.push(
-            createSolutionWithMetaWithFitness({
-              solution: await createNewSolutionFix({ task: TASK }).call(),
-              createdWith: 'initial',
-              fitnessAndNextSolutionsFunction: createFitnessAndNextSolutionsFunction({ task: { task: TASK }, maxBranching: BRANCHING }),
-            }),
-          );
-        }
-        const initialSolutions = await Promise.all(initialSolutionsPromises);
-        const finalSolution = await stepEvolve({
-          initialSolutions,
-          threshold: THRESHOLD,
-          maxNumIterations: ITERATIONS,
-          maxStaleIterations: MAX_STALE_ITERATIONS,
-          observers: [
-            {
-              onInitialSolutions: async (solutionsWithMeta, iteration) => {
-                for (const solutionWithMeta of solutionsWithMeta) {
-                  mutateAppendToLog(
-                    task,
-                    'Initial solution is: ' + solutionWithMeta.solution + ' ' + solutionWithMeta.totalFitness + ' (' + solutionWithMeta.createdWith + ')' + '.',
-                  );
-                  writeFile(path.join(__dirname, 'logs', `${iteration}.json`), JSON.stringify({ iteration, solutionsWithMeta }, null, 2), 'utf8');
-                }
-              },
-              onProgressMade: async (
-                oldSolutionsWithMeta: SolutionWithMeta<string>[],
-                accepted: SolutionWithMeta<string>[],
-                rejected: SolutionWithMeta<string>[],
-                newSolutions: SolutionWithMeta<string>[],
-                iteration: number,
-              ) => {
-                writeFile(path.join(__dirname, 'logs', `${iteration}.json`), JSON.stringify({ iteration, accepted, rejected, newSolutions }, null, 2), 'utf8');
-                //mutateAppendToLog(task, `Solutions ${oldSolutionsWithMeta.map((s) => s.solution).join(', ')}`);
-
-                for (const solutionWithMeta of accepted) {
-                  mutateAppendToLog(
-                    task,
-                    `New best ${iteration}: ${solutionWithMeta.solution} ${solutionWithMeta.totalFitness} (${solutionWithMeta.createdWith}).`,
-                  );
-                }
-              },
-              onFinalSolution: async (solutionWithMeta, iteration) => {
-                const { totalFitness, solution, iteration: solutionIteration } = solutionWithMeta;
-
-                mutateAppendToLog(task, 'Final solution is:');
-                mutateAppendToLog(task, '```');
-                mutateAppendToLog(task, solution);
-                mutateAppendToLog(task, '```');
-                mutateAppendToLog(task, 'Fitness: ' + totalFitness);
-                mutateAppendToLog(task, 'Iteration: ' + iteration + ' (Best solution found in iteration: ' + solutionIteration + ')');
-              },
-            },
-          ],
+        mutateStartStage({
+          task,
+          name: 'Stage 4 (DeepAnalysis)',
+          progressIncrement: PROGRESS_FOR_STRATEGY_STAGES,
         });
-
-        task.answer = finalSolution.solution;
+        mutateAppendToLog(task, 'Stage 4 (DeepAnalysis)');
+        await rumDeepAnalysis(task);
         task.onChange(true);
         mutateEndStage(task);
         break;

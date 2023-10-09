@@ -1,13 +1,15 @@
-import * as assert from 'assert';
 import { writeFile } from 'node:fs/promises';
+
+import * as assert from 'assert';
 import { existsSync, lstatSync, readFileSync } from 'fs';
 import * as glob from 'glob';
 import * as path from 'path';
+
 import { setupCLISystemsForTest } from '../../src/CLI/setupCLISystems';
 import { applyModificationProcedure } from '../../src/minionTasks/applyModificationProcedure';
 import { createModificationProcedure } from '../../src/minionTasks/createModificationProcedure';
-import { extractFileNameFromPath } from '../../src/utils/extractFileNameFromPath';
 import { WorkspaceFilesKnowledge } from '../../src/minionTasks/generateDescriptionForWorkspaceFiles';
+import { extractFileNameFromPath } from '../../src/utils/extractFileNameFromPath';
 
 suite('Create procedure test suite', () => {
   const baseDir = path.resolve(__dirname);
@@ -23,16 +25,28 @@ suite('Create procedure test suite', () => {
         cwd: path.join(__dirname, testDir),
       })[0];
 
-      const originalFileURI = testOriginalFilePath ? testOriginalFilePath : path.resolve(baseDir, testDir, 'original.txt');
-      const filename = testOriginalFilePath ? extractFileNameFromPath(testOriginalFilePath) : '';
+      const originalFileURI = testOriginalFilePath
+        ? testOriginalFilePath
+        : path.resolve(baseDir, testDir, 'original.txt');
+      const filename = testOriginalFilePath
+        ? extractFileNameFromPath(testOriginalFilePath)
+        : '';
       const currentCode = readFileSync(originalFileURI, 'utf8');
-      const modification = readFileSync(path.resolve(baseDir, testDir, 'modification.txt'), 'utf8');
-      const expectedOutput = readFileSync(path.resolve(baseDir, testDir, 'result.txt'), 'utf8');
-      const knowledegePath = path.resolve(baseDir, testDir, 'knowledge.json');
+      const modification = readFileSync(
+        path.resolve(baseDir, testDir, 'modification.txt'),
+        'utf8',
+      );
+      const expectedOutput = readFileSync(
+        path.resolve(baseDir, testDir, 'result.txt'),
+        'utf8',
+      );
+      const knowledgePath = path.resolve(baseDir, testDir, 'knowledge.json');
       let knowledge: WorkspaceFilesKnowledge[] = [];
 
-      if (existsSync(knowledegePath)) {
-        knowledge = JSON.parse(readFileSync(knowledegePath, 'utf8'));
+      if (existsSync(knowledgePath)) {
+        knowledge = JSON.parse(
+          readFileSync(knowledgePath, 'utf8'),
+        ) as WorkspaceFilesKnowledge[];
       }
 
       const { result: procedure } = await createModificationProcedure(
@@ -44,11 +58,19 @@ suite('Create procedure test suite', () => {
         knowledge,
       );
 
-      writeFile(path.resolve(baseDir, testDir, 'procedure.txt'), procedure, 'utf-8');
+      writeFile(
+        path.resolve(baseDir, testDir, 'procedure.txt'),
+        procedure,
+        'utf-8',
+      );
 
       let modifiedContent;
       try {
-        modifiedContent = await applyModificationProcedure(currentCode, procedure, 'typescript');
+        modifiedContent = await applyModificationProcedure(
+          currentCode,
+          procedure,
+          'typescript',
+        );
       } catch (e) {
         const error = e as Error;
         modifiedContent = error.toString();

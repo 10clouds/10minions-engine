@@ -1,15 +1,19 @@
 import { z } from 'zod';
+
+import { CriteriaRatings, MAX_POINTS } from '../../score/rateMinionTask';
 import { createFullPromptFromSections } from '../../src/gpt/createFullPromptFromSections';
 import { gptExecute } from '../../src/gpt/gptExecute';
 import { GPTMode } from '../../src/gpt/types';
 import { Fix, SolutionWithMeta } from '../../src/stepEvolve/FitnessFunction';
 import { getRandomElement } from '../../src/utils/random/getRandomElement';
 import { shuffleArray } from '../../src/utils/random/shuffleArray';
-import { MinionTask } from '../minionTasks/MinionTask';
-import { CriteriaRatings, MAX_POINTS } from '../../score/rateMinionTask';
-import { MinionTaskSolution } from '../minionTasks/advancedCodeChangeStrategy';
-import { improveSolutionFix } from './fixImproveSolution';
 import { countTokens } from '../gpt/countTokens';
+import { MinionTaskSolution } from '../minionTasks/advancedCodeChangeStrategy';
+import { MinionTask } from '../minionTasks/MinionTask';
+import {
+  improveSolutionFix,
+  ImproveSolutionFixResult,
+} from './fixImproveSolution';
 
 export async function createFixesForSolution(
   task: MinionTask,
@@ -18,10 +22,14 @@ export async function createFixesForSolution(
 ): Promise<Fix<MinionTaskSolution>[]> {
   let averageCriteriaRating = 0;
   if (criteriaWithRatings.length > 0) {
-    averageCriteriaRating = criteriaWithRatings.map((c) => c.rating).reduce((a, b) => a + b, 0) / criteriaWithRatings.length;
+    averageCriteriaRating =
+      criteriaWithRatings.map((c) => c.rating).reduce((a, b) => a + b, 0) /
+      criteriaWithRatings.length;
   }
   const resultingCode = solutionWithMeta.solution.resultingCode;
-  const criteriaWithBelowAverageRating = criteriaWithRatings.filter((c) => c.rating <= averageCriteriaRating);
+  const criteriaWithBelowAverageRating = criteriaWithRatings.filter(
+    (c) => c.rating <= averageCriteriaRating,
+  );
   const { modificationDescription, userQuery } = task;
 
   const fullPrompt = createFullPromptFromSections({
@@ -36,7 +44,10 @@ export async function createFixesForSolution(
       USER_QUERY: userQuery,
       SOLUTION: resultingCode,
       CRITERIA: shuffleArray(criteriaWithBelowAverageRating.slice())
-        .map(({ criteria }) => `Max of ${MAX_POINTS}pts if the SOLUTION passes this test: '${criteria}'`)
+        .map(
+          ({ criteria }) =>
+            `Max of ${MAX_POINTS}pts if the SOLUTION passes this test: '${criteria}'`,
+        )
         .join('\n'),
     },
   });
@@ -48,12 +59,23 @@ export async function createFixesForSolution(
     outputName: 'suggestions',
     outputSchema: z
       .object({
-        suggestions: z.array(z.string().describe('Suggestion to the user, what should be improved in order to maximize criteria.')).describe('Suggestions'),
+        suggestions: z
+          .array(
+            z
+              .string()
+              .describe(
+                'Suggestion to the user, what should be improved in order to maximize criteria.',
+              ),
+          )
+          .describe('Suggestions'),
       })
       .describe('Suggestions'),
   });
 
-  const result = criteriaWithBelowAverageRating.length > 0 ? gptResult : { result: { suggestions: [], cost: 0 } };
+  const result =
+    criteriaWithBelowAverageRating.length > 0
+      ? gptResult
+      : { result: { suggestions: [], cost: 0 } };
 
   const allSuggestions = [...result.result.suggestions];
   task.totalCost += gptResult.cost;
@@ -61,8 +83,16 @@ export async function createFixesForSolution(
   // TODO: add maintain suggestions
   // TODO: add createNewSolutionFix
   const fixes = [
-    ...allSuggestions.map((suggestions) => improveSolutionFix({ task, solutionWithMeta, suggestions })),
-    ...Array(3).fill(improveSolutionFix({ task, solutionWithMeta, suggestions: [...allSuggestions].join('\n') })),
+    ...allSuggestions.map((suggestions) =>
+      improveSolutionFix({ task, solutionWithMeta, suggestions }),
+    ),
+    ...Array<ImproveSolutionFixResult>(3).fill(
+      improveSolutionFix({
+        task,
+        solutionWithMeta,
+        suggestions: [...allSuggestions].join('\n'),
+      }),
+    ),
   ];
 
   return fixes;

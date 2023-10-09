@@ -1,9 +1,8 @@
-import { ApplicationStatus, MinionTask } from './MinionTask';
 import { getEditorManager } from '../managers/EditorManager';
 import { getMinionTasksManager } from '../managers/MinionTasksManager';
-import { MINION_TASK_STRATEGY_ID } from './strategies';
-import { Knowledge } from '../strategyAndKnowledge/Knowledge';
 import { WorkspaceFilesKnowledge } from './generateDescriptionForWorkspaceFiles';
+import { ApplicationStatus, MinionTask } from './MinionTask';
+import { MINION_TASK_STRATEGY_ID } from './strategies';
 
 export type SerializedMinionTask = {
   id: string;
@@ -32,7 +31,9 @@ export type SerializedMinionTask = {
   relevantKnowledge?: WorkspaceFilesKnowledge[];
 };
 
-export function serializeMinionTask(minionTask: MinionTask): SerializedMinionTask {
+export function serializeMinionTask(
+  minionTask: MinionTask,
+): SerializedMinionTask {
   return {
     id: minionTask.id,
     minionIndex: minionTask.minionIndex,
@@ -86,7 +87,8 @@ export function deserializeMinionTask(data: SerializedMinionTask): MinionTask {
     modificationProcedure: data.modificationProcedure,
     inlineMessage: data.inlineMessage,
     executionStage: data.executionStage,
-    strategyId: data.strategy === null ? '' : (data.strategy as MINION_TASK_STRATEGY_ID),
+    strategyId:
+      data.strategy === null ? '' : (data.strategy as MINION_TASK_STRATEGY_ID),
     onChanged: async (important: boolean) => {
       getMinionTasksManager().updateExecution(important, minionTask);
     },

@@ -15,4 +15,4 @@ export type MultiCriterion<S> = {
   }[];
   calculate: (solution: S) => number;
   suggestions: (solution: S) => string[];
-}
+};

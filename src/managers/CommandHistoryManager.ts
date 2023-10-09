@@ -3,7 +3,7 @@ export interface CommandHistoryManager {
   sendCommandSuggestions(input: string): void;
 }
 
-let globalManager: CommandHistoryManager;
+let globalManager: CommandHistoryManager | null = null;
 
 export function setCommandHistoryManager(manager: CommandHistoryManager) {
   if (globalManager) {
@@ -13,5 +13,9 @@ export function setCommandHistoryManager(manager: CommandHistoryManager) {
 }
 
 export function getCommandHistoryManager(): CommandHistoryManager {
+  if (!globalManager) {
+    throw new Error(`CommandHistoryManager is not set.`);
+  }
+
   return globalManager;
 }

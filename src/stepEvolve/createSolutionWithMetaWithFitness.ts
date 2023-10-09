@@ -1,4 +1,7 @@
-import { FitnessAndNextSolutionsFunction, SolutionWithMeta } from './FitnessFunction';
+import {
+  FitnessAndNextSolutionsFunction,
+  SolutionWithMeta,
+} from './FitnessFunction';
 
 export async function createSolutionWithMetaWithFitness<S>({
   solution,

@@ -1,0 +1,46 @@
+// module.exports = {
+//   root: true,
+//   parser: '@typescript-eslint/parser',
+//   parserOptions: {
+//     tsconfigRootDir: __dirname,
+//     ecmaVersion: 6,
+//     sourceType: 'module',
+//   },
+//   plugins: ['@typescript-eslint/eslint-plugin'],
+//   extends: ['plugin:@typescript-eslint/recommended', 'plugin:prettier/recommended'],
+//   rules: {
+//     'no-unused-vars': 'off',
+//     '@typescript-eslint/no-unused-vars': 'off',
+//     '@typescript-eslint/naming-convention': ['warn', { selector: 'enumMember', format: ['UPPER_CASE'] }],
+//     '@typescript-eslint/semi': 'warn',
+//     curly: 'off',
+//     eqeqeq: 'warn',
+//     'no-throw-literal': 'warn',
+//     semi: 'off',
+//     '@typescript-eslint/no-empty-function': 'off',
+//     'prettier/prettier': 'warn',
+//     'no-return-await': 'warn',
+//   },
+//   ignorePatterns: ['out', 'dist', '**/*.d.ts'],
+// };
+
+{
+  "root": true,
+  "extends": ["@10clouds/eslint-config", "plugin:prettier/recommended"],
+  "plugins": ["prettier", "simple-import-sort", "unused-imports"],
+  "rules": {
+    "prettier/prettier": "warn",
+    "@typescript-eslint/no-floating-promises": "off", 
+    "@typescript-eslint/no-invalid-this": "off",
+    "@typescript-eslint/no-unnecessary-condition": "off",
+    "simple-import-sort/imports": "warn",
+    "simple-import-sort/exports": "warn",
+    "unused-imports/no-unused-imports": "warn",
+    "newline-before-return": "warn",
+    "no-empty-function": "off"
+  },
+  "parserOptions": {
+    "project": true
+  },
+  "ignorePatterns": ["out", "dist", "**/*.d.ts"]
+}

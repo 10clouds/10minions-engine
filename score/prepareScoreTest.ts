@@ -1,27 +1,51 @@
+import path from 'path';
+import { z } from 'zod';
+
 import { initMinionTask } from '../score/initTestMinionTask';
-import { generateScoreTests } from './generateScoreTests';
-import { initCLISystems, setupCLISystemsForTest } from '../src/CLI/setupCLISystems';
+import {
+  initCLISystems,
+  setupCLISystemsForTest,
+} from '../src/CLI/setupCLISystems';
 import { countTokens } from '../src/gpt/countTokens';
 import { gptExecute } from '../src/gpt/gptExecute';
 import { GPTMode } from '../src/gpt/types';
-import { z } from 'zod';
-import { ScoreTest } from './types';
+import {
+  generateScoreTests,
+  GenerateScoreTestsResult,
+} from './generateScoreTests';
 import { TestRequiredData } from './prepareTestFiles';
-import path from 'path';
+import { ScoreTest } from './types';
 
 const ITERATIONS = 6;
 
-export const prepareScoreTest = async (userQuery: string, fileName: string, minionTask: TestRequiredData) => {
+export const prepareScoreTest = async (
+  userQuery: string,
+  fileName: string,
+  minionTask: TestRequiredData,
+) => {
   initCLISystems();
   setupCLISystemsForTest();
   try {
     let allTestCases: ScoreTest[] = [];
     for (let i = 0; i < ITERATIONS; i++) {
-      const minionTaskFilePath = path.join(__dirname, 'score', `${fileName}/original.txt`);
-      const { execution } = await initMinionTask(userQuery, minionTaskFilePath, undefined, fileName);
+      const minionTaskFilePath = path.join(
+        __dirname,
+        'score',
+        `${fileName}/original.txt`,
+      );
+      const { execution } = await initMinionTask(
+        userQuery,
+        minionTaskFilePath,
+        undefined,
+        fileName,
+      );
       const tests = await generateScoreTests(execution, true);
       if (tests?.result) {
-        allTestCases = [...allTestCases, ...JSON.parse(tests?.result).items];
+        allTestCases = [
+          ...allTestCases,
+          ...((JSON.parse(tests.result) as GenerateScoreTestsResult)
+            .items as ScoreTest[]),
+        ];
       }
     }
 
