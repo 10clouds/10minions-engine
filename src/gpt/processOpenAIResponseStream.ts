@@ -23,8 +23,12 @@ export async function processOpenAIResponseStream({
   let fullContent = '';
   let chunkBuffer = '';
 
-  return await new Promise<string>((resolve, reject) => {
-    stream?.on('data', async (value) => {
+  return new Promise<string>((resolve, reject) => {
+    if (!stream) {
+      return reject('No stream');
+    }
+
+    stream.on('data', async (value) => {
       try {
         if (isCancelled() || controller.signal.aborted) {
           stream.removeAllListeners();
@@ -60,7 +64,7 @@ export async function processOpenAIResponseStream({
       }
     });
 
-    stream?.on('end', () => {
+    stream.on('end', () => {
       if (isCancelled() || controller.signal.aborted) {
         stream.removeAllListeners();
         reject(CANCELED_STAGE_NAME);
@@ -69,7 +73,7 @@ export async function processOpenAIResponseStream({
       resolve(fullContent);
     });
 
-    stream?.on('error', (err) => {
+    stream.on('error', (err) => {
       console.error('Error: ', err);
       reject(err);
     });

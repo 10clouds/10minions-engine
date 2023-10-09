@@ -1,7 +1,6 @@
 import fetch from 'node-fetch';
 import { z } from 'zod';
 import zodToJsonSchema from 'zod-to-json-schema';
-import { DEBUG_RESPONSES } from '../const';
 import { getAnalyticsManager } from '../managers/AnalyticsManager';
 import { getOpenAICacheManager } from '../managers/OpenAICacheManager';
 import { isZodString } from '../utils/isZodString';
@@ -12,6 +11,7 @@ import { FAST_MODE_TOKENS, GPTExecuteRequestData, GPTExecuteRequestMessage, GPTE
 import { countTokens } from './countTokens';
 
 let openAIApiKey: string | undefined;
+const MAX_REQUEST_ATTEMPTS = 3;
 
 export function setOpenAIApiKey(apiKey: string) {
   openAIApiKey = apiKey;
@@ -31,7 +31,6 @@ function convertResult<OutputTypeSchema extends z.ZodType>(result: string, outpu
     }
   }
 }
-
 export async function gptExecute<OutputTypeSchema extends z.ZodType>({
   fullPrompt,
   onChunk = async () => {},
@@ -99,9 +98,6 @@ export async function gptExecute<OutputTypeSchema extends z.ZodType>({
         }),
   };
 
-  if (DEBUG_RESPONSES) {
-    // console.log('REQUEST DATA:', requestData);
-  }
   const cachedResult = await getOpenAICacheManager().getCachedResult(requestData);
 
   if (cachedResult && typeof cachedResult === 'string') {
@@ -112,7 +108,7 @@ export async function gptExecute<OutputTypeSchema extends z.ZodType>({
     };
   }
 
-  for (let attempt = 1; attempt <= 3; attempt++) {
+  for (let attempt = 1; attempt <= MAX_REQUEST_ATTEMPTS; attempt++) {
     try {
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -145,7 +141,7 @@ export async function gptExecute<OutputTypeSchema extends z.ZodType>({
         error: String(error),
       });
 
-      if (attempt === 3) {
+      if (attempt === MAX_REQUEST_ATTEMPTS) {
         throw error;
       }
     }

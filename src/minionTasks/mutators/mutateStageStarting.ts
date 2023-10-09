@@ -15,5 +15,5 @@ export async function mutateStageStarting(task: MinionTask) {
   mutateAppendToLog(task, 'Task: ' + task.userQuery + '');
   mutateAppendToLog(task, '');
 
-  mutateGenerateShortName(task); // Intentionally no await
+  mutateGenerateShortName(task);
 }

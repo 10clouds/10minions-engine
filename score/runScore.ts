@@ -1,7 +1,8 @@
 import { mapLimit } from 'async';
 import chalk from 'chalk';
 import { OptionValues, program } from 'commander';
-import fs from 'fs';
+import { existsSync, unlinkSync } from 'fs';
+import { readFile, writeFile } from 'node:fs/promises';
 import * as glob from 'glob';
 import { Validator } from 'jsonschema'; // Imported the jsonschema library
 import path from 'path';
@@ -37,7 +38,7 @@ async function runTest({
   iterations?: number;
   testQueueName?: string;
 }): Promise<void> {
-  const tests: TestDefinition[] = JSON.parse(fs.readFileSync(path.join(__dirname, 'score', `${fileName}/tests.json`), 'utf8'));
+  const tests: TestDefinition[] = JSON.parse(await readFile(path.join(__dirname, 'score', `${fileName}/tests.json`), 'utf8'));
 
   // Create a validator instance
   const validator = new Validator();
@@ -52,12 +53,12 @@ async function runTest({
     }
   }
   const testPath = path.join(__dirname, 'score', fileName);
-  const userQuery = fs.readFileSync(path.join(testPath, `userQuery.txt`), 'utf8');
+  const userQuery = await readFile(path.join(testPath, `userQuery.txt`), 'utf8');
   const knowledegePath = path.resolve(__dirname, testPath, 'knowledge.json');
   let knowledge: WorkspaceFilesKnowledge[] = [];
 
-  if (fs.existsSync(knowledegePath)) {
-    knowledge = JSON.parse(fs.readFileSync(knowledegePath, 'utf8'));
+  if (existsSync(knowledegePath)) {
+    knowledge = JSON.parse(await readFile(knowledegePath, 'utf8'));
   }
 
   const statistics = {
@@ -69,14 +70,14 @@ async function runTest({
   console.log(`Running test for '${fileName} (${iterations} iterations)'`);
   const directoryPath = path.resolve(__dirname, `score/${fileName}/temp.txt`);
   const testInfoPath = path.resolve(__dirname, `score/${fileName}/testInfo.json`);
-  const originalFileContent = fs.readFileSync(path.join(__dirname, 'score', `${fileName}/original.txt`), 'utf8');
-  const testInfo = JSON.parse(fs.readFileSync(path.join(__dirname, 'score', `${fileName}/testInfo.json`), 'utf8'));
+  const originalFileContent = await readFile(path.join(__dirname, 'score', `${fileName}/original.txt`), 'utf8');
+  const testInfo = JSON.parse(await readFile(path.join(__dirname, 'score', `${fileName}/testInfo.json`), 'utf8'));
 
   for (let i = 0; i < iterations; i++) {
     setupCLISystemsForTest();
     logToFile(`Iteration ${i + 1} of ${iterations}`);
     console.log('ITERATION: ', i, ` of ${fileName}`);
-    fs.writeFileSync(directoryPath, originalFileContent);
+    writeFile(directoryPath, originalFileContent, 'utf8');
     const minionTaskFilePath = path.join(__dirname, 'score', `${fileName}/temp.txt`);
     const { execution } = await initMinionTask(userQuery, minionTaskFilePath, undefined, fileName);
     execution.relevantKnowledge = knowledge;
@@ -97,7 +98,7 @@ async function runTest({
       statistics.passed++;
     }
 
-    fs.unlinkSync(directoryPath);
+    unlinkSync(directoryPath);
   }
 
   const score = ((100 * statistics.passed) / statistics.total).toFixed();
@@ -111,7 +112,7 @@ async function runTest({
       iterations,
     },
   ];
-  fs.writeFileSync(testInfoPath, JSON.stringify(testInfo));
+  writeFile(testInfoPath, JSON.stringify(testInfo), 'utf8');
 
   console.log(`'${chalk.green(fileName)}' score: ${score}%`);
   logToFile(`'${fileName}' score: ${score}%`);

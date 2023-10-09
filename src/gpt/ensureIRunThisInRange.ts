@@ -15,6 +15,11 @@ interface EnsureICanRunThisInRangeParams {
  * for the specified AI model.
  */
 export function ensureIRunThisInRange({ prompt, minTokens, preferedTokens, mode }: EnsureICanRunThisInRangeParams): number {
+  /**
+   * @EXTRA_BUFFER_FOR_ENCODING_OVERHEAD provides a safety margin for token encoding overhead,
+   * ensuring you have enough tokens for the operation while accounting for potential
+   * additional tokens needed during encoding.
+   */
   const EXTRA_BUFFER_FOR_ENCODING_OVERHEAD = 50;
 
   minTokens = Math.ceil(minTokens);

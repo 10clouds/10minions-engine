@@ -7,7 +7,8 @@ type CommandSegment = {
   followedBy?: CommandSegment[];
   execute?: (currentContent: string, languageId: string, params: { [key: string]: string }) => Promise<string>;
 };
-
+const REPLACE_REGEX = /^(?:(?!```).)*```[^\n]*\n(.*?)\n```(?:(?!```).)*$/s;
+const REPLACE_VALUE = '$1';
 const COMMAND_STRUCTURE: CommandSegment[] = [
   {
     name: 'REPLACE',
@@ -18,8 +19,8 @@ const COMMAND_STRUCTURE: CommandSegment[] = [
           {
             name: 'END_REPLACE',
             execute: async (currentContent, languageId, params) => {
-              const findText = params.REPLACE.replace(/^(?:(?!```).)*```[^\n]*\n(.*?)\n```(?:(?!```).)*$/s, '$1');
-              const withText = params.WITH.replace(/^(?:(?!```).)*```[^\n]*\n(.*?)\n```(?:(?!```).)*$/s, '$1');
+              const findText = params.REPLACE.replace(REPLACE_REGEX, REPLACE_VALUE);
+              const withText = params.WITH.replace(REPLACE_REGEX, REPLACE_VALUE);
               const replacementArray = await fuzzyReplaceTextInner({
                 currentCode: currentContent,
                 findText,
@@ -43,7 +44,7 @@ const COMMAND_STRUCTURE: CommandSegment[] = [
       {
         name: 'END_REPLACE_ALL',
         execute: async (currentContent, languageId, params) => {
-          return params.REPLACE_ALL.replace(/^(?:(?!```).)*```[^\n]*\n(.*?)\n```(?:(?!```).)*$/s, '$1');
+          return params.REPLACE_ALL.replace(REPLACE_REGEX, REPLACE_VALUE);
         },
       },
     ],
@@ -57,8 +58,8 @@ const COMMAND_STRUCTURE: CommandSegment[] = [
           {
             name: 'END_INSERT',
             execute: async (currentContent, languageId, params) => {
-              const beforeText = params.BEFORE.replace(/^(?:(?!```).)*```[^\n]*\n(.*?)\n```(?:(?!```).)*$/s, '$1');
-              const insertText = params.INSERT.replace(/^(?:(?!```).)*```[^\n]*\n(.*?)\n```(?:(?!```).)*$/s, '$1');
+              const beforeText = params.BEFORE.replace(REPLACE_REGEX, REPLACE_VALUE);
+              const insertText = params.INSERT.replace(REPLACE_REGEX, REPLACE_VALUE);
               const replacementArray = await fuzzyReplaceTextInner({
                 currentCode: currentContent,
                 findText: beforeText,
@@ -83,40 +84,6 @@ const COMMAND_STRUCTURE: CommandSegment[] = [
         name: 'END_MODIFY_OTHER',
         execute: async (currentContent, languageId, params) => {
           return getCommentForLanguage(languageId, params.MODIFY_OTHER) + '\n' + currentContent;
-        },
-      },
-    ],
-  },
-
-  {
-    name: 'RENAME',
-    params: ['from', 'to'],
-    followedBy: [
-      {
-        name: 'END_RENAME',
-        execute: async (currentContent) => {
-          //function params: languageId, params
-          // const context = params.RENAME.trim();
-
-          return currentContent;
-
-          /*
-
-      TODO:
-      const document = editor.document;
-      const position = editor.selection.active;
-
-      const oldFunctionName = "oldFunction";
-      const newFunctionName = "newFunction";
-
-      vscode.commands.executeCommand(
-        "editor.action.rename",
-        document.uri,
-        position,
-        {
-          newName: newFunctionName,
-        }
-      );*/
         },
       },
     ],

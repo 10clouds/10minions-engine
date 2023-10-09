@@ -1,4 +1,5 @@
-import fs, { writeFileSync } from 'fs';
+import fs from 'fs';
+import { writeFile } from 'node:fs/promises';
 import path from 'path';
 import { SolutionWithMeta } from '../stepEvolve/FitnessFunction';
 import { createSolutionWithMetaWithFitness } from '../stepEvolve/createSolutionWithMetaWithFitness';
@@ -104,9 +105,10 @@ export const advancedCodeChangeStrategy = async (task: MinionTask, test?: boolea
           if (!fs.existsSync(logsPath)) {
             fs.mkdirSync(logsPath, { recursive: true });
           }
-          writeFileSync(
+          writeFile(
             path.join(__dirname, 'logs', `${iteration}-${dtFormat(new Date(), 'YYYY-MM-DD_HH-mm-ss')}.json`),
             JSON.stringify({ iteration, solutionsWithMeta }, null, 2),
+            'utf8',
           );
         },
         onProgressMade: async (
@@ -116,7 +118,7 @@ export const advancedCodeChangeStrategy = async (task: MinionTask, test?: boolea
           newSolutions: MinionTaskSolutionWithMeta[],
           iteration: number,
         ) => {
-          writeFileSync(path.join(__dirname, 'logs', `${iteration}.json`), JSON.stringify({ iteration, accepted, rejected, newSolutions }, null, 2));
+          writeFile(path.join(__dirname, 'logs', `${iteration}.json`), JSON.stringify({ iteration, accepted, rejected, newSolutions }, null, 2), 'utf8');
           mutateAppendToLog(task, `Solutions ${oldSolutionsWithMeta.map((s) => s.solution).join(', ')}`);
 
           for (const solutionWithMeta of accepted) {

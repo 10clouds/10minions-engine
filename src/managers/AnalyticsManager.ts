@@ -6,7 +6,6 @@ import { serializeMinionTask } from '../minionTasks/SerializedMinionTask';
 
 import * as crypto from 'crypto';
 
-//TODO: consider put it to env file before open source
 const firebaseConfig = {
   apiKey: 'AIzaSyCM95vbb8kEco1Tyq23wd_7ryVgbzQiCqk',
   authDomain: 'minions-diagnostics.firebaseapp.com',

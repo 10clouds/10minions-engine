@@ -1,4 +1,5 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { mkdirSync, readFileSync } from 'fs';
+import { writeFile } from 'node:fs/promises';
 import path from 'path';
 import { initCLISystems } from '../../src/CLI/setupCLISystems';
 import { SolutionWithMeta } from '../../src/stepEvolve/FitnessFunction';
@@ -159,9 +160,7 @@ const EXAMPLE_KNOWLEDGE: Knowledge[] = [
             }),
           );
         }
-
         const initialSolutions = await Promise.all(initialSolutionsPromises);
-
         const finalSolution = await stepEvolve({
           initialSolutions,
           threshold: THRESHOLD,
@@ -175,8 +174,8 @@ const EXAMPLE_KNOWLEDGE: Knowledge[] = [
                     task,
                     'Initial solution is: ' + solutionWithMeta.solution + ' ' + solutionWithMeta.totalFitness + ' (' + solutionWithMeta.createdWith + ')' + '.',
                   );
+                  writeFile(path.join(__dirname, 'logs', `${iteration}.json`), JSON.stringify({ iteration, solutionsWithMeta }, null, 2), 'utf8');
                 }
-                writeFileSync(path.join(__dirname, 'logs', `${iteration}.json`), JSON.stringify({ iteration, solutionsWithMeta }, null, 2));
               },
               onProgressMade: async (
                 oldSolutionsWithMeta: SolutionWithMeta<string>[],
@@ -185,7 +184,7 @@ const EXAMPLE_KNOWLEDGE: Knowledge[] = [
                 newSolutions: SolutionWithMeta<string>[],
                 iteration: number,
               ) => {
-                writeFileSync(path.join(__dirname, 'logs', `${iteration}.json`), JSON.stringify({ iteration, accepted, rejected, newSolutions }, null, 2));
+                writeFile(path.join(__dirname, 'logs', `${iteration}.json`), JSON.stringify({ iteration, accepted, rejected, newSolutions }, null, 2), 'utf8');
                 //mutateAppendToLog(task, `Solutions ${oldSolutionsWithMeta.map((s) => s.solution).join(', ')}`);
 
                 for (const solutionWithMeta of accepted) {

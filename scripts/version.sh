@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
+# Get the new version without 'v'
 NEW_VERSION="${1//v}"
-CURRENT_VERSION="$(jq -r '.version' package.json)"
+jq ".version = \"$NEW_VERSION\"" package.json > package.json.tmp
 
-sed -i "s/$CURRENT_VERSION/$NEW_VERSION/g" package.json
+mv package.json.tmp package.json

@@ -1,9 +1,4 @@
 export interface LogProvider {
-  /*
-    get logURI() {
-    return `10minions-log:minionTaskId/${this.id}/${('[' + this.shortName + '].md').replace(/ /g, '%20')}`;
-  }
-  */
   reportChangeInTask(taskId: string): void;
 }
 
