@@ -3,7 +3,7 @@ import { WorkspaceFilesKnowledge } from '../../minionTasks/generateDescriptionFo
 import { calculateAndFormatExecutionTime } from '../../utils/calculateAndFormatExecutionTime';
 import { mutateAppendToLog } from '../logs/mutators/mutateAppendToLog';
 import { TaskContext } from '../TaskContext';
-import { TaskCanceled } from '../utils/TaskCanceled';
+import { TaskCanceledError } from '../utils/TaskCanceled';
 import { mutateStopExecution } from './mutateStopExecution';
 
 export function mutateRunTaskStages<TC extends TaskContext>(
@@ -29,7 +29,7 @@ export function mutateRunTaskStages<TC extends TaskContext>(
       execute(task, getExternalData, test);
       mutateStopExecution(task);
     } catch (error) {
-      if (!(error instanceof TaskCanceled)) {
+      if (!(error instanceof TaskCanceledError)) {
         getEditorManager().showErrorMessage(`Error in execution: ${error}`);
         console.error('Error in execution', error);
       }
