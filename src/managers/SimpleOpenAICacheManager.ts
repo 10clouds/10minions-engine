@@ -1,4 +1,5 @@
 import * as admin from 'firebase-admin';
+
 import { getAnalyticsManager } from './AnalyticsManager';
 
 // It is used to cache the results of the OpenAI API calls and it is imported by project that use this npm package.
@@ -16,14 +17,19 @@ export class SimpleOpenAICacheManager {
     }
   }
 
-  public async getCachedResult(requestData: object): Promise<string | undefined> {
+  public async getCachedResult(
+    requestData: object,
+  ): Promise<string | undefined> {
     if (!this.firestore) {
       return undefined;
     }
 
     const requestDataHash = getAnalyticsManager().getRequestHash(requestData);
 
-    const snapshot = await this.firestore.collection('openAICalls').where('requestDataHash', '==', requestDataHash).get();
+    const snapshot = await this.firestore
+      .collection('openAICalls')
+      .where('requestDataHash', '==', requestDataHash)
+      .get();
 
     if (snapshot.empty) {
       return undefined;
@@ -38,6 +44,7 @@ export class SimpleOpenAICacheManager {
     });
     // TODO: add explenation why this is done like that
     const randomIndex = Math.floor(Math.random() * data.length);
+
     return data[randomIndex];
   }
 }

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+
 import { createFullPromptFromSections } from '../../src/gpt/createFullPromptFromSections';
 import { gptExecute } from '../../src/gpt/gptExecute';
 import { GPTMode } from '../../src/gpt/types';
@@ -6,23 +7,34 @@ import { Fix, SolutionWithMeta } from '../../src/stepEvolve/FitnessFunction';
 import { getRandomElement } from '../../src/utils/random/getRandomElement';
 import { shuffleArray } from '../../src/utils/random/shuffleArray';
 import { Criterion } from './Criterion';
-import { TaskDefinition } from './TaskDefinition';
 import { createNewSolutionFix } from './fixes/fixCreateNewSolution';
 import { improveSolutionFix } from './fixes/fixImproveSolution';
+import { TaskDefinition } from './TaskDefinition';
 
 export async function createFixesForSolution(
   task: TaskDefinition,
   solutionWithMeta: SolutionWithMeta<string>,
-  criteriaWithRatings: (Criterion<string> & { rating: number; reasoning: string })[],
+  criteriaWithRatings: (Criterion<string> & {
+    rating: number;
+    reasoning: string;
+  })[],
 ): Promise<Fix<string>[]> {
   let averageCriteriaRating = 0;
   if (criteriaWithRatings.length > 0) {
-    averageCriteriaRating = criteriaWithRatings.map((c) => c.rating).reduce((a, b) => a + b, 0) / criteriaWithRatings.length;
+    averageCriteriaRating =
+      criteriaWithRatings.map((c) => c.rating).reduce((a, b) => a + b, 0) /
+      criteriaWithRatings.length;
   }
 
-  const criteriaWithBelowAverageRating = criteriaWithRatings.filter((c) => c.rating <= averageCriteriaRating);
-  const criteriaGPT = criteriaWithBelowAverageRating.filter((c) => c.suggestions === 'GPT');
-  const criteriaCalculate = criteriaWithBelowAverageRating.filter((c) => c.suggestions !== 'GPT');
+  const criteriaWithBelowAverageRating = criteriaWithRatings.filter(
+    (c) => c.rating <= averageCriteriaRating,
+  );
+  const criteriaGPT = criteriaWithBelowAverageRating.filter(
+    (c) => c.suggestions === 'GPT',
+  );
+  const criteriaCalculate = criteriaWithBelowAverageRating.filter(
+    (c) => c.suggestions !== 'GPT',
+  );
 
   const result =
     criteriaGPT.length > 0
@@ -38,7 +50,10 @@ export async function createFixesForSolution(
               PROBLEM: task.task,
               SOLUTION: solutionWithMeta.solution,
               CRITERIA: shuffleArray(criteriaGPT.slice())
-                .map((c) => `${c.name} - Max of ${c.maxPoints}pts if ${c.maxPointsIf}`)
+                .map(
+                  (c) =>
+                    `${c.name} - Max of ${c.maxPoints}pts if ${c.maxPointsIf}`,
+                )
                 .join('\n'),
             },
           }),
@@ -48,17 +63,29 @@ export async function createFixesForSolution(
           outputSchema: z
             .object({
               suggestions: z
-                .array(z.string().describe('Suggestion to the user, what should be improved in order to maximize criteria.'))
+                .array(
+                  z
+                    .string()
+                    .describe(
+                      'Suggestion to the user, what should be improved in order to maximize criteria.',
+                    ),
+                )
                 .describe('Suggestions'),
             })
             .describe('Suggestions'),
         })
       : { result: { suggestions: [] } };
 
-  const criteriaWithAboveAverageRating = criteriaWithRatings.filter((c) => c.rating > averageCriteriaRating);
+  const criteriaWithAboveAverageRating = criteriaWithRatings.filter(
+    (c) => c.rating > averageCriteriaRating,
+  );
   const allSuggestions = [
     ...result.result.suggestions,
-    ...criteriaCalculate.map((c) => (c.suggestions !== 'GPT' ? c.suggestions(solutionWithMeta.solution) : [])).flat(),
+    ...criteriaCalculate
+      .map((c) =>
+        c.suggestions !== 'GPT' ? c.suggestions(solutionWithMeta.solution) : [],
+      )
+      .flat(),
   ];
 
   console.log('allSuggestions', allSuggestions);
@@ -66,11 +93,25 @@ export async function createFixesForSolution(
   const fixes = [
     createNewSolutionFix(task),
     ...allSuggestions.map((suggestions) =>
-      improveSolutionFix({ task, solutionWithMeta, suggestions: [suggestions, ...criteriaWithAboveAverageRating.map((c) => c.maintain)].join('\n') }),
+      improveSolutionFix({
+        task,
+        solutionWithMeta,
+        suggestions: [
+          suggestions,
+          ...criteriaWithAboveAverageRating.map((c) => c.maintain),
+        ].join('\n'),
+      }),
     ),
-    ...Array(3).fill(
-      improveSolutionFix({ task, solutionWithMeta, suggestions: [...allSuggestions, ...criteriaWithAboveAverageRating.map((c) => c.maintain)].join('\n') }),
-    ),
+    ...(Array(3).fill(
+      improveSolutionFix({
+        task,
+        solutionWithMeta,
+        suggestions: [
+          ...allSuggestions,
+          ...criteriaWithAboveAverageRating.map((c) => c.maintain),
+        ].join('\n'),
+      }),
+    ) as Fix<string>[]),
   ];
 
   return fixes;

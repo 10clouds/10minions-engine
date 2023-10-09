@@ -2,7 +2,10 @@ import { Strategy } from '../strategyAndKnowledge/Strategy';
 
 export type MINION_TASK_STRATEGY_ID = 'AnswerQuestion' | 'CodeChange';
 
-export const MINION_TASK_STRATEGY_IDS = ['AnswerQuestion', 'CodeChange'] as const;
+export const MINION_TASK_STRATEGY_IDS = [
+  'AnswerQuestion',
+  'CodeChange',
+] as const;
 
 export const MINION_TASK_STRATEGIES: Strategy[] = [
   {

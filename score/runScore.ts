@@ -1,21 +1,32 @@
+import { readFile, writeFile } from 'node:fs/promises';
+
 import { mapLimit } from 'async';
 import chalk from 'chalk';
 import { OptionValues, program } from 'commander';
+import { format as dtFormat } from 'date-and-time';
 import { existsSync, unlinkSync } from 'fs';
-import { readFile, writeFile } from 'node:fs/promises';
 import * as glob from 'glob';
 import { Validator } from 'jsonschema'; // Imported the jsonschema library
 import path from 'path';
-import { initCLISystems, setupCLISystemsForTest } from '../src/CLI/setupCLISystems';
-import { initMinionTask } from './initTestMinionTask';
-import { TestDefinition, functionReturnTypeCheckSchema, gptAssertSchema, simpleStringFindSchema } from './types';
-import { logFilePath, logToFile } from './utils/logToFile';
-import { rateMinionTask } from './rateMinionTask';
+
+import {
+  initCLISystems,
+  setupCLISystemsForTest,
+} from '../src/CLI/setupCLISystems';
+import { WorkspaceFilesKnowledge } from '../src/minionTasks/generateDescriptionForWorkspaceFiles';
+import { mutateExecuteMinionTaskStages } from '../src/minionTasks/mutateExecuteMinionTaskStages';
 import { mutatorApplyMinionTask } from '../src/minionTasks/mutators/mutateApplyMinionTask';
 import { mutateRunTaskStages } from '../src/tasks/mutators/mutateRunTaskStages';
-import { mutateExecuteMinionTaskStages } from '../src/minionTasks/mutateExecuteMinionTaskStages';
-import { format as dtFormat } from 'date-and-time';
-import { WorkspaceFilesKnowledge } from '../src/minionTasks/generateDescriptionForWorkspaceFiles';
+import { initMinionTask } from './initTestMinionTask';
+import { rateMinionTask } from './rateMinionTask';
+import {
+  functionReturnTypeCheckSchema,
+  gptAssertSchema,
+  simpleStringFindSchema,
+  TestDefinition,
+  TestInfo,
+} from './types';
+import { logFilePath, logToFile } from './utils/logToFile';
 interface ScoringTestOptions extends OptionValues {
   iterations: number;
   pattern?: string;
@@ -24,7 +35,11 @@ interface ScoringTestOptions extends OptionValues {
 
 export const TestDefinitionSchema = {
   id: '/TestDefinition',
-  oneOf: [gptAssertSchema, simpleStringFindSchema, functionReturnTypeCheckSchema],
+  oneOf: [
+    gptAssertSchema,
+    simpleStringFindSchema,
+    functionReturnTypeCheckSchema,
+  ],
 };
 
 const defaultIternationsNumber = 10;
@@ -38,7 +53,12 @@ async function runTest({
   iterations?: number;
   testQueueName?: string;
 }): Promise<void> {
-  const tests: TestDefinition[] = JSON.parse(await readFile(path.join(__dirname, 'score', `${fileName}/tests.json`), 'utf8'));
+  const tests: TestDefinition[] = JSON.parse(
+    await readFile(
+      path.join(__dirname, 'score', `${fileName}/tests.json`),
+      'utf8',
+    ),
+  ) as TestDefinition[];
 
   // Create a validator instance
   const validator = new Validator();
@@ -49,16 +69,25 @@ async function runTest({
 
     // If validation fails, throw error with details
     if (!validation.valid) {
-      throw new Error(`Test validation failed for '${fileName}': ${validation.errors.join(', ')}`);
+      throw new Error(
+        `Test validation failed for '${fileName}': ${validation.errors.join(
+          ', ',
+        )}`,
+      );
     }
   }
   const testPath = path.join(__dirname, 'score', fileName);
-  const userQuery = await readFile(path.join(testPath, `userQuery.txt`), 'utf8');
-  const knowledegePath = path.resolve(__dirname, testPath, 'knowledge.json');
+  const userQuery = await readFile(
+    path.join(testPath, `userQuery.txt`),
+    'utf8',
+  );
+  const knowledgePath = path.resolve(__dirname, testPath, 'knowledge.json');
   let knowledge: WorkspaceFilesKnowledge[] = [];
 
-  if (existsSync(knowledegePath)) {
-    knowledge = JSON.parse(await readFile(knowledegePath, 'utf8'));
+  if (existsSync(knowledgePath)) {
+    knowledge = JSON.parse(
+      await readFile(knowledgePath, 'utf8'),
+    ) as WorkspaceFilesKnowledge[];
   }
 
   const statistics = {
@@ -69,25 +98,54 @@ async function runTest({
   logToFile(`Running test for '${fileName} (${iterations} iterations)'`);
   console.log(`Running test for '${fileName} (${iterations} iterations)'`);
   const directoryPath = path.resolve(__dirname, `score/${fileName}/temp.txt`);
-  const testInfoPath = path.resolve(__dirname, `score/${fileName}/testInfo.json`);
-  const originalFileContent = await readFile(path.join(__dirname, 'score', `${fileName}/original.txt`), 'utf8');
-  const testInfo = JSON.parse(await readFile(path.join(__dirname, 'score', `${fileName}/testInfo.json`), 'utf8'));
+  const testInfoPath = path.resolve(
+    __dirname,
+    `score/${fileName}/testInfo.json`,
+  );
+  const originalFileContent = await readFile(
+    path.join(__dirname, 'score', `${fileName}/original.txt`),
+    'utf8',
+  );
+  const testInfo = JSON.parse(
+    await readFile(
+      path.join(__dirname, 'score', `${fileName}/testInfo.json`),
+      'utf8',
+    ),
+  ) as TestInfo;
 
   for (let i = 0; i < iterations; i++) {
     setupCLISystemsForTest();
     logToFile(`Iteration ${i + 1} of ${iterations}`);
     console.log('ITERATION: ', i, ` of ${fileName}`);
     writeFile(directoryPath, originalFileContent, 'utf8');
-    const minionTaskFilePath = path.join(__dirname, 'score', `${fileName}/temp.txt`);
-    const { execution } = await initMinionTask(userQuery, minionTaskFilePath, undefined, fileName);
+    const minionTaskFilePath = path.join(
+      __dirname,
+      'score',
+      `${fileName}/temp.txt`,
+    );
+    const { execution } = await initMinionTask(
+      userQuery,
+      minionTaskFilePath,
+      undefined,
+      fileName,
+    );
     execution.relevantKnowledge = knowledge;
-    await mutateRunTaskStages(execution, mutateExecuteMinionTaskStages, undefined, true);
+    await mutateRunTaskStages(
+      execution,
+      mutateExecuteMinionTaskStages,
+      undefined,
+      true,
+    );
     console.log('STRATEGY: ', execution.strategyId);
     logToFile(`Strategy of ${i + 1} of iteration is ${execution.strategyId}`);
 
     await mutatorApplyMinionTask(execution);
     const resultingCode = (await execution.document()).getText();
-    const { finalRating, passes, criteriaRatings } = await rateMinionTask(execution, resultingCode, tests);
+    const { finalRating, passes, criteriaRatings } = await rateMinionTask(
+      execution,
+      resultingCode,
+      tests,
+    );
 
     console.log('RATING: ', finalRating);
     console.log('PASSES: ', passes);
@@ -102,7 +160,7 @@ async function runTest({
   }
 
   const score = ((100 * statistics.passed) / statistics.total).toFixed();
-  const previousResults = testInfo.testResults || [];
+  const previousResults = testInfo.testResults;
   testInfo.testResults = [
     ...previousResults,
     {
@@ -134,7 +192,7 @@ async function runScoring(options: ScoringTestOptions): Promise<void> {
     testBaseNames.map((fileName) => ({
       fileName,
       iterations: options.iterations,
-      testQueueName: options.testQueueName,
+      testQueueName: options.testQueueName as string,
     })),
     options.concurrency,
     runTest,
@@ -142,6 +200,7 @@ async function runScoring(options: ScoringTestOptions): Promise<void> {
 
   console.log(`Log file: ${logFilePath}`);
   console.log('Done!');
+
   return;
 }
 
@@ -153,12 +212,21 @@ program
   .option(
     '-i, --iterations <iterations>',
     'Number of iterations',
-    (value) => parseInt(value),
+    (value) => parseInt(value, 10),
     defaultIternationsNumber, //  based on the previous definition
   )
   .option('-p, --pattern <pattern>', 'File patterns to run tests on', '*')
-  .option('-n, --testQueueName <testQueueName>', 'File name for tests queue', 'routine tests')
-  .option('-c, --concurrency <concurency>', 'Number of concurrent tests', (value) => parseInt(value), 1)
+  .option(
+    '-n, --testQueueName <testQueueName>',
+    'File name for tests queue',
+    'routine tests',
+  )
+  .option(
+    '-c, --concurrency <concurency>',
+    'Number of concurrent tests',
+    (value) => parseInt(value, 10),
+    1,
+  )
   .addHelpText(
     'after',
     `

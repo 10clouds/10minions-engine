@@ -1,19 +1,19 @@
-import { MinionTask } from '../MinionTask';
-import { gptExecute } from '../../gpt/gptExecute';
+import { z } from 'zod';
+
 import { countTokens } from '../../gpt/countTokens';
 import { ensureIRunThisInRange } from '../../gpt/ensureIRunThisInRange';
+import { gptExecute } from '../../gpt/gptExecute';
 import { GPTMode, QUALITY_MODE_TOKENS } from '../../gpt/types';
-import { z } from 'zod';
 import { mutateAppendToLog } from '../../tasks/logs/mutators/mutateAppendToLog';
 import { mutateAppendToLogNoNewline } from '../../tasks/logs/mutators/mutateAppendToLogNoNewline';
 import { mutateReportSmallProgress } from '../../tasks/mutators/mutateReportSmallProgress';
-import { Knowledge } from '../../strategyAndKnowledge/Knowledge';
+import { MinionTask } from '../MinionTask';
 import { createPrompt } from '../prompts/createAnswerPrompt';
 import { trimKnowledge } from '../utils/trimKnowledge';
 
 const EXTRA_TOKENS = 200;
 
-export async function mutateCreateAnswer(task: MinionTask, relevantKnowledge: Knowledge[]) {
+export async function mutateCreateAnswer(task: MinionTask) {
   if (task.strategyId === '') {
     throw new Error('Classification is undefined');
   }
@@ -37,16 +37,19 @@ export async function mutateCreateAnswer(task: MinionTask, relevantKnowledge: Kn
   };
   let promptWithContext = createPrompt(promptData);
 
-  const minTokens = countTokens(fullFileContents, GPTMode.QUALITY) + EXTRA_TOKENS;
-  const fullPromptTokens = countTokens(promptWithContext, GPTMode.QUALITY) + EXTRA_TOKENS;
+  const minTokens =
+    countTokens(fullFileContents, GPTMode.QUALITY) + EXTRA_TOKENS;
+  const fullPromptTokens =
+    countTokens(promptWithContext, GPTMode.QUALITY) + EXTRA_TOKENS;
 
-  const mode: GPTMode = fullPromptTokens > QUALITY_MODE_TOKENS ? GPTMode.FAST : GPTMode.QUALITY;
+  const mode: GPTMode =
+    fullPromptTokens > QUALITY_MODE_TOKENS ? GPTMode.FAST : GPTMode.QUALITY;
 
   let maxTokens = ensureIRunThisInRange({
     prompt: promptWithContext,
-    mode: mode,
+    mode,
     preferedTokens: fullPromptTokens,
-    minTokens: minTokens,
+    minTokens,
   });
 
   const promptWithKnowledgeData = trimKnowledge({

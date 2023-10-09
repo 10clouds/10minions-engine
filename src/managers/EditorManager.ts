@@ -31,7 +31,7 @@ export interface WorkspaceEdit {
   replace(uri: EditorUri, range: EditorRange, newText: string): void;
   insert(uri: EditorUri, position: EditorPosition, newText: string): void;
 
-  entries(): [EditorUri, EditorTextEdit[]][];
+  getEntries(): [EditorUri, EditorTextEdit[]][];
 }
 
 export interface EditorManager {
@@ -47,6 +47,7 @@ let globalEditorManger: EditorManager | undefined = undefined;
 export function setEditorManager(editorManager: EditorManager | undefined) {
   if (editorManager === undefined) {
     globalEditorManger = undefined;
+
     return;
   }
 
@@ -60,5 +61,6 @@ export function getEditorManager(): EditorManager {
   if (!globalEditorManger) {
     throw new Error(`EditorManager is not set.`);
   }
+
   return globalEditorManger;
 }

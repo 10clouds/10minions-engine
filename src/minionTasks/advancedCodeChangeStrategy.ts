@@ -1,19 +1,21 @@
-import fs from 'fs';
 import { writeFile } from 'node:fs/promises';
+
+import { format as dtFormat } from 'date-and-time';
+import fs from 'fs';
 import path from 'path';
-import { SolutionWithMeta } from '../stepEvolve/FitnessFunction';
+
+import { generateScoreTests } from '../../score/generateScoreTests';
+import { initMinionTask, Selection } from '../../score/initTestMinionTask';
+import { ScoreTestType } from '../../score/types';
+import { createFitnessAndNextSolutionsFunction } from '../stepEvolve/createFitnessAndNextSolutionsFunction';
+import { createNewSolutionFix } from '../stepEvolve/createNewSolutionFix';
 import { createSolutionWithMetaWithFitness } from '../stepEvolve/createSolutionWithMetaWithFitness';
+import { SolutionWithMeta } from '../stepEvolve/FitnessFunction';
 import { stepEvolve } from '../stepEvolve/stepEvolve';
 import { mutateAppendToLog } from '../tasks/logs/mutators/mutateAppendToLog';
 import { mutateEndStage } from '../tasks/mutators/mutateEndStage';
 import { mutateStartStage } from '../tasks/mutators/mutateStartStage';
 import { MinionTask } from './MinionTask';
-import { Selection, initMinionTask } from '../../score/initTestMinionTask';
-import { createFitnessAndNextSolutionsFunction } from '../stepEvolve/createFitnessAndNextSolutionsFunction';
-import { generateScoreTests } from '../../score/generateScoreTests';
-import { ScoreTestType } from '../../score/types';
-import { format as dtFormat } from 'date-and-time';
-import { createNewSolutionFix } from '../stepEvolve/createNewSolutionFix';
 
 const ITERATIONS = 3;
 const MAX_STALE_ITERATIONS = 3;
@@ -31,10 +33,15 @@ export interface MinionTaskSolution {
   modificationDescription: string;
   originalCode?: string;
 }
-
+interface ParsedCriteriaDefinition {
+  items: ScoreTestType[];
+}
 type MinionTaskSolutionWithMeta = SolutionWithMeta<MinionTaskSolution>;
 
-export const advancedCodeChangeStrategy = async (task: MinionTask, test?: boolean) => {
+export const advancedCodeChangeStrategy = async (
+  task: MinionTask,
+  test?: boolean,
+) => {
   let costs = task.totalCost || 0;
 
   mutateStartStage({
@@ -50,7 +57,10 @@ export const advancedCodeChangeStrategy = async (task: MinionTask, test?: boolea
     costs += criteriaDefinition.cost;
   }
 
-  const parsedCriteriaDefinition: { items: ScoreTestType[] } = criteriaDefinition && JSON.parse(criteriaDefinition.result);
+  const parsedCriteriaDefinition: ParsedCriteriaDefinition = (
+    criteriaDefinition ? JSON.parse(criteriaDefinition.result) : {}
+  ) as ParsedCriteriaDefinition;
+
   const selectionData: Selection = {
     start: task.selection.start,
     end: task.selection.end,
@@ -65,8 +75,12 @@ export const advancedCodeChangeStrategy = async (task: MinionTask, test?: boolea
       name: 'Preparing solutions...',
       progressIncrement: PROGRESS_PER_PRE_STAGE,
     });
-
-    const { execution: tempMinionTask } = await initMinionTask(task.userQuery, task.documentURI.fsPath, selectionData);
+    if (task.stopped) return;
+    const { execution: tempMinionTask } = await initMinionTask(
+      task.userQuery,
+      task.documentURI.fsPath,
+      selectionData,
+    );
     tempMinionTask.relevantKnowledge = task.relevantKnowledge;
     initialSolutionsPromises.push(
       createSolutionWithMetaWithFitness({
@@ -84,9 +98,12 @@ export const advancedCodeChangeStrategy = async (task: MinionTask, test?: boolea
     mutateEndStage(task);
   }
 
+  if (task.stopped) return;
+
   const initialSolutions = await Promise.all(initialSolutionsPromises);
 
   const finalSolution = await stepEvolve<MinionTaskSolution>({
+    task,
     initialSolutions,
     threshold: THRESHOLD,
     maxNumIterations: ITERATIONS,
@@ -97,7 +114,8 @@ export const advancedCodeChangeStrategy = async (task: MinionTask, test?: boolea
           for (const solutionWithMeta of solutionsWithMeta) {
             mutateAppendToLog(
               task,
-              'Initial solution is: ' + solutionWithMeta.solution + ' ' + solutionWithMeta.totalFitness + ' (' + solutionWithMeta.createdWith + ')' + '.',
+              `Initial solution is: ${solutionWithMeta.solution} ${solutionWithMeta.totalFitness} (${solutionWithMeta.createdWith})` +
+                `.`,
             );
           }
           const logsPath = path.resolve(__dirname, 'logs');
@@ -106,7 +124,14 @@ export const advancedCodeChangeStrategy = async (task: MinionTask, test?: boolea
             fs.mkdirSync(logsPath, { recursive: true });
           }
           writeFile(
-            path.join(__dirname, 'logs', `${iteration}-${dtFormat(new Date(), 'YYYY-MM-DD_HH-mm-ss')}.json`),
+            path.join(
+              __dirname,
+              'logs',
+              `${iteration}-${dtFormat(
+                new Date(),
+                'YYYY-MM-DD_HH-mm-ss',
+              )}.json`,
+            ),
             JSON.stringify({ iteration, solutionsWithMeta }, null, 2),
             'utf8',
           );
@@ -118,11 +143,27 @@ export const advancedCodeChangeStrategy = async (task: MinionTask, test?: boolea
           newSolutions: MinionTaskSolutionWithMeta[],
           iteration: number,
         ) => {
-          writeFile(path.join(__dirname, 'logs', `${iteration}.json`), JSON.stringify({ iteration, accepted, rejected, newSolutions }, null, 2), 'utf8');
-          mutateAppendToLog(task, `Solutions ${oldSolutionsWithMeta.map((s) => s.solution).join(', ')}`);
+          writeFile(
+            path.join(__dirname, 'logs', `${iteration}.json`),
+            JSON.stringify(
+              { iteration, accepted, rejected, newSolutions },
+              null,
+              2,
+            ),
+            'utf8',
+          );
+          mutateAppendToLog(
+            task,
+            `Solutions ${oldSolutionsWithMeta
+              .map((s) => s.solution)
+              .join(', ')}`,
+          );
 
           for (const solutionWithMeta of accepted) {
-            mutateAppendToLog(task, `New best ${iteration}: ${solutionWithMeta.solution} ${solutionWithMeta.totalFitness} (${solutionWithMeta.createdWith}).`);
+            mutateAppendToLog(
+              task,
+              `New best ${iteration}: ${solutionWithMeta.solution} ${solutionWithMeta.totalFitness} (${solutionWithMeta.createdWith}).`,
+            );
           }
         },
         onFinalSolution: async (solutionWithMeta, iteration) => {
@@ -136,14 +177,18 @@ export const advancedCodeChangeStrategy = async (task: MinionTask, test?: boolea
           mutateAppendToLog(task, '```');
           mutateAppendToLog(task, resultingCode);
           mutateAppendToLog(task, '```');
-          mutateAppendToLog(task, 'Fitness: ' + totalFitness);
-          mutateAppendToLog(task, 'Iteration: ' + iteration + ' (Best solution found in iteration: ' + solutionIteration + ')');
+          mutateAppendToLog(task, `Fitness: ${totalFitness}`);
+          mutateAppendToLog(
+            task,
+            `Iteration: ${iteration} (Best solution found in iteration: ${solutionIteration})`,
+          );
         },
       },
     ],
   });
 
-  const { modificationDescription, modificationProcedure } = finalSolution.solution;
+  const { modificationDescription, modificationProcedure } =
+    finalSolution?.solution || ({} as MinionTaskSolution);
   task.totalCost += costs;
   task.modificationProcedure = modificationProcedure;
   task.modificationDescription = modificationDescription;

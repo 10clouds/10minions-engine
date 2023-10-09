@@ -1,6 +1,10 @@
-import { stepEvolve } from '../../src/stepEvolve/stepEvolve';
 import { createSolutionWithMetaWithFitness } from '../../src/stepEvolve/createSolutionWithMetaWithFitness';
-import { RANGE_SEEK_END, RANGE_SEEK_START, createFitnessAndNextSolutionsFunction } from './createFitnessAndNextSolutionsFunction';
+import { stepEvolve } from '../../src/stepEvolve/stepEvolve';
+import {
+  createFitnessAndNextSolutionsFunction,
+  RANGE_SEEK_END,
+  RANGE_SEEK_START,
+} from './createFitnessAndNextSolutionsFunction';
 
 const INTRO = `
 This example searches for a maximum of a example function.
@@ -17,13 +21,16 @@ const THRESHOLD = -0.000932;
 
   const initialSolutions = [];
   for (let i = 0; i < 10; i++) {
-    const solution = Math.random() * (RANGE_SEEK_END - RANGE_SEEK_START) + RANGE_SEEK_START;
+    const solution =
+      Math.random() * (RANGE_SEEK_END - RANGE_SEEK_START) + RANGE_SEEK_START;
     initialSolutions.push(
       await createSolutionWithMetaWithFitness({
         solution,
         createdWith: 'initial',
         parent: undefined,
-        fitnessAndNextSolutionsFunction: createFitnessAndNextSolutionsFunction({ avoidThoseNumbers: [0, 5000, 10000] }),
+        fitnessAndNextSolutionsFunction: createFitnessAndNextSolutionsFunction({
+          avoidThoseNumbers: [0, 5000, 10000],
+        }),
       }),
     );
   }
@@ -37,19 +44,28 @@ const THRESHOLD = -0.000932;
       {
         onInitialSolutions: async (solutionsWithMeta, iteration) => {
           for (const solutionWithMeta of solutionsWithMeta) {
-            console.log('Initial solution is: ' + solutionWithMeta.solution + '.');
+            console.log(`Initial solution is: ${solutionWithMeta.solution}.`);
           }
         },
-        async onProgressMade(oldSolutionsWithMeta, accepted, rejected, newSolutions, iteration) {
+        async onProgressMade(
+          oldSolutionsWithMeta,
+          accepted,
+          rejected,
+          newSolutions,
+          iteration,
+        ) {
           for (const accepted1 of accepted) {
             console.log(oldSolutionsWithMeta.map((s) => s.solution).join(', '));
 
             const { solution, totalFitness, createdWith } = accepted1;
-            console.log('New best ' + iteration + ': ' + solution + ' ' + totalFitness + ' (' + createdWith + ')' + '.');
+            console.log(
+              `New best ${iteration}: ${solution} ${totalFitness} (${createdWith})` +
+                `.`,
+            );
           }
         },
         onFinalSolution: async (solutionWithMeta, iteration) => {
-          console.log('The final solution is: ' + solutionWithMeta.solution + '.');
+          console.log(`The final solution is: ${solutionWithMeta.solution}.`);
         },
       },
     ],

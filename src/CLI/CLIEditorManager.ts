@@ -1,6 +1,11 @@
-import { EditorDocument, EditorManager, EditorUri, WorkspaceEdit } from '../managers/EditorManager';
-import { CLIWorkspaceEdit } from './CLIWorkspaceEdit';
+import {
+  EditorDocument,
+  EditorManager,
+  EditorUri,
+  WorkspaceEdit,
+} from '../managers/EditorManager';
 import { CLIEditorDocument } from './CLIEditorDocument';
+import { CLIWorkspaceEdit } from './CLIWorkspaceEdit';
 
 export class CLIEditorManager implements EditorManager {
   openDocuments: EditorDocument[] = [];
@@ -14,12 +19,15 @@ export class CLIEditorManager implements EditorManager {
   }
 
   async applyEdit(edit: CLIWorkspaceEdit) {
-    const promises = edit.entries().map(async ([uri, edits]) => {
+    const promises = edit.getEntries().map(async ([uri, edits]) => {
       const document = (await this.openTextDocument(uri)) as CLIEditorDocument;
 
       edits.forEach((edit) => {
         const range = {
-          start: { line: edit.startLine, character: edit.startCharacter },
+          start: {
+            line: edit.startLine,
+            character: edit.startCharacter,
+          },
           end: {
             line: edit.endLine ?? edit.startLine,
             character: edit.endCharacter ?? edit.startCharacter,
@@ -50,13 +58,16 @@ export class CLIEditorManager implements EditorManager {
   showInformationMessage(message: string): void {}
 
   async openTextDocument(uri: EditorUri) {
-    const existingDocument = this.openDocuments.find((doc) => doc.uri.toString() === uri.toString());
+    const existingDocument = this.openDocuments.find(
+      (doc) => doc.uri.toString() === uri.toString(),
+    );
     if (existingDocument) {
       return existingDocument;
     }
 
     const document = new CLIEditorDocument(uri);
     this.openDocuments.push(document);
+
     return document;
   }
 

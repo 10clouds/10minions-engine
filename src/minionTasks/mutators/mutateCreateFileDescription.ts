@@ -1,9 +1,10 @@
-import { gptExecute } from '../../gpt/gptExecute';
-import { countTokens } from '../../gpt/countTokens';
-import { ensureIRunThisInRange } from '../../gpt/ensureIRunThisInRange';
-import { GPTMode } from '../../gpt/types';
 import { z } from 'zod';
+
+import { countTokens } from '../../gpt/countTokens';
 import { createFullPromptFromSections } from '../../gpt/createFullPromptFromSections';
+import { ensureIRunThisInRange } from '../../gpt/ensureIRunThisInRange';
+import { gptExecute } from '../../gpt/gptExecute';
+import { GPTMode } from '../../gpt/types';
 
 export interface WorkspaceFileData {
   path: string;
@@ -12,10 +13,8 @@ export interface WorkspaceFileData {
 
 function createPrompt(fileData: WorkspaceFileData) {
   return createFullPromptFromSections({
-    intro: `Generate a brief description - 2 sentence maximum long of what this file does and list the all functions like this 
-      {functionName: name, description: "Describes when to use function and what it do", fullFunction: "function functionName{...function body...}" } 
-      (skip functions from external libraries eg. React ones) 
-      based on FILE CONTEXT section.`.trim(),
+    intro:
+      `Generate a brief description - 2 sentence maximum long of what this file does based on FILE CONTEXT section.`.trim(),
     sections: {
       'FILE CONTEXT': fileData.content,
       'FILE PATH': fileData.path,
@@ -23,9 +22,7 @@ function createPrompt(fileData: WorkspaceFileData) {
   });
 }
 
-export async function mutateCreateFileDescription(fileData: WorkspaceFileData, onProcessStart?: () => void) {
-  onProcessStart?.();
-
+export async function mutateCreateFileDescription(fileData: WorkspaceFileData) {
   const promptWithContext = createPrompt(fileData);
   const mode: GPTMode = GPTMode.FAST;
 
@@ -35,9 +32,9 @@ export async function mutateCreateFileDescription(fileData: WorkspaceFileData, o
   try {
     const maxTokens = ensureIRunThisInRange({
       prompt: promptWithContext,
-      mode: mode,
+      mode,
       preferedTokens: fullPromptTokens,
-      minTokens: minTokens,
+      minTokens,
     });
 
     const { result } = await gptExecute({
@@ -47,19 +44,15 @@ export async function mutateCreateFileDescription(fileData: WorkspaceFileData, o
       controller: new AbortController(),
       outputSchema: z
         .object({
-          description: z.string().describe('Description of the file to identify what the file do and when to use it.'),
-          functions: z
-            .array(
-              z.object({
-                functionName: z.string().describe('Name of the function'),
-                description: z.string().describe('Describes when to use function and what it do'),
-                fullFunction: z.string().describe('Stores the full function').optional(),
-              }),
-            )
-            .describe('List of functions used in the file.'),
+          description: z
+            .string()
+            .describe(
+              'Description of the file to identify what the file do and when to use it.',
+            ),
         })
         .describe('File info'),
     });
+
     return result;
   } catch (error) {
     console.error(error);

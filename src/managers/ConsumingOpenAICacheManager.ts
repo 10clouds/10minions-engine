@@ -1,4 +1,5 @@
 import * as admin from 'firebase-admin';
+
 import { getAnalyticsManager } from './AnalyticsManager';
 
 export class ConsumingOpenAICacheManager {
@@ -18,16 +19,21 @@ export class ConsumingOpenAICacheManager {
     }
   }
 
-  public async getCachedResult(requestData: object): Promise<string | undefined> {
+  public async getCachedResult(
+    requestData: object,
+  ): Promise<string | undefined> {
     if (!this.firestore) {
       return undefined;
     }
 
     const requestDataHash = getAnalyticsManager().getRequestHash(requestData);
-
+    const isCacheExists = typeof this.cache[requestDataHash] === 'undefined';
     //if cache was not initialized yet, initialize it
-    if (!this.cache[requestDataHash]) {
-      const snapshot = await this.firestore.collection('openAICalls').where('requestDataHash', '==', requestDataHash).get();
+    if (isCacheExists) {
+      const snapshot = await this.firestore
+        .collection('openAICalls')
+        .where('requestDataHash', '==', requestDataHash)
+        .get();
 
       this.cache[requestDataHash] = [];
 
@@ -39,7 +45,7 @@ export class ConsumingOpenAICacheManager {
     }
 
     //consume the cache or return undefined
-    if (this.cache[requestDataHash] && this.cache[requestDataHash].length > 0) {
+    if (!isCacheExists && this.cache[requestDataHash].length > 0) {
       return this.cache[requestDataHash].shift();
     }
 

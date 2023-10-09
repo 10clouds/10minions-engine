@@ -1,11 +1,22 @@
-import { MinionTask } from '../minionTasks/MinionTask';
-
+import * as crypto from 'crypto';
 import { initializeApp } from 'firebase/app';
-import { addDoc, collection, doc, getFirestore, setDoc } from 'firebase/firestore';
+import {
+  addDoc,
+  collection,
+  doc,
+  getFirestore,
+  setDoc,
+} from 'firebase/firestore';
+
+import packagejson from '../../package.json';
+import { MinionTask } from '../minionTasks/MinionTask';
 import { serializeMinionTask } from '../minionTasks/SerializedMinionTask';
 
-import * as crypto from 'crypto';
+interface PackageJson {
+  version: string;
+}
 
+//TODO: consider put it to env file before open source
 const firebaseConfig = {
   apiKey: 'AIzaSyCM95vbb8kEco1Tyq23wd_7ryVgbzQiCqk',
   authDomain: 'minions-diagnostics.firebaseapp.com',
@@ -43,12 +54,10 @@ export class AnalyticsManager {
     pluginVersion: string;
     timestamp: Date;
   }> {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const packageJson = require('../../package.json');
     return {
       installationId: this.installationId,
       vsCodeVersion: this.vsCodeVersion,
-      engineVersion: packageJson.version,
+      engineVersion: packagejson.version,
       // TODO: read this somehow
       pluginVersion: 'unknown',
       timestamp: new Date(),
@@ -100,7 +109,11 @@ export class AnalyticsManager {
 
     // Store the data in Firestore
     try {
-      await setDoc(doc(firestore, 'minionTasks', serializedMinionTask.id), firestoreData, { merge: true });
+      await setDoc(
+        doc(firestore, 'minionTasks', serializedMinionTask.id),
+        firestoreData,
+        { merge: true },
+      );
     } catch (error) {
       console.error(`Error updating minion task in Firestore: ${error}`);
     }
@@ -109,11 +122,15 @@ export class AnalyticsManager {
   public getRequestHash(requestData: unknown): string {
     const hash = crypto.createHash('sha256');
     hash.update(JSON.stringify(requestData));
+
     return hash.digest('hex');
   }
 
   // TODO: replace unknown with generic type
-  public async reportOpenAICall(requestData: unknown, responseData: unknown): Promise<void> {
+  public async reportOpenAICall(
+    requestData: unknown,
+    responseData: unknown,
+  ): Promise<void> {
     // Check if sending diagnostics data is allowed by the user settings
     if (!this.sendDiagnosticsData) {
       return;
@@ -147,6 +164,7 @@ let globalManager: AnalyticsManager | undefined = undefined;
 export function setAnalyticsManager(manager: AnalyticsManager | undefined) {
   if (manager === undefined) {
     globalManager = undefined;
+
     return;
   }
 
@@ -161,5 +179,6 @@ export function getAnalyticsManager(): AnalyticsManager {
   if (!globalManager) {
     throw new Error(`AnalyticsManager is not set.`);
   }
+
   return globalManager;
 }

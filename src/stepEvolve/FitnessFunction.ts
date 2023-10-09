@@ -14,7 +14,9 @@ export type FitnessAndNextSolutionsResult<S> = {
  * takes a solution and returns its fitness score
  * and next possible solutions as a promise.
  */
-export type FitnessAndNextSolutionsFunction<S> = (solution: SolutionWithMeta<S>) => Promise<FitnessAndNextSolutionsResult<S>>;
+export type FitnessAndNextSolutionsFunction<S> = (
+  solution: SolutionWithMeta<S>,
+) => Promise<FitnessAndNextSolutionsResult<S>>;
 
 /**
  * SolutionWithMeta represents a solution with its metadata,

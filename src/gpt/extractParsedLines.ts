@@ -6,40 +6,42 @@ import { ParsedLine } from './types';
  * @returns A tuple containing the array of parsed lines and the modified chunk buffer.
  * @throws An error if an error object is encountered in the chunk buffer.
  */
-export function extractParsedLines(chunkBuffer: string): [ParsedLine[], string] {
+export function extractParsedLines(
+  chunkBuffer: string,
+): [ParsedLine[], string] {
   const parsedLines: ParsedLine[] = [];
-
-  while (chunkBuffer.includes('\n')) {
-    if (chunkBuffer.startsWith('\n')) {
-      chunkBuffer = chunkBuffer.slice(1);
+  let chunkBufferCopy = chunkBuffer;
+  while (chunkBufferCopy.includes('\n')) {
+    if (chunkBufferCopy.startsWith('\n')) {
+      chunkBufferCopy = chunkBufferCopy.slice(1);
       continue;
     }
 
-    if (chunkBuffer.startsWith('data: ')) {
-      const [line, ...rest] = chunkBuffer.split('\n');
-      chunkBuffer = rest.join('\n');
+    if (chunkBufferCopy.startsWith('data: ')) {
+      const [line, ...rest] = chunkBufferCopy.split('\n');
+      chunkBufferCopy = rest.join('\n');
 
       if (line === 'data: [DONE]') continue;
 
       const parsedLine = line.replace(/^data: /, '').trim();
       if (parsedLine !== '') {
         try {
-          parsedLines.push(JSON.parse(parsedLine));
+          parsedLines.push(JSON.parse(parsedLine) as ParsedLine);
         } catch (e) {
           console.error(`Error parsing chunk: ${line}`);
           throw e;
         }
       }
     } else {
-      const errorObject = JSON.parse(chunkBuffer);
+      const errorObject = JSON.parse(chunkBufferCopy) as { error?: Error };
 
       if (errorObject.error) {
         throw new Error(JSON.stringify(errorObject));
       } else {
-        throw new Error(`Unexpected JSON object: ${chunkBuffer}`);
+        throw new Error(`Unexpected JSON object: ${chunkBufferCopy}`);
       }
     }
   }
 
-  return [parsedLines, chunkBuffer];
+  return [parsedLines, chunkBufferCopy];
 }

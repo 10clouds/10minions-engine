@@ -1,6 +1,10 @@
-import { FitnessAndNextSolutionsFunction, Fix, SolutionWithMeta } from './FitnessFunction';
 import { shuffleArray } from '../utils/random/shuffleArray';
 import { createSolutionWithMetaWithFitness } from './createSolutionWithMetaWithFitness';
+import {
+  FitnessAndNextSolutionsFunction,
+  Fix,
+  SolutionWithMeta,
+} from './FitnessFunction';
 
 export async function createSolutionsFromFixes<S>({
   solutionWithMeta,

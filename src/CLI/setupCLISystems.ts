@@ -1,16 +1,21 @@
 import '../initEnv';
 
+import { ServiceAccount } from 'firebase-admin';
 import { readFileSync } from 'fs';
 import path from 'path';
-import { AnalyticsManager, setAnalyticsManager } from '../managers/AnalyticsManager';
-import { NoCacheOpenAICacheManager } from '../managers/NoCacheOpenAICacheManager';
+
+import { setOpenAIApiKey } from '../gpt/gptExecute';
+import {
+  AnalyticsManager,
+  setAnalyticsManager,
+} from '../managers/AnalyticsManager';
+import { ConsumingOpenAICacheManager } from '../managers/ConsumingOpenAICacheManager';
 import { setEditorManager } from '../managers/EditorManager';
 import { setLogProvider } from '../managers/LogProvider';
-import { setOriginalContentProvider } from '../managers/OriginalContentProvider';
-import { setOpenAIApiKey } from '../gpt/gptExecute';
-import { CLIEditorManager } from './CLIEditorManager';
+import { NoCacheOpenAICacheManager } from '../managers/NoCacheOpenAICacheManager';
 import { setOpenAICacheManager } from '../managers/OpenAICacheManager';
-import { ConsumingOpenAICacheManager } from '../managers/ConsumingOpenAICacheManager';
+import { setOriginalContentProvider } from '../managers/OriginalContentProvider';
+import { CLIEditorManager } from './CLIEditorManager';
 
 export function initCLISystems() {
   const baseDir = path.resolve(path.resolve(__dirname), '..', '..');
@@ -26,10 +31,19 @@ export function initCLISystems() {
   if (process.env.NO_OPENAI_CACHE === 'true') {
     setOpenAICacheManager(new NoCacheOpenAICacheManager());
   } else {
-    setOpenAICacheManager(new ConsumingOpenAICacheManager(JSON.parse(readFileSync(path.resolve(baseDir, 'serviceAccount.json'), 'utf8'))));
+    setOpenAICacheManager(
+      new ConsumingOpenAICacheManager(
+        JSON.parse(
+          readFileSync(path.resolve(baseDir, 'serviceAccount.json'), 'utf8'),
+        ) as ServiceAccount,
+      ),
+    );
   }
 
-  const analyticsManager = new AnalyticsManager('CLIInstallationID', 'CLIVsCodeStub');
+  const analyticsManager = new AnalyticsManager(
+    'CLIInstallationID',
+    'CLIVsCodeStub',
+  );
   analyticsManager.setSendDiagnosticsData(true);
 
   setAnalyticsManager(analyticsManager);

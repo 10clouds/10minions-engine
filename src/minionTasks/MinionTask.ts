@@ -1,11 +1,22 @@
 import { randomUUID } from 'crypto';
 import * as path from 'path';
-import { EditorDocument, EditorRange, EditorUri, getEditorManager } from '../managers/EditorManager';
+
+import {
+  EditorDocument,
+  EditorRange,
+  EditorUri,
+  getEditorManager,
+} from '../managers/EditorManager';
 import { getOriginalContentProvider } from '../managers/OriginalContentProvider';
+import {
+  APPLIED_STAGE_NAME,
+  APPLYING_STAGE_NAME,
+  CANCELED_STAGE_NAME,
+  FINISHED_STAGE_NAME,
+} from '../tasks/stageNames';
 import { TaskContext } from '../tasks/TaskContext';
-import { APPLIED_STAGE_NAME, APPLYING_STAGE_NAME, CANCELED_STAGE_NAME, FINISHED_STAGE_NAME } from '../tasks/stageNames';
-import { MINION_TASK_STRATEGY_ID } from './strategies';
 import { WorkspaceFilesKnowledge } from './generateDescriptionForWorkspaceFiles';
+import { MINION_TASK_STRATEGY_ID } from './strategies';
 
 export enum ApplicationStatus {
   APPLIED = 'applied',
@@ -160,7 +171,9 @@ export class MinionTask implements TaskContext {
   }
 
   get originalContentURI() {
-    return `10minions-originalContent:minionTaskId/${this.id}/${(this.shortName + '.txt').replace(/ /g, '%20')}`;
+    return `10minions-originalContent:minionTaskId/${
+      this.id
+    }/${`${this.shortName}.txt`.replace(/ /g, '%20')}`;
   }
 
   static async create({
@@ -187,7 +200,7 @@ export class MinionTask implements TaskContext {
       userQuery,
       selection,
       selectedText,
-      originalContent: await document.getText(),
+      originalContent: document.getText(),
       startTime: Date.now(),
       onChanged,
     });
@@ -199,7 +212,10 @@ export class MinionTask implements TaskContext {
   }
 
   public async document() {
-    const document = await getEditorManager().openTextDocument(this.documentURI);
+    const document = await getEditorManager().openTextDocument(
+      this.documentURI,
+    );
+
     return document;
   }
 

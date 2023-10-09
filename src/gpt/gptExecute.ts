@@ -1,14 +1,22 @@
 import fetch from 'node-fetch';
 import { z } from 'zod';
 import zodToJsonSchema from 'zod-to-json-schema';
+
 import { getAnalyticsManager } from '../managers/AnalyticsManager';
 import { getOpenAICacheManager } from '../managers/OpenAICacheManager';
 import { isZodString } from '../utils/isZodString';
 import { calculateCosts } from './calculateCosts';
+import { countTokens } from './countTokens';
 import { ensureICanRunThis } from './ensureIcanRunThis';
 import { processOpenAIResponseStream } from './processOpenAIResponseStream';
-import { FAST_MODE_TOKENS, GPTExecuteRequestData, GPTExecuteRequestMessage, GPTExecuteRequestPrompt, GPTMode, GPTModel, MODEL_DATA } from './types';
-import { countTokens } from './countTokens';
+import {
+  FAST_MODE_TOKENS,
+  GPTExecuteRequestData,
+  GPTExecuteRequestMessage,
+  GPTExecuteRequestPrompt,
+  GPTMode,
+  GPTModel,
+} from './types';
 
 let openAIApiKey: string | undefined;
 const MAX_REQUEST_ATTEMPTS = 3;
@@ -17,19 +25,20 @@ export function setOpenAIApiKey(apiKey: string) {
   openAIApiKey = apiKey;
 }
 
-function convertResult<OutputTypeSchema extends z.ZodType>(result: string, outputSchema: OutputTypeSchema): z.infer<OutputTypeSchema> {
+function convertResult<OutputTypeSchema extends z.ZodType>(
+  result: string,
+  outputSchema: OutputTypeSchema,
+): z.infer<OutputTypeSchema> {
   if (isZodString(outputSchema)) {
-    return result as z.infer<OutputTypeSchema>;
-  } else {
-    const parseResult = outputSchema.safeParse(JSON.parse(result));
-    if (parseResult.success) {
-      return parseResult.data;
-    } else {
-      console.log('RESULT', result);
-      console.log('SCHEMA', outputSchema);
-      throw new Error(`Could not parse result: ${result}`);
-    }
+    return result;
   }
+  const parseResult = outputSchema.safeParse(JSON.parse(result));
+  if (parseResult.success) {
+    return parseResult.data as OutputTypeSchema;
+  }
+  console.log('RESULT', result);
+  console.log('SCHEMA', outputSchema);
+  throw new Error(`Could not parse result: ${result}`);
 }
 export async function gptExecute<OutputTypeSchema extends z.ZodType>({
   fullPrompt,
@@ -57,7 +66,9 @@ export async function gptExecute<OutputTypeSchema extends z.ZodType>({
 }> {
   let model: GPTModel = 'gpt-4-0613';
 
-  const messages: GPTExecuteRequestMessage[] = Array.isArray(fullPrompt) ? fullPrompt : [{ role: 'user', content: fullPrompt }];
+  const messages: GPTExecuteRequestMessage[] = Array.isArray(fullPrompt)
+    ? fullPrompt
+    : [{ role: 'user', content: fullPrompt }];
   const messagesAsString = JSON.stringify(messages);
 
   if (mode === GPTMode.FAST) {
@@ -92,16 +103,19 @@ export async function gptExecute<OutputTypeSchema extends z.ZodType>({
             {
               name: outputName,
               description: outputSchema.description || 'Output',
-              parameters: zodToJsonSchema(outputSchema, 'parameters').definitions?.parameters,
+              parameters: zodToJsonSchema(outputSchema, 'parameters')
+                .definitions?.parameters,
             },
           ],
         }),
   };
 
-  const cachedResult = await getOpenAICacheManager().getCachedResult(requestData);
+  const cachedResult =
+    await getOpenAICacheManager().getCachedResult(requestData);
 
   if (cachedResult && typeof cachedResult === 'string') {
     await onChunk(cachedResult);
+
     return {
       result: convertResult(cachedResult, outputSchema),
       cost: 0,
@@ -110,15 +124,18 @@ export async function gptExecute<OutputTypeSchema extends z.ZodType>({
 
   for (let attempt = 1; attempt <= MAX_REQUEST_ATTEMPTS; attempt++) {
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${openAIApiKey}`,
+      const response = await fetch(
+        'https://api.openai.com/v1/chat/completions',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${openAIApiKey}`,
+          },
+          body: JSON.stringify(requestData),
+          signal,
         },
-        body: JSON.stringify(requestData),
-        signal,
-      });
+      );
 
       const result = await processOpenAIResponseStream({
         response,

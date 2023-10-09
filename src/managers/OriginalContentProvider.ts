@@ -2,11 +2,15 @@ export interface OriginalContentProvider {
   reportChange(uri: string): void;
 }
 
-let globalOriginalContentProvider: OriginalContentProvider | undefined = undefined;
+let globalOriginalContentProvider: OriginalContentProvider | undefined =
+  undefined;
 
-export function setOriginalContentProvider(originalContentProvider: OriginalContentProvider | undefined) {
+export function setOriginalContentProvider(
+  originalContentProvider: OriginalContentProvider | undefined,
+) {
   if (originalContentProvider === undefined) {
     globalOriginalContentProvider = undefined;
+
     return;
   }
 
@@ -20,5 +24,6 @@ export function getOriginalContentProvider(): OriginalContentProvider {
   if (!globalOriginalContentProvider) {
     throw new Error(`OriginalContentProvider is not set.`);
   }
+
   return globalOriginalContentProvider;
 }

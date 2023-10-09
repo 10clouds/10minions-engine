@@ -1,15 +1,16 @@
 import { z } from 'zod';
-import { MinionTask } from '../MinionTask';
+
 import { DEBUG_PROMPTS, DEBUG_RESPONSES } from '../../const';
 import { countTokens } from '../../gpt/countTokens';
 import { ensureICanRunThis } from '../../gpt/ensureIcanRunThis';
 import { gptExecute } from '../../gpt/gptExecute';
 import { GPTMode } from '../../gpt/types';
 import { EditorDocument, EditorPosition } from '../../managers/EditorManager';
+import { mutateAppendSectionToLog } from '../../tasks/logs/mutators/mutateAppendSectionToLog';
 import { mutateAppendToLog } from '../../tasks/logs/mutators/mutateAppendToLog';
 import { mutateAppendToLogNoNewline } from '../../tasks/logs/mutators/mutateAppendToLogNoNewline';
-import { mutateAppendSectionToLog } from '../../tasks/logs/mutators/mutateAppendSectionToLog';
 import { mutateReportSmallProgress } from '../../tasks/mutators/mutateReportSmallProgress';
+import { MinionTask } from '../MinionTask';
 
 export function extractRelevantCodePrompt({
   userQuery,
@@ -34,8 +35,10 @@ ${userQuery}
 
 ${
   selectedText
-    ? `
-# SELECTED CODE (starts on line ${selectionPosition.line + 1} column: ${selectionPosition.character + 1} in the file) 
+    ? ` 
+# SELECTED CODE (starts on line ${selectionPosition.line + 1} column: ${
+        selectionPosition.character + 1
+      } in the file) 
 ${selectedText}
 `
     : ''

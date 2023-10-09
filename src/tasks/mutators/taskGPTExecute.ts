@@ -1,12 +1,13 @@
 import { z } from 'zod';
+
 import { DEBUG_RESPONSES } from '../../const';
 import { ensureICanRunThis } from '../../gpt/ensureIcanRunThis';
 import { gptExecute } from '../../gpt/gptExecute';
 import { GPTExecuteRequestPrompt, GPTMode } from '../../gpt/types';
-import { TaskContext } from '../TaskContext';
 import { mutateAppendToLog } from '../logs/mutators/mutateAppendToLog';
-import { mutateReportSmallProgress } from './mutateReportSmallProgress';
 import { mutateAppendToLogNoNewline } from '../logs/mutators/mutateAppendToLogNoNewline';
+import { TaskContext } from '../TaskContext';
+import { mutateReportSmallProgress } from './mutateReportSmallProgress';
 
 export async function taskGPTExecute<OutputTypeSchema extends z.ZodType>(
   task: TaskContext,
@@ -56,5 +57,5 @@ export async function taskGPTExecute<OutputTypeSchema extends z.ZodType>(
 
   task.totalCost += cost;
 
-  return result;
+  return result as Promise<z.infer<OutputTypeSchema>>;
 }

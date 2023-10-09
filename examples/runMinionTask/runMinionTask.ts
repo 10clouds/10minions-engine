@@ -2,13 +2,146 @@
 Task: Add comments to this code
 */
 
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
+/*
+Task: Add comments to this code
+*/
+
 import path from 'path';
+
 import { initCLISystems } from '../../src/CLI/setupCLISystems';
 import { getEditorManager } from '../../src/managers/EditorManager';
 import { MinionTask } from '../../src/minionTasks/MinionTask';
-import { mutateRunTaskStages } from '../../src/tasks/mutators/mutateRunTaskStages';
-import { mutatorApplyMinionTask } from '../../src/minionTasks/mutators/mutateApplyMinionTask';
 import { mutateExecuteMinionTaskStages } from '../../src/minionTasks/mutateExecuteMinionTaskStages';
+import { mutatorApplyMinionTask } from '../../src/minionTasks/mutators/mutateApplyMinionTask';
+import { mutateRunTaskStages } from '../../src/tasks/mutators/mutateRunTaskStages';
 
 const INTRO = `
 This example creates a minion task and runs it.
@@ -24,12 +157,17 @@ This example creates a minion task and runs it.
 
   const task = await MinionTask.create({
     userQuery: 'Add comments to this code',
-    document: await getEditorManager().openTextDocument(getEditorManager().createUri(path.join(__filename))),
-    selection: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } },
+    document: await getEditorManager().openTextDocument(
+      getEditorManager().createUri(path.join(__filename)),
+    ),
+    selection: {
+      start: { line: 0, character: 0 },
+      end: { line: 0, character: 0 },
+    },
     selectedText: '',
     minionIndex: 0,
     onChanged: async () => {
-      console.log('Progress: ' + (task.progress * 100).toFixed(0) + '%');
+      console.log(`Progress: ${(task.progress * 100).toFixed(0)}%`);
     },
   });
 
