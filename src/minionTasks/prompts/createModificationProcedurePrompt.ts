@@ -1,4 +1,4 @@
-import { createFullPromptFromSections } from '../../gpt/createFullPromptFromSections';
+import { createFullPromptFromSections } from '../../gpt/utils/createFullPromptFromSections';
 import { PromptKnowledge } from '../utils/trimKnowledge';
 import { AVAILABLE_COMMANDS } from './codeModificationCommandsPrompt';
 import { knowledgeHelperPrompt } from './knowledgeHelperPrompt';

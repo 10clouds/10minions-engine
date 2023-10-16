@@ -1,10 +1,10 @@
 import { z } from 'zod';
 
 import { DEBUG_PROMPTS, DEBUG_RESPONSES } from '../../const';
-import { countTokens } from '../../gpt/countTokens';
-import { ensureICanRunThis } from '../../gpt/ensureIcanRunThis';
 import { gptExecute } from '../../gpt/gptExecute';
 import { GPTMode } from '../../gpt/types';
+import { countTokens } from '../../gpt/utils/countTokens';
+import { ensureICanRunThis } from '../../gpt/utils/ensureIcanRunThis';
 import { EditorDocument, EditorPosition } from '../../managers/EditorManager';
 import { mutateAppendSectionToLog } from '../../tasks/logs/mutators/mutateAppendSectionToLog';
 import { mutateAppendToLog } from '../../tasks/logs/mutators/mutateAppendToLog';
@@ -56,7 +56,7 @@ export async function stageExtractRelevantCode(task: MinionTask) {
   const userQuery = task.userQuery;
   const selectionPosition = task.selection.start;
   const selectedText = task.selectedText;
-  const fullFileContents = task.originalContent;
+  const fullFileContents = task.getOriginalContent;
 
   const promptWithContext = extractRelevantCodePrompt({
     userQuery,

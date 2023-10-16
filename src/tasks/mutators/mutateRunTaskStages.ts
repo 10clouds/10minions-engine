@@ -6,7 +6,7 @@ import { TaskContext } from '../TaskContext';
 import { TaskCanceledError } from '../utils/TaskCanceled';
 import { mutateStopExecution } from './mutateStopExecution';
 
-export function mutateRunTaskStages<TC extends TaskContext>(
+export async function mutateRunTaskStages<TC extends TaskContext>(
   task: TC,
   execute: (
     task: TC,
@@ -16,40 +16,40 @@ export function mutateRunTaskStages<TC extends TaskContext>(
   getExternalData?: () => Promise<WorkspaceFilesKnowledge[]>,
   test?: boolean,
 ) {
-  return new Promise<void>((resolve, reject) => {
-    if (task.stopped) {
-      return;
+  if (task.stopped) {
+    return;
+  }
+
+  task.progress = 0;
+
+  try {
+    await execute(task, getExternalData, test);
+    await mutateStopExecution(task);
+    task.onSuccess?.();
+  } catch (error) {
+    if (!(error instanceof TaskCanceledError)) {
+      getEditorManager().showErrorMessage(`Error in execution: ${error}`);
+      console.error('Error in execution', error);
     }
 
-    task.onSuccess = resolve;
-    task.onErrorOrCancel = reject;
+    await mutateStopExecution(
+      task,
+      error instanceof Error ? `Error: ${error.message}` : String(error),
+    );
+    task.onErrorOrCancel?.(
+      error instanceof Error ? error.message : String(error),
+    );
+  } finally {
+    const executionTime = Date.now() - task.startTime;
+    const formattedExecutionTime =
+      calculateAndFormatExecutionTime(executionTime);
 
-    try {
-      task.progress = 0;
-      execute(task, getExternalData, test);
-      mutateStopExecution(task);
-    } catch (error) {
-      if (!(error instanceof TaskCanceledError)) {
-        getEditorManager().showErrorMessage(`Error in execution: ${error}`);
-        console.error('Error in execution', error);
-      }
+    mutateAppendToLog(task, `Total Cost: ~${task.totalCost.toFixed(2)}$`);
+    mutateAppendToLog(
+      task,
+      `${task.executionStage} (Execution Time: ${formattedExecutionTime})`,
+    );
 
-      mutateStopExecution(
-        task,
-        error instanceof Error ? `Error: ${error.message}` : String(error),
-      );
-    } finally {
-      const executionTime = Date.now() - task.startTime;
-      const formattedExecutionTime =
-        calculateAndFormatExecutionTime(executionTime);
-
-      mutateAppendToLog(task, `Total Cost: ~${task.totalCost.toFixed(2)}$`);
-      mutateAppendToLog(
-        task,
-        `${task.executionStage} (Execution Time: ${formattedExecutionTime})`,
-      );
-
-      task.progress = 1;
-    }
-  });
+    task.progress = 1;
+  }
 }

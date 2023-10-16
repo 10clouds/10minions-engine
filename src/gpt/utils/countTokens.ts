@@ -1,5 +1,5 @@
+import { GPTMode, MODEL_DATA } from '../types';
 import { getModel } from './getModel';
-import { GPTMode, MODEL_DATA } from './types';
 
 export function countTokens(text: string, mode: GPTMode) {
   const model = getModel(mode);

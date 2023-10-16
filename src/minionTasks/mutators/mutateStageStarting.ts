@@ -7,7 +7,7 @@ import { MinionTask } from '../MinionTask';
 export async function mutateStageStarting(task: MinionTask) {
   const document = await getEditorManager().openTextDocument(task.documentURI);
 
-  task.originalContent = document.getText();
+  task.setOriginalContent = document.getText();
 
   mutateClearLog(task);
   mutateAppendToLog(task, `Id: ${task.id}`);

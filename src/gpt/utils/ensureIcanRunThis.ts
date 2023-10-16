@@ -1,7 +1,7 @@
+import { TokenError } from '../TokenError';
+import { GPTExecuteRequestPrompt, GPTMode, MODEL_DATA } from '../types';
 import { countTokens } from './countTokens';
 import { getModel } from './getModel';
-import { TokenError } from './TokenError';
-import { GPTExecuteRequestPrompt, GPTMode, MODEL_DATA } from './types';
 
 interface EnsureICanRunThisParams {
   prompt: GPTExecuteRequestPrompt;

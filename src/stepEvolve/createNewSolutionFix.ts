@@ -1,8 +1,8 @@
-import { MinionTaskSolution } from '../minionTasks/advancedCodeChangeStrategy';
 import { applyModificationProcedure } from '../minionTasks/applyModificationProcedure';
 import { MinionTask } from '../minionTasks/MinionTask';
 import { mutateCreateModification } from '../minionTasks/mutators/mutateCreateModification';
 import { mutateCreateModificationProcedure } from '../minionTasks/mutators/mutateCreateModificationProcedure';
+import { MinionTaskSolution } from '../minionTasks/types';
 import { mutateStopExecution } from '../tasks/mutators/mutateStopExecution';
 
 const MAX_ATTEMPTS_NUMBER = 4;
@@ -22,7 +22,7 @@ export const createNewSolutionFix = async (
       await mutateCreateModificationProcedure(task);
       mutateStopExecution(task);
       modifiedContent = await applyModificationProcedure(
-        task.originalContent,
+        task.getOriginalContent,
         task.modificationProcedure,
         'ts',
       );
@@ -36,6 +36,6 @@ export const createNewSolutionFix = async (
     resultingCode: modifiedContent,
     modificationProcedure: task.modificationProcedure,
     modificationDescription: task.modificationDescription,
-    originalCode: task.originalContent,
+    originalCode: task.getOriginalContent,
   };
 };

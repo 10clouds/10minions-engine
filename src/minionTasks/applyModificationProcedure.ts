@@ -1,5 +1,6 @@
 import { getCommentForLanguage } from '../utils/code/comments';
-import { fuzzyReplaceTextInner } from '../utils/code/fuzzyReplaceText';
+import { fuzzyReplaceTextInner } from '../utils/code/fuzzyReplaceTextInner';
+import { sleep } from '../utils/sleep';
 
 type CommandSegment = {
   name: string;
@@ -148,10 +149,8 @@ export async function applyModificationProcedure(
     }
   }
 
-  for await (const line of lines) {
-    await new Promise((resolve) => {
-      setTimeout(resolve, 1);
-    });
+  for (const line of lines) {
+    await sleep(1);
 
     const possibilities: CommandSegment[] = inCommand
       ? inCommand.followedBy || []
@@ -175,7 +174,7 @@ export async function applyModificationProcedure(
               followedBy.name.startsWith('END_') && followedBy.execute,
           );
 
-          if (findEnd && findEnd.execute) {
+          if (findEnd?.execute) {
             currentCode = await findEnd.execute(
               currentCode,
               languageId,

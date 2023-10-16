@@ -46,7 +46,7 @@ export function serializeMinionTask(
       endCharacter: minionTask.selection.end.character,
     },
     selectedText: minionTask.selectedText,
-    originalContent: minionTask.originalContent,
+    originalContent: minionTask.getOriginalContent,
     finalContent: minionTask.contentAfterApply,
     startTime: minionTask.startTime,
     shortName: minionTask.shortName,
@@ -57,7 +57,7 @@ export function serializeMinionTask(
     strategy: minionTask.strategyId === '' ? null : minionTask.strategyId,
     logContent: minionTask.logContent,
     contentWhenDismissed: minionTask.contentWhenDismissed,
-    aplicationStatus: minionTask.aplicationStatus,
+    aplicationStatus: minionTask.applicationStatus,
     relevantKnowledge: minionTask.relevantKnowledge,
   };
 }

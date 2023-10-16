@@ -1,4 +1,4 @@
-import { ParsedLine } from './types';
+import { ParsedLine } from '../types';
 
 /**
  * This function processes the chunkBuffer string line by line, checking for lines starting with "data: " or JSON error objects. If a line starts with "data: ", it removes the prefix, trims whitespace, attempts JSON parsing, and adds the result to an array. If parsing fails, it logs an error and throws an exception. For lines not starting with "data: ", it assumes they are JSON error objects and handles them accordingly. The function repeats this process until there are no more newline characters in chunkBuffer, returning the array of ParsedLine objects and the modified chunkBuffer.

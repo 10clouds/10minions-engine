@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-import { countTokens } from '../../src/gpt/countTokens';
 import { gptExecute } from '../../src/gpt/gptExecute';
 import { GPTMode } from '../../src/gpt/types';
+import { countTokens } from '../../src/gpt/utils/countTokens';
 
 // TODO: left as reference for now, but should be removed propably
 export async function gptAssert({

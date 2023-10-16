@@ -1,5 +1,5 @@
+import { GPTExecuteRequestData, GPTMode, GPTModel, MODEL_DATA } from '../types';
 import { countTokens } from './countTokens';
-import { GPTExecuteRequestData, GPTMode, GPTModel, MODEL_DATA } from './types';
 
 export const calculateCosts = (
   model: GPTModel,

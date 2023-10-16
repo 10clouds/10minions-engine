@@ -9,7 +9,7 @@ import { MinionTask } from '../MinionTask';
 export async function mutateCreateModificationProcedure(task: MinionTask) {
   const {
     strategyId,
-    originalContent,
+    getOriginalContent: originalContent,
     modificationDescription,
     baseName,
     relevantKnowledge,

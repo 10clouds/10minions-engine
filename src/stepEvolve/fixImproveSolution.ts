@@ -1,12 +1,12 @@
 import { z } from 'zod';
 
-import { countTokens } from '../gpt/countTokens';
-import { createFullPromptFromSections } from '../gpt/createFullPromptFromSections';
-import { ensureIRunThisInRange } from '../gpt/ensureIRunThisInRange';
 import { gptExecute } from '../gpt/gptExecute';
 import { GPTMode } from '../gpt/types';
-import { MinionTaskSolution } from '../minionTasks/advancedCodeChangeStrategy';
+import { countTokens } from '../gpt/utils/countTokens';
+import { createFullPromptFromSections } from '../gpt/utils/createFullPromptFromSections';
+import { ensureIRunThisInRange } from '../gpt/utils/ensureIRunThisInRange';
 import { MinionTask } from '../minionTasks/MinionTask';
+import { MinionTaskSolution } from '../minionTasks/types';
 import { SolutionWithMeta } from './FitnessFunction';
 
 const EXTRA_TOKENS = 200;
@@ -34,7 +34,7 @@ export function improveSolutionFix({
   const solution = solutionWithMeta.solution.resultingCode;
   const fullPrompt = createFullPromptFromSections({
     intro:
-      'Improve the following SOLUTION and MODIFICATION_PROCEDURE that fullfill USER_QUERY request based on MODIFICATION_DESCRIPTION, use SUGGESTIONS as guidance. Do not output any section markers or additional sections in your response, just the new improved solution, improved MODIFICATION_PROCEDURE.',
+      'Improve the following SOLUTION and MODIFICATION_PROCEDURE that fullfil USER_QUERY request based on MODIFICATION_DESCRIPTION, use SUGGESTIONS as guidance. Do not output any section markers or additional sections in your response, just the new improved solution, improved MODIFICATION_PROCEDURE.',
     sections: {
       MODIFICATION_DESCRIPTION: modificationDescription,
       MODIFICATION_PROCEDURE: modificationProcedure,
@@ -51,7 +51,7 @@ export function improveSolutionFix({
   const maxTokens = ensureIRunThisInRange({
     prompt: fullPrompt,
     mode,
-    preferedTokens: fullPromptTokens,
+    preferredTokens: fullPromptTokens,
     minTokens,
   });
 

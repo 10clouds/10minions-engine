@@ -17,7 +17,7 @@ export async function mutatorApplyMinionTask(minionTask: MinionTask) {
 
   if (minionTask.executionStage !== FINISHED_STAGE_NAME) {
     getEditorManager().showErrorMessage(`Cannot apply unfinished task.`);
-    minionTask.aplicationStatus = ApplicationStatus.NOT_APPLIED;
+    minionTask.applicationStatus = ApplicationStatus.NOT_APPLIED;
 
     return;
   }
@@ -48,18 +48,18 @@ export async function mutatorApplyMinionTask(minionTask: MinionTask) {
       return;
     }
 
-    minionTask.originalContent = currentDocContent;
+    minionTask.setOriginalContent = currentDocContent;
 
-    const preprocessedContent = minionTask.originalContent;
+    const preprocessedContent = minionTask.getOriginalContent;
 
     const modifiedContent = await applyModificationProcedure(
       preprocessedContent,
       minionTask.modificationProcedure,
       document.languageId,
     );
-    minionTask.aplicationStatus = ApplicationStatus.APPLIED;
+    minionTask.applicationStatus = ApplicationStatus.APPLIED;
 
-    await getEditorManager().applyWorkspaceEdit(async (edit) => {
+    getEditorManager().applyWorkspaceEdit(async (edit) => {
       edit.replace(
         document.uri,
         {

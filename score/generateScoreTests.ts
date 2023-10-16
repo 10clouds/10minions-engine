@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
-import { countTokens } from '../src/gpt/countTokens';
-import { ensureIRunThisInRange } from '../src/gpt/ensureIRunThisInRange';
 import { gptExecute } from '../src/gpt/gptExecute';
 import { GPTMode } from '../src/gpt/types';
+import { countTokens } from '../src/gpt/utils/countTokens';
+import { ensureIRunThisInRange } from '../src/gpt/utils/ensureIRunThisInRange';
 import { MinionTask } from '../src/minionTasks/MinionTask';
 import { extractExtensionNameFromPath } from '../src/utils/extractFileNameFromPath';
 import { listOfTypes, ScoreTest, TestSchemas } from './types';
@@ -81,7 +81,7 @@ const prompt = async (minionTask: MinionTask, test?: boolean) => {
 
   Original code contains user's original file content
   ===== ORIGINAL CODE =====
-  ${minionTask.originalContent}
+  ${minionTask.getOriginalContent}
 
   User query is a prompt for GPT and defines what should happend to code.
   ===== USER QUERY =====
@@ -118,7 +118,7 @@ export const generateScoreTests = async (
   const maxTokens = ensureIRunThisInRange({
     prompt: fullPrompt,
     mode,
-    preferedTokens: fullPromptTokens,
+    preferredTokens: fullPromptTokens,
     minTokens: fullPromptTokens,
   });
 

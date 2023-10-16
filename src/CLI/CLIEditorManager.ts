@@ -6,13 +6,14 @@ import {
 } from '../managers/EditorManager';
 import { CLIEditorDocument } from './CLIEditorDocument';
 import { CLIWorkspaceEdit } from './CLIWorkspaceEdit';
-
 export class CLIEditorManager implements EditorManager {
-  openDocuments: EditorDocument[] = [];
+  private openDocuments: EditorDocument[] = [];
 
   constructor(public dryRun = false) {}
 
-  applyWorkspaceEdit(fillEdit: (edit: WorkspaceEdit) => Promise<void>) {
+  applyWorkspaceEdit(
+    fillEdit: <T extends WorkspaceEdit>(edit: T) => Promise<void>,
+  ) {
     const edit = new CLIWorkspaceEdit();
     fillEdit(edit);
     this.applyEdit(edit);
@@ -55,8 +56,6 @@ export class CLIEditorManager implements EditorManager {
     console.error(message);
   }
 
-  showInformationMessage(message: string): void {}
-
   async openTextDocument(uri: EditorUri) {
     const existingDocument = this.openDocuments.find(
       (doc) => doc.uri.toString() === uri.toString(),
@@ -71,10 +70,30 @@ export class CLIEditorManager implements EditorManager {
     return document;
   }
 
+  closeTextDocument(uri: EditorUri) {
+    const index = this.openDocuments.findIndex(
+      (doc) => doc.uri.toString() === uri.toString(),
+    );
+    if (index !== -1) {
+      this.openDocuments.splice(index, 1);
+    }
+  }
+
+  showInformationMessage(message: string): void {
+    console.log(message);
+  }
+
   createUri(uri: string): EditorUri {
     return {
       fsPath: uri,
       toString: () => uri,
+      // scheme: 'file',
+      // authority: '',
+      // path: uri,
+      // query: '',
+      // fragment: '',
+      // with: () => uri as unknown as EditorUri,
+      // toJSON: () => uri,
     };
   }
 }

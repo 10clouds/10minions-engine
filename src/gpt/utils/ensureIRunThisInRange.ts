@@ -1,12 +1,12 @@
+import { TokenError } from '../TokenError';
+import { GPTMode, MODEL_DATA } from '../types';
 import { countTokens } from './countTokens';
 import { getModel } from './getModel';
-import { TokenError } from './TokenError';
-import { GPTMode, MODEL_DATA } from './types';
 
 interface EnsureICanRunThisInRangeParams {
   prompt: string;
   minTokens: number;
-  preferedTokens: number;
+  preferredTokens: number;
   mode: GPTMode;
 }
 /**
@@ -23,11 +23,11 @@ const EXTRA_BUFFER_FOR_ENCODING_OVERHEAD = 50;
 export function ensureIRunThisInRange({
   prompt,
   minTokens,
-  preferedTokens,
+  preferredTokens,
   mode,
 }: EnsureICanRunThisInRangeParams): number {
   const roundedMinTokens = Math.ceil(minTokens);
-  const roundedPreferredTokens = Math.ceil(preferedTokens);
+  const roundedPreferredTokens = Math.ceil(preferredTokens);
 
   const model = getModel(mode);
   const usedTokens =

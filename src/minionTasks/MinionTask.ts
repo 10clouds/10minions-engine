@@ -32,7 +32,7 @@ export class MinionTask implements TaskContext {
   readonly selection: EditorRange;
   readonly selectedText: string;
 
-  private _originalContent: string;
+  private originalContent: string;
 
   readonly id: string;
 
@@ -74,12 +74,12 @@ export class MinionTask implements TaskContext {
     return true;
   }
 
-  get originalContent(): string {
-    return this._originalContent;
+  get getOriginalContent(): string {
+    return this.originalContent;
   }
 
-  set originalContent(value: string) {
-    this._originalContent = value;
+  set setOriginalContent(value: string) {
+    this.originalContent = value;
     getOriginalContentProvider().reportChange(this.originalContentURI);
   }
 
@@ -94,7 +94,7 @@ export class MinionTask implements TaskContext {
   modificationProcedure: string;
 
   inlineMessage: string;
-  aplicationStatus?: ApplicationStatus;
+  applicationStatus?: ApplicationStatus;
   relevantKnowledge?: WorkspaceFilesKnowledge[];
 
   constructor({
@@ -152,7 +152,7 @@ export class MinionTask implements TaskContext {
     this.userQuery = userQuery;
     this.selection = selection;
     this.selectedText = selectedText;
-    this._originalContent = originalContent;
+    this.originalContent = originalContent;
     this.contentAfterApply = finalContent;
     this.contentWhenDismissed = contentWhenDismissed;
     this.startTime = startTime;
@@ -166,7 +166,7 @@ export class MinionTask implements TaskContext {
     this.relevantKnowledgeIds = relevantKnowledgeIds;
     this.logContent = logContent;
     this.totalCost = totalCost;
-    this.aplicationStatus = aplicationStatus;
+    this.applicationStatus = aplicationStatus;
     this.relevantKnowledge = relevantKnowledge;
   }
 

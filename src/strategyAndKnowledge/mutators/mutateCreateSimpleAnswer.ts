@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { createFullPromptFromSections } from '../../gpt/createFullPromptFromSections';
+import { createFullPromptFromSections } from '../../gpt/utils/createFullPromptFromSections';
 import { GPTMode } from '../../gpt/types';
 import { mutateAppendSectionToLog } from '../../tasks/logs/mutators/mutateAppendSectionToLog';
 import { mutateAppendToLogNoNewline } from '../../tasks/logs/mutators/mutateAppendToLogNoNewline';
