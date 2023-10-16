@@ -32,7 +32,7 @@ export function createFullPromptFromSections({
 
   return `
   ${cleanedIntro}
-
+ 
   ${sectionPrompts}
 
   ${cleanedOutro ?? ''}`.trim();

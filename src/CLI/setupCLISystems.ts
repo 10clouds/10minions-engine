@@ -4,7 +4,7 @@ import { ServiceAccount } from 'firebase-admin';
 import { readFileSync } from 'fs';
 import path from 'path';
 
-import { setOpenAIApiKey } from '../gpt/gptExecute';
+import { setOpenAIApiKey } from '../gpt/utils/setOpenAiKey';
 import {
   AnalyticsManager,
   setAnalyticsManager,
@@ -25,8 +25,6 @@ export function initCLISystems() {
   }
 
   setOpenAIApiKey(process.env.OPENAI_API_KEY);
-
-  setOpenAICacheManager(undefined);
 
   if (process.env.NO_OPENAI_CACHE === 'true') {
     setOpenAICacheManager(new NoCacheOpenAICacheManager());
@@ -68,6 +66,5 @@ export function initCLISystems() {
 }
 
 export function setupCLISystemsForTest() {
-  setEditorManager(undefined);
   setEditorManager(new CLIEditorManager());
 }

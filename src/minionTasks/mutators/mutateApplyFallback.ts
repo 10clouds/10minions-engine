@@ -20,16 +20,17 @@ ${minionTask.modificationDescription}
 
   mutateAppendToLogNoNewline(minionTask, LOG_PLAIN_COMMENT_MARKER);
 
-  minionTask.originalContent = document.getText();
-  minionTask.aplicationStatus = ApplicationStatus.APPLIED_AS_FALLBACK;
+  minionTask.setOriginalContent = document.getText();
+  minionTask.applicationStatus = ApplicationStatus.APPLIED_AS_FALLBACK;
 
-  await getEditorManager().applyWorkspaceEdit(async (edit) => {
+  getEditorManager().applyWorkspaceEdit(async (edit) => {
     edit.insert(
       minionTask.documentURI,
       { line: 0, character: 0 },
       `${decomposedString}\n`,
     );
   });
+
   getEditorManager().showInformationMessage(
     `Modification applied successfully.`,
   );

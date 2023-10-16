@@ -1,5 +1,4 @@
 import { EditorTextEdit } from '../managers/EditorManager';
-
 export class CLIEditEntry implements EditorTextEdit {
   constructor(
     public action: string,

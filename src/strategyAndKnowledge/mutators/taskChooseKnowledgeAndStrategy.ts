@@ -1,10 +1,10 @@
 import { z } from 'zod';
 
 import { DEBUG_PROMPTS } from '../../const';
-import { countTokens } from '../../gpt/countTokens';
-import { ensureIRunThisInRange } from '../../gpt/ensureIRunThisInRange';
-import { getModel } from '../../gpt/getModel';
 import { GPTExecuteRequestMessage, GPTMode, MODEL_DATA } from '../../gpt/types';
+import { countTokens } from '../../gpt/utils/countTokens';
+import { ensureIRunThisInRange } from '../../gpt/utils/ensureIRunThisInRange';
+import { getModel } from '../../gpt/utils/getModel';
 import { mutateAppendSectionToLog } from '../../tasks/logs/mutators/mutateAppendSectionToLog';
 import { mutateAppendToLog } from '../../tasks/logs/mutators/mutateAppendToLog';
 import { taskGPTExecute } from '../../tasks/mutators/taskGPTExecute';
@@ -108,7 +108,7 @@ export async function taskChooseKnowledgeAndStrategy<TC extends TaskContext>({
   const maxTokens = ensureIRunThisInRange({
     prompt,
     mode,
-    preferedTokens: fullPromptTokens,
+    preferredTokens: fullPromptTokens,
     minTokens,
   });
   const KnowledgeIdsEnum = z.enum([

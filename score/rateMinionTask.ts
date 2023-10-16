@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
-import { countTokens } from '../src/gpt/countTokens';
-import { createFullPromptFromSections } from '../src/gpt/createFullPromptFromSections';
 import { gptExecute } from '../src/gpt/gptExecute';
 import { GPTMode } from '../src/gpt/types';
+import { countTokens } from '../src/gpt/utils/countTokens';
+import { createFullPromptFromSections } from '../src/gpt/utils/createFullPromptFromSections';
 import { MinionTask } from '../src/minionTasks/MinionTask';
 import { shuffleArray } from '../src/utils/random/shuffleArray';
 import { sum } from '../src/utils/utils';

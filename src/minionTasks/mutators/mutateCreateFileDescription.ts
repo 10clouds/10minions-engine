@@ -1,10 +1,10 @@
 import { z } from 'zod';
 
-import { countTokens } from '../../gpt/countTokens';
-import { createFullPromptFromSections } from '../../gpt/createFullPromptFromSections';
-import { ensureIRunThisInRange } from '../../gpt/ensureIRunThisInRange';
 import { gptExecute } from '../../gpt/gptExecute';
 import { GPTMode } from '../../gpt/types';
+import { countTokens } from '../../gpt/utils/countTokens';
+import { createFullPromptFromSections } from '../../gpt/utils/createFullPromptFromSections';
+import { ensureIRunThisInRange } from '../../gpt/utils/ensureIRunThisInRange';
 
 export interface WorkspaceFileData {
   path: string;
@@ -33,7 +33,7 @@ export async function mutateCreateFileDescription(fileData: WorkspaceFileData) {
     const maxTokens = ensureIRunThisInRange({
       prompt: promptWithContext,
       mode,
-      preferedTokens: fullPromptTokens,
+      preferredTokens: fullPromptTokens,
       minTokens,
     });
 

@@ -1,4 +1,4 @@
-import { countTokens } from '../gpt/countTokens';
+import { countTokens } from '../gpt/utils/countTokens';
 import { GPTMode } from '../gpt/types';
 import { mutateCreateFileDescription } from './mutators/mutateCreateFileDescription';
 

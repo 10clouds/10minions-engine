@@ -2,6 +2,20 @@ export type EditorPosition = {
   readonly line: number;
   readonly character: number;
 };
+export type EditorTextEdit = {
+  action: string;
+  startLine: number;
+  startCharacter: number;
+  text: string;
+  endLine?: number;
+  endCharacter?: number;
+};
+
+export interface WorkspaceEdit {
+  replace(uri: EditorUri, range: EditorRange, newText: string): void;
+  insert(uri: EditorUri, position: EditorPosition, newText: string): void;
+  getEntries(): [EditorUri, EditorTextEdit[]][];
+}
 
 export type EditorRange = {
   readonly start: EditorPosition;
@@ -24,20 +38,13 @@ export type EditorDocument = {
   };
 };
 
-// TODO: replace this object type
-export type EditorTextEdit = object;
-
-export interface WorkspaceEdit {
-  replace(uri: EditorUri, range: EditorRange, newText: string): void;
-  insert(uri: EditorUri, position: EditorPosition, newText: string): void;
-
-  getEntries(): [EditorUri, EditorTextEdit[]][];
-}
-
 export interface EditorManager {
-  applyWorkspaceEdit(fillEdit: (edit: WorkspaceEdit) => Promise<void>): unknown;
-  showInformationMessage(message: string): unknown;
+  applyWorkspaceEdit(
+    fillEdit: <T extends WorkspaceEdit>(edit: T) => Promise<void>,
+  ): void;
+  showInformationMessage(message: string): void;
   openTextDocument(uri: EditorUri): Promise<EditorDocument>;
+  closeTextDocument?(uri: EditorUri): void;
   showErrorMessage(message: string): void;
   createUri(uri: string): EditorUri;
 }

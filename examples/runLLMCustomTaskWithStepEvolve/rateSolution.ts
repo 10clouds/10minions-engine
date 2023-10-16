@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-import { createFullPromptFromSections } from '../../src/gpt/createFullPromptFromSections';
 import { gptExecute } from '../../src/gpt/gptExecute';
 import { GPTMode } from '../../src/gpt/types';
+import { createFullPromptFromSections } from '../../src/gpt/utils/createFullPromptFromSections';
 import { SolutionWithMeta } from '../../src/stepEvolve/FitnessFunction';
 import { shuffleArray } from '../../src/utils/random/shuffleArray';
 import { sum } from '../../src/utils/utils';

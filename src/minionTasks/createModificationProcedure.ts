@@ -1,10 +1,10 @@
 import { z } from 'zod';
 
 import { DEBUG_PROMPTS } from '../const';
-import { countTokens } from '../gpt/countTokens';
-import { ensureIRunThisInRange } from '../gpt/ensureIRunThisInRange';
 import { gptExecute } from '../gpt/gptExecute';
 import { GPTMode, QUALITY_MODE_TOKENS } from '../gpt/types';
+import { countTokens } from '../gpt/utils/countTokens';
+import { ensureIRunThisInRange } from '../gpt/utils/ensureIRunThisInRange';
 import { WorkspaceFilesKnowledge } from './generateDescriptionForWorkspaceFiles';
 import { createPrompt } from './prompts/createModificationProcedurePrompt';
 import { trimKnowledge } from './utils/trimKnowledge';
@@ -46,7 +46,7 @@ export async function createModificationProcedure(
   let maxTokens = ensureIRunThisInRange({
     prompt: promptWithContext,
     mode,
-    preferedTokens: fullPromptTokens,
+    preferredTokens: fullPromptTokens,
     minTokens,
   });
 

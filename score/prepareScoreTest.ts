@@ -6,9 +6,9 @@ import {
   initCLISystems,
   setupCLISystemsForTest,
 } from '../src/CLI/setupCLISystems';
-import { countTokens } from '../src/gpt/countTokens';
 import { gptExecute } from '../src/gpt/gptExecute';
 import { GPTMode } from '../src/gpt/types';
+import { countTokens } from '../src/gpt/utils/countTokens';
 import {
   generateScoreTests,
   GenerateScoreTestsResult,

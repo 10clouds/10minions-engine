@@ -3,12 +3,15 @@ import { readFile } from 'node:fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
 
-import { getEditorManager } from '../src/managers/EditorManager';
+import {
+  EditorPosition,
+  getEditorManager,
+} from '../src/managers/EditorManager';
 import { MinionTask } from '../src/minionTasks/MinionTask';
 
 export interface Selection {
-  start: { line: number; character: number };
-  end: { line: number; character: number };
+  start: EditorPosition;
+  end: EditorPosition;
   selectedText: string;
 }
 

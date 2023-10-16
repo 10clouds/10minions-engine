@@ -1,4 +1,4 @@
-import { createFullPromptFromSections } from '../../gpt/createFullPromptFromSections';
+import { createFullPromptFromSections } from '../../gpt/utils/createFullPromptFromSections';
 import { EditorDocument, EditorPosition } from '../../managers/EditorManager';
 import { PromptKnowledge } from '../utils/trimKnowledge';
 import { knowledgeHelperPrompt } from './knowledgeHelperPrompt';

@@ -28,8 +28,10 @@ export async function mutateExecuteMinionTaskStages(
   const workspaceFilesKnowledge = getExternalData
     ? await getExternalData()
     : [];
+
   const knowledge = [...workspaceFilesKnowledge, ...minionsKnowledge];
   mutateEndStage(task);
+
   mutateStartStage({ task, name: 'Understanding ...', progressIncrement: 0.3 });
   const { strategy, relevantKnowledge } = await taskChooseKnowledgeAndStrategy({
     task,
@@ -43,8 +45,10 @@ export async function mutateExecuteMinionTaskStages(
   task.relevantKnowledgeIds = relevantKnowledge.map(
     (knowledge) => knowledge.id,
   );
+
   task.relevantKnowledge = relevantKnowledge as WorkspaceFilesKnowledge[];
   mutateEndStage(task);
+
   switch (task.strategyId) {
     case 'AnswerQuestion':
       mutateStartStage({

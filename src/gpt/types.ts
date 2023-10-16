@@ -40,7 +40,7 @@ export type ModelData = {
 };
 
 export interface ModelsResponseData {
-  objest: string;
+  object: string;
   data: {
     id: string;
     object: string;

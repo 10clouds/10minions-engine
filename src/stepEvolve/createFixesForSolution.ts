@@ -1,15 +1,15 @@
 import { z } from 'zod';
 
 import { CriteriaRatings, MAX_POINTS } from '../../score/rateMinionTask';
-import { createFullPromptFromSections } from '../../src/gpt/createFullPromptFromSections';
 import { gptExecute } from '../../src/gpt/gptExecute';
 import { GPTMode } from '../../src/gpt/types';
 import { Fix, SolutionWithMeta } from '../../src/stepEvolve/FitnessFunction';
 import { getRandomElement } from '../../src/utils/random/getRandomElement';
 import { shuffleArray } from '../../src/utils/random/shuffleArray';
-import { countTokens } from '../gpt/countTokens';
-import { MinionTaskSolution } from '../minionTasks/advancedCodeChangeStrategy';
+import { countTokens } from '../gpt/utils/countTokens';
+import { createFullPromptFromSections } from '../gpt/utils/createFullPromptFromSections';
 import { MinionTask } from '../minionTasks/MinionTask';
+import { MinionTaskSolution } from '../minionTasks/types';
 import {
   improveSolutionFix,
   ImproveSolutionFixResult,
@@ -37,7 +37,7 @@ export async function createFixesForSolution(
       'brilliant software engineer with a high IQ, specializing in compiler optimization to enhance code efficiency',
       'data scientist of exceptional intelligence, focused on developing advanced machine learning algorithms for code improvement suggestions',
       'ingenious systems architect possessing a high IQ, dedicated to optimizing code for scalability and peak performance',
-      'harp-minded security researcher with a high IQ, adept at identifying and rectifying code vulnerabilities for enhanced code quality',
+      'sharp-minded security researcher with a high IQ, adept at identifying and rectifying code vulnerabilities for enhanced code quality',
     ])}. provide suggestions on how to improve the SOLUTION that full fill USER_QUERY request based on MODIFICATION_DESCRIPTION in order to maximize the judging CRITERIA.`,
     sections: {
       MODIFICATION_DESCRIPTION: modificationDescription,

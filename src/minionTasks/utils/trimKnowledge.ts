@@ -1,7 +1,7 @@
-import { countTokens } from '../../gpt/countTokens';
-import { ensureIRunThisInRange } from '../../gpt/ensureIRunThisInRange';
-import { getModel } from '../../gpt/getModel';
 import { GPTMode, MODEL_DATA } from '../../gpt/types';
+import { countTokens } from '../../gpt/utils/countTokens';
+import { ensureIRunThisInRange } from '../../gpt/utils/ensureIRunThisInRange';
+import { getModel } from '../../gpt/utils/getModel';
 import { WorkspaceFilesKnowledge } from '../generateDescriptionForWorkspaceFiles';
 
 export type PromptKnowledge = { knowledge?: WorkspaceFilesKnowledge[] };
@@ -55,7 +55,7 @@ export const trimKnowledge = <T extends PromptKnowledge>({
   const newMaxTokens = ensureIRunThisInRange({
     prompt: newPrompt,
     mode,
-    preferedTokens: fullPromptTokens,
+    preferredTokens: fullPromptTokens,
     minTokens,
   });
 

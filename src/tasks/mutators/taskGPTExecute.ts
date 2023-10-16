@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
 import { DEBUG_RESPONSES } from '../../const';
-import { ensureICanRunThis } from '../../gpt/ensureIcanRunThis';
 import { gptExecute } from '../../gpt/gptExecute';
 import { GPTExecuteRequestPrompt, GPTMode } from '../../gpt/types';
+import { ensureICanRunThis } from '../../gpt/utils/ensureIcanRunThis';
 import { mutateAppendToLog } from '../logs/mutators/mutateAppendToLog';
 import { mutateAppendToLogNoNewline } from '../logs/mutators/mutateAppendToLogNoNewline';
 import { TaskContext } from '../TaskContext';

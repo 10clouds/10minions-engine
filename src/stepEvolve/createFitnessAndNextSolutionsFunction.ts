@@ -5,8 +5,8 @@ import {
   FitnessAndNextSolutionsFunction,
   SolutionWithMeta,
 } from '../../src/stepEvolve/FitnessFunction';
-import { MinionTaskSolution } from '../minionTasks/advancedCodeChangeStrategy';
 import { MinionTask } from '../minionTasks/MinionTask';
+import { MinionTaskSolution } from '../minionTasks/types';
 import { createFixesForSolution } from './createFixesForSolution';
 
 export function createFitnessAndNextSolutionsFunction({

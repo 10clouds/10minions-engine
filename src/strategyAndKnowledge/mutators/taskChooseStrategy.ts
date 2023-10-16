@@ -7,7 +7,7 @@ import { mutateAppendToLog } from '../../tasks/logs/mutators/mutateAppendToLog';
 import { taskGPTExecute } from '../../tasks/mutators/taskGPTExecute';
 import { shuffleArray } from '../../utils/random/shuffleArray';
 import { Strategy } from '../Strategy';
-import { countTokens } from '../../gpt/countTokens';
+import { countTokens } from '../../gpt/utils/countTokens';
 
 export async function taskChooseStrategy<TC extends TaskContext>(task: TC, strategies: Strategy[], taskToPrompt: (task: TC) => Promise<string>) {
   const promptWithContext = `

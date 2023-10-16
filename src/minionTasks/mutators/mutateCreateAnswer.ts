@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
-import { countTokens } from '../../gpt/countTokens';
-import { ensureIRunThisInRange } from '../../gpt/ensureIRunThisInRange';
 import { gptExecute } from '../../gpt/gptExecute';
 import { GPTMode, QUALITY_MODE_TOKENS } from '../../gpt/types';
+import { countTokens } from '../../gpt/utils/countTokens';
+import { ensureIRunThisInRange } from '../../gpt/utils/ensureIRunThisInRange';
 import { mutateAppendToLog } from '../../tasks/logs/mutators/mutateAppendToLog';
 import { mutateAppendToLogNoNewline } from '../../tasks/logs/mutators/mutateAppendToLogNoNewline';
 import { mutateReportSmallProgress } from '../../tasks/mutators/mutateReportSmallProgress';
@@ -23,7 +23,7 @@ export async function mutateCreateAnswer(task: MinionTask) {
   const document = await task.document();
   const userQuery = task.userQuery;
   const selectedText = task.selectedText;
-  const fullFileContents = task.originalContent;
+  const fullFileContents = task.getOriginalContent;
   const isCancelled = () => {
     return task.stopped;
   };
@@ -48,7 +48,7 @@ export async function mutateCreateAnswer(task: MinionTask) {
   let maxTokens = ensureIRunThisInRange({
     prompt: promptWithContext,
     mode,
-    preferedTokens: fullPromptTokens,
+    preferredTokens: fullPromptTokens,
     minTokens,
   });
 

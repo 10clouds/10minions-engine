@@ -1,5 +1,6 @@
 import { MinionTask } from '../minionTasks/MinionTask';
 import { getRandomElement } from '../utils/random/getRandomElement';
+import { sleep } from '../utils/sleep';
 import { type SolutionWithMeta } from './FitnessFunction';
 import { FitnessObserver } from './FitnessObserver';
 
@@ -90,9 +91,7 @@ export async function stepEvolve<S>({
           ),
       ),
     );
-    await new Promise((r) => {
-      setTimeout(r, 0);
-    });
+    await sleep(0);
   }
 
   await Promise.all(
