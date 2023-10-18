@@ -1,20 +1,27 @@
 import { z } from 'zod';
+
 import { DEBUG_PROMPTS } from '../../const';
 import { GPTMode, MODEL_NAMES } from '../../gpt/types';
-import { TaskContext } from '../../tasks/TaskContext';
+import { countTokens } from '../../gpt/utils/countTokens';
 import { mutateAppendSectionToLog } from '../../tasks/logs/mutators/mutateAppendSectionToLog';
 import { mutateAppendToLog } from '../../tasks/logs/mutators/mutateAppendToLog';
 import { taskGPTExecute } from '../../tasks/mutators/taskGPTExecute';
+import { TaskContext } from '../../tasks/TaskContext';
 import { shuffleArray } from '../../utils/random/shuffleArray';
 import { Strategy } from '../Strategy';
-import { countTokens } from '../../gpt/utils/countTokens';
 
-export async function taskChooseStrategy<TC extends TaskContext>(task: TC, strategies: Strategy[], taskToPrompt: (task: TC) => Promise<string>) {
+export async function taskChooseStrategy<TC extends TaskContext>(
+  task: TC,
+  strategies: Strategy[],
+  taskToPrompt: (task: TC) => Promise<string>,
+) {
   const promptWithContext = `
 ${await taskToPrompt(task)}
 
 Possible strategies:
-${shuffleArray(strategies.map((c) => `* ${c.id} - ${c.description}`)).join('\n')}
+${shuffleArray(strategies.map((c) => `* ${c.id} - ${c.description}`)).join(
+  '\n',
+)} 
 
 Now choose strategy for the task.
 `.trim();
@@ -38,7 +45,10 @@ Now choose strategy for the task.
     outputSchema: z
       .object({
         relevantKnowledge: z.array(z.string()),
-        strategy: z.enum([strategies[0].id, ...strategies.slice(1).map((s) => s.id)]),
+        strategy: z.enum([
+          strategies[0].id,
+          ...strategies.slice(1).map((s) => s.id),
+        ]),
         model: z.enum([MODEL_NAMES[0], ...MODEL_NAMES.slice(1)]),
       })
       .describe('Choose appropriate strategy'),
