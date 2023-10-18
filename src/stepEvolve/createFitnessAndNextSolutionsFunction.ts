@@ -32,27 +32,29 @@ export function createFitnessAndNextSolutionsFunction({
       criteriaDefinition.items,
     );
 
+    const nextPossibleSolutions = async (): Promise<
+      SolutionWithMeta<MinionTaskSolution>[]
+    > => {
+      const fixes = await createFixesForSolution(
+        task,
+        solutionWithMeta,
+        criteriaRatings,
+      );
+
+      return createSolutionsFromFixes({
+        solutionWithMeta,
+        fitnessAndNextSolutionsFunction,
+        fixes,
+        maxBranching,
+      });
+    };
+
     return {
       totalFitness: finalRating,
       fitnessComponents: criteriaRatings.map((c) => {
         return { id: c.criteria, fitness: c.rating };
       }),
-      nextPossibleSolutions: async (): Promise<
-        SolutionWithMeta<MinionTaskSolution>[]
-      > => {
-        const fixes = await createFixesForSolution(
-          task,
-          solutionWithMeta,
-          criteriaRatings,
-        );
-
-        return createSolutionsFromFixes({
-          solutionWithMeta,
-          fitnessAndNextSolutionsFunction,
-          fixes,
-          maxBranching,
-        });
-      },
+      nextPossibleSolutions,
     };
   };
 

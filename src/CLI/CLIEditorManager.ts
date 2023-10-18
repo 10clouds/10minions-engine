@@ -87,13 +87,6 @@ export class CLIEditorManager implements EditorManager {
     return {
       fsPath: uri,
       toString: () => uri,
-      // scheme: 'file',
-      // authority: '',
-      // path: uri,
-      // query: '',
-      // fragment: '',
-      // with: () => uri as unknown as EditorUri,
-      // toJSON: () => uri,
     };
   }
 }

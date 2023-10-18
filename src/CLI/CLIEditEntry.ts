@@ -1,7 +1,7 @@
 import { EditorTextEdit } from '../managers/EditorManager';
 export class CLIEditEntry implements EditorTextEdit {
   constructor(
-    public action: string,
+    public action: 'replace' | 'insert',
     public startLine: number,
     public startCharacter: number,
     public text: string,
